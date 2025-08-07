@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
-import Sample from ".//routes/Dashboard/Sample"
+import Admin from "./routes/Dashboard/Admin"
+import Staff from "./routes/Dashboard/Staff"
 
 const App = () => {
   return (
@@ -12,9 +13,14 @@ const App = () => {
         />
 
       <Route 
-          path="/dashboard" 
-          element={<Sample />} 
-        />
+          path="/dashboard/Staff" 
+          element={<Staff />} 
+      />
+
+      <Route 
+          path="/dashboard/Admin" 
+          element={<Admin />} 
+      />
       </Routes>
     </Router>
   )
