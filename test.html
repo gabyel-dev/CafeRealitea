@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cafe Realitea - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="hidden md:flex md:flex-shrink-0">
+            <div class="flex flex-col w-64 bg-gradient-to-b from-amber-800 to-amber-900">
+                <div class="flex items-center justify-center h-16 px-4 bg-amber-900">
+                    <div class="flex items-center">
+                        <i class="fas fa-mug-hot text-amber-300 text-2xl mr-2"></i>
+                        <span class="text-white font-bold text-xl">Cafe Realitea</span>
+                    </div>
+                </div>
+                <div class="flex flex-col flex-grow px-4 py-4 overflow-y-auto">
+                    <div class="space-y-1">
+                        <a href="#dashboard" class="sidebar-link group flex items-center px-2 py-2 text-sm font-medium rounded-md text-amber-100 hover:bg-amber-800 hover:text-white">
+                            <i class="fas fa-tachometer-alt mr-3 text-amber-300"></i>
+                            Dashboard
+                        </a>
+                        <a href="#sales" class="sidebar-link group flex items-center px-2 py-2 text-sm font-medium rounded-md text-amber-100 hover:bg-amber-800 hover:text-white">
+                            <i class="fas fa-history mr-3 text-amber-300"></i>
+                            Sales History
+                        </a>
+                        <a href="#orders" class="sidebar-link group flex items-center px-2 py-2 text-sm font-medium rounded-md text-amber-100 hover:bg-amber-800 hover:text-white">
+                            <i class="fas fa-clipboard-list mr-3 text-amber-300"></i>
+                            Order Management
+                        </a>
+                        <a href="#profile" class="sidebar-link group flex items-center px-2 py-2 text-sm font-medium rounded-md text-amber-100 hover:bg-amber-800 hover:text-white">
+                            <i class="fas fa-user-cog mr-3 text-amber-300"></i>
+                            Admin Settings
+                        </a>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-amber-700">
+                    <div class="flex items-center">
+                        <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Admin profile">
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-white">Admin User</p>
+                            <p class="text-xs font-medium text-amber-200">admin@realitea.com</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile navbar (hidden on desktop) -->
+        <div class="md:hidden fixed w-full z-10">
+            <div class="bg-amber-800 shadow-lg">
+                <div class="flex items-center justify-between h-16 px-4">
+                    <div class="flex items-center">
+                        <i class="fas fa-mug-hot text-amber-300 text-xl mr-2"></i>
+                        <span class="text-white font-bold">Cafe Realitea</span>
+                    </div>
+                    <button id="mobile-menu-button" class="text-amber-200 hover:text-white focus:outline-none">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                </div>
+                <!-- Mobile menu (hidden by default) -->
+                <div id="mobile-menu" class="hidden pb-3 bg-amber-800">
+                    <a href="#dashboard" class="mobile-link block px-3 py-2 text-base font-medium text-amber-100 hover:bg-amber-700 hover:text-white">
+                        <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                    </a>
+                    <a href="#sales" class="mobile-link block px-3 py-2 text-base font-medium text-amber-100 hover:bg-amber-700 hover:text-white">
+                        <i class="fas fa-history mr-2"></i> Sales History
+                    </a>
+                    <a href="#orders" class="mobile-link block px-3 py-2 text-base font-medium text-amber-100 hover:bg-amber-700 hover:text-white">
+                        <i class="fas fa-clipboard-list mr-2"></i> Order Management
+                    </a>
+                    <a href="#profile" class="mobile-link block px-3 py-2 text-base font-medium text-amber-100 hover:bg-amber-700 hover:text-white">
+                        <i class="fas fa-user-cog mr-2"></i> Admin Settings
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="flex flex-col flex-1 overflow-y-auto pt-16 md:pt-0">
+            <main class="flex-1 p-6">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page-content">
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800">Dashboard Overview</h1>
+                        <p class="text-gray-600">Welcome back! Here's what's happening with Cafe Realitea today.</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                        <!-- Monthly Profit -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500">Monthly Profit</p>
+                                    <h2 class="text-2xl font-bold text-gray-800">₱45,320</h2>
+                                    <p class="text-green-500 text-sm mt-1">↑ 12% from last month</p>
+                                </div>
+                                <div class="bg-amber-100 p-3 rounded-full">
+                                    <i class="fas fa-peso-sign text-amber-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Food</span>
+                                    <span>₱15,200 (34%)</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-amber-500 h-2 rounded-full" style="width: 34%"></div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Beverages</span>
+                                    <span>₱25,600 (56%)</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-amber-400 h-2 rounded-full" style="width: 56%"></div>
+                                </div>
+                            </div>
+                            <div class="mt-3">
+                                <div class="flex justify-between text-xs text-gray-500 mb-1">
+                                    <span>Others</span>
+                                    <span>₱4,520 (10%)</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="bg-amber-300 h-2 rounded-full" style="width: 10%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-gray-500">Today's Revenue</p>
+                                    <h2 class="text-2xl font-bold text-gray-800">₱3,850</h2>
+                                    <p class="text-green-500 text-sm mt-1">↑ 8% from yesterday</p>
+                                </div>
+                                <div class="bg-green-100 p-3 rounded-full">
+                                    <i class="fas fa-chart-line text-green-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Orders Today</p>
+                                        <p class="font-semibold">42</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500 text-sm">Avg. Order Value</p>
+                                        <p class="font-semibold">₱91.67</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Popular Items -->
+                        <div class="bg-white rounded-lg shadow p-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="font-semibold text-gray-800">Popular Items</h3>
+                                <div class="bg-purple-100 p-3 rounded-full">
+                                    <i class="fas fa-star text-purple-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="bg-amber-100 p-2 rounded mr-3">
+                                            <i class="fas fa-coffee text-amber-600"></i>
+                                        </div>
+                                        <span>Wintermelon Milk Tea</span>
+                                    </div>
+                                    <span class="font-semibold">28 sales</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="bg-amber-100 p-2 rounded mr-3">
+                                            <i class="fas fa-coffee text-amber-600"></i>
+                                        </div>
+                                        <span>Caramel Macchiato</span>
+                                    </div>
+                                    <span class="font-semibold">19 sales</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center">
+                                        <div class="bg-amber-100 p-2 rounded mr-3">
+                                            <i class="fas fa-bread-slice text-amber-600"></i>
+                                        </div>
+                                        <span>Chocolate Croissant</span>
+                                    </div>
+                                    <span class="font-semibold">15 sales</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Sales & Activity -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- Recent Sales -->
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="p-6 border-b border-gray-200">
+                                <h3 class="font-semibold text-gray-800">Recent Sales</h3>
+                            </div>
+                            <div class="divide-y divide-gray-200">
+                                <div class="p-4 hover:bg-gray-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-medium">Order #1024</p>
+                                            <p class="text-sm text-gray-500">2 Wintermelon MT, 1 Croissant</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium">₱320</p>
+                                            <p class="text-sm text-gray-500">10:24 AM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 hover:bg-gray-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-medium">Order #1023</p>
+                                            <p class="text-sm text-gray-500">1 Caramel Macchiato (Hot)</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium">₱150</p>
+                                            <p class="text-sm text-gray-500">9:45 AM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 hover:bg-gray-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-medium">Order #1022</p>
+                                            <p class="text-sm text-gray-500">3 Hokkaido MT, 2 Cookies</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium">₱450</p>
+                                            <p class="text-sm text-gray-500">9:12 AM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4 hover:bg-gray-50">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="font-medium">Order #1021</p>
+                                            <p class="text-sm text-gray-500">1 Americano (Cold)</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-medium">₱120</p>
+                                            <p class="text-sm text-gray-500">8:30 AM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 text-center">
+                                <a href="#sales" class="text-amber-600 hover:text-amber-800 text-sm font-medium">View all sales</a>
+                            </div>
+                        </div>
+
+                        <!-- Activity Log -->
+                        <div class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="p-6 border-b border-gray-200">
+                                <h3 class="font-semibold text-gray-800">Recent Activity</h3>
+                            </div>
+                            <div class="divide-y divide-gray-200">
+                                <div class="p-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0 mr-3">
+                                            <div class="bg-green-100 p-2 rounded-full">
+                                                <i class="fas fa-check text-green-600"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm">New order #1024 was placed</p>
+                                            <p class="text-xs text-gray-500 mt-1">10:24 AM • Just now</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0 mr-3">
+                                            <div class="bg-blue-100 p-2 rounded-full">
+                                                <i class="fas fa-user text-blue-600"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm">Staff member updated inventory</p>
+                                            <p class="text-xs text-gray-500 mt-1">9:50 AM • 34 mins ago</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0 mr-3">
+                                            <div class="bg-purple-100 p-2 rounded-full">
+                                                <i class="fas fa-bell text-purple-600"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm">Wintermelon Milk Tea is running low (12 remaining)</p>
+                                            <p class="text-xs text-gray-500 mt-1">Yesterday • 5:30 PM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="p-4">
+                                    <div class="flex">
+                                        <div class="flex-shrink-0 mr-3">
+                                            <div class="bg-amber-100 p-2 rounded-full">
+                                                <i class="fas fa-truck text-amber-600"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <p class="text-sm">New supply delivery received</p>
+                                            <p class="text-xs text-gray-500 mt-1">Yesterday • 3:15 PM</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-gray-50 text-center">
+                                <a href="#" class="text-amber-600 hover:text-amber-800 text-sm font-medium">View all activity</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sales History Page (hidden by default) -->
+                <div id="sales-page" class="page-content hidden">
+                    <div class="mb-6 flex justify-between items-center">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-800">Sales History</h1>
+                            <p class="text-gray-600">View and manage all sales records</p>
+                        </div>
+                        <button class="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md flex items-center">
+                            <i class="fas fa-file-export mr-2"></i> Export
+                        </button>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="bg-white rounded-lg shadow p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                                <select class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                                    <option>Today</option>
+                                    <option>Yesterday</option>
+                                    <option>Last 7 days</option>
+                                    <option>This month</option>
+                                    <option>Custom range</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Product Type</label>
+                                <select class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                                    <option>All Products</option>
+                                    <option>Milk Tea</option>
+                                    <option>Coffee (Hot)</option>
+                                    <option>Coffee (Cold)</option>
+                                    <option>Food</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                <select class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                                    <option>All Methods</option>
+                                    <option>Cash</option>
+                                    <option>Credit Card</option>
+                                    <option>GCash</option>
+                                    <option>PayMaya</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button class="w-full bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-md">
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sales Table -->
+                    <div class="bg-white rounded-lg shadow overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Order ID
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Date/Time
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Items
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Total
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Payment
+                                        </th>
+                                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            #1024
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Today, 10:24 AM
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">
+                                            2 Wintermelon MT, 1 Croissant
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            ₱320
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                GCash
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-amber-600 hover:text-amber-900 mr-3">Edit</button>
+                                            <button class="text-red-600 hover:text-red-900">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            #1023
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Today, 9:45 AM
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">
+                                            1 Caramel Macchiato (Hot)
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            ₱150
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Cash
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-amber-600 hover:text-amber-900 mr-3">Edit</button>
+                                            <button class="text-red-600 hover:text-red-900">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            #1022
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Today, 9:12 AM
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">
+                                            3 Hokkaido MT, 2 Cookies
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            ₱450
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                                                Credit Card
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-amber-600 hover:text-amber-900 mr-3">Edit</button>
+                                            <button class="text-red-600 hover:text-red-900">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            #1021
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Today, 8:30 AM
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">
+                                            1 Americano (Cold)
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            ₱120
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                GCash
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-amber-600 hover:text-amber-900 mr-3">Edit</button>
+                                            <button class="text-red-600 hover:text-red-900">Delete</button>
+                                        </td>
+                                    </tr>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            #1020
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            Yesterday, 5:45 PM
+                                        </td>
+                                        <td class="px-6 py-4 text-sm text-gray-500">
+                                            2 Taro MT, 1 Cheese Cake
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            ₱380
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                Cash
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                            <button class="text-amber-600 hover:text-amber-900 mr-3">Edit</button>
+                                            <button class="text-red-600 hover:text-red-900">Delete</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+                            <div class="flex-1 flex justify-between sm:hidden">
+                                <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Previous
+                                </a>
+                                <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Next
+                                </a>
+                            </div>
+                            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p class="text-sm text-gray-700">
+                                        Showing <span class="font-medium">1</span> to <span class="font-medium">5</span> of <span class="font-medium">24</span> results
+                                    </p>
+                                </div>
+                                <div>
+                                    <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Previous</span>
+                                            <i class="fas fa-chevron-left"></i>
+                                        </a>
+                                        <a href="#" aria-current="page" class="z-10 bg-amber-50 border-amber-500 text-amber-600 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            1
+                                        </a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            2
+                                        </a>
+                                        <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                                            3
+                                        </a>
+                                        <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                            <span class="sr-only">Next</span>
+                                            <i class="fas fa-chevron-right"></i>
+                                        </a>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Management Page (hidden by default) -->
+                <div id="orders-page" class="page-content hidden">
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800">Order Management</h1>
+                        <p class="text-gray-600">Create and manage customer orders</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- New Order Form -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-lg shadow overflow-hidden">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h3 class="font-semibold text-gray-800">Create New Order</h3>
+                                </div>
+                                <div class="p-6">
+                                    <div class="mb-6">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                                        <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" placeholder="Walk-in customer">
+                                    </div>
+
+                                    <div class="mb-6">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
+                                        <div class="grid grid-cols-2 gap-4">
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" class="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300" name="order-type" checked>
+                                                <span class="ml-2 text-gray-700">Dine-in</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" class="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300" name="order-type">
+                                                <span class="ml-2 text-gray-700">Takeout</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" class="h-4 w-4 text-amber-600 focus:ring-amber-500 border-gray-300" name="order-type">
+                                                <span class="ml-2 text-gray-700">Delivery</span>
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-6">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Add Items</label>
+                                        <div class="space-y-4">
+                                            <!-- Milk Tea Section -->
+                                            <div>
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <h4 class="font-medium text-gray-800">Milk Tea</h4>
+                                                    <button class="text-amber-600 hover:text-amber-800 text-sm">View all</button>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-3">
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Wintermelon</span>
+                                                        <span class="text-amber-600 font-medium">₱120</span>
+                                                    </button>
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Hokkaido</span>
+                                                        <span class="text-amber-600 font-medium">₱130</span>
+                                                    </button>
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Taro</span>
+                                                        <span class="text-amber-600 font-medium">₱125</span>
+                                                    </button>
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Matcha</span>
+                                                        <span class="text-amber-600 font-medium">₱135</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Coffee Section -->
+                                            <div>
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <h4 class="font-medium text-gray-800">Coffee</h4>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <div class="flex space-x-2 mb-2">
+                                                        <button class="coffee-type-btn px-3 py-1 rounded-full bg-amber-600 text-white text-sm">Hot</button>
+                                                        <button class="coffee-type-btn px-3 py-1 rounded-full bg-gray-200 text-gray-700 text-sm hover:bg-gray-300">Cold</button>
+                                                    </div>
+                                                    <div class="grid grid-cols-2 gap-3" id="hot-coffee-items">
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Americano</span>
+                                                            <span class="text-amber-600 font-medium">₱100</span>
+                                                        </button>
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Latte</span>
+                                                            <span class="text-amber-600 font-medium">₱120</span>
+                                                        </button>
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Cappuccino</span>
+                                                            <span class="text-amber-600 font-medium">₱130</span>
+                                                        </button>
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Caramel Macchiato</span>
+                                                            <span class="text-amber-600 font-medium">₱150</span>
+                                                        </button>
+                                                    </div>
+                                                    <div class="grid grid-cols-2 gap-3 hidden" id="cold-coffee-items">
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Iced Americano</span>
+                                                            <span class="text-amber-600 font-medium">₱110</span>
+                                                        </button>
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Iced Latte</span>
+                                                            <span class="text-amber-600 font-medium">₱130</span>
+                                                        </button>
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Cold Brew</span>
+                                                            <span class="text-amber-600 font-medium">₱140</span>
+                                                        </button>
+                                                        <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                            <span>Iced Caramel Macchiato</span>
+                                                            <span class="text-amber-600 font-medium">₱160</span>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Food Section -->
+                                            <div>
+                                                <div class="flex items-center justify-between mb-2">
+                                                    <h4 class="font-medium text-gray-800">Food</h4>
+                                                </div>
+                                                <div class="grid grid-cols-2 gap-3">
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Chocolate Croissant</span>
+                                                        <span class="text-amber-600 font-medium">₱80</span>
+                                                    </button>
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Cheese Cake</span>
+                                                        <span class="text-amber-600 font-medium">₱140</span>
+                                                    </button>
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Cookies (3pcs)</span>
+                                                        <span class="text-amber-600 font-medium">₱90</span>
+                                                    </button>
+                                                    <button class="item-btn flex items-center justify-between p-3 border border-gray-200 rounded-md hover:border-amber-400 hover:bg-amber-50">
+                                                        <span>Sandwich</span>
+                                                        <span class="text-amber-600 font-medium">₱120</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Order Summary -->
+                        <div>
+                            <div class="bg-white rounded-lg shadow overflow-hidden sticky top-6">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h3 class="font-semibold text-gray-800">Order Summary</h3>
+                                </div>
+                                <div class="p-6">
+                                    <div class="mb-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                                        <select class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500">
+                                            <option>Cash</option>
+                                            <option>Credit Card</option>
+                                            <option>GCash</option>
+                                            <option>PayMaya</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="border-t border-gray-200 mt-4 pt-4">
+                                        <h4 class="text-sm font-medium text-gray-700 mb-3">Order Items</h4>
+                                        <div class="space-y-3 mb-4" id="order-items-container">
+                                            <!-- Items will be added here dynamically -->
+                                            <div class="text-gray-500 text-sm italic">No items added yet</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="border-t border-gray-200 mt-4 pt-4">
+                                        <div class="flex justify-between mb-2">
+                                            <span class="text-sm text-gray-600">Subtotal</span>
+                                            <span class="text-sm font-medium">₱0.00</span>
+                                        </div>
+                                        <div class="flex justify-between mb-2">
+                                            <span class="text-sm text-gray-600">Tax (12%)</span>
+                                            <span class="text-sm font-medium">₱0.00</span>
+                                        </div>
+                                        <div class="flex justify-between font-medium text-gray-900 text-lg mt-3 pt-3 border-t border-gray-200">
+                                            <span>Total</span>
+                                            <span>₱0.00</span>
+                                        </div>
+                                    </div>
+
+                                    <button class="mt-6 w-full bg-amber-600 hover:bg-amber-700 text-white py-3 px-4 rounded-md font-medium flex items-center justify-center">
+                                        <i class="fas fa-check-circle mr-2"></i> Complete Order
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile/Admin Settings Page (hidden by default) -->
+                <div id="profile-page" class="page-content hidden">
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800">Admin Settings</h1>
+                        <p class="text-gray-600">Manage your account and cafe settings</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Profile Card -->
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-lg shadow overflow-hidden">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h3 class="font-semibold text-gray-800">Profile</h3>
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex flex-col items-center">
+                                        <img class="h-24 w-24 rounded-full mb-4" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" alt="Admin profile">
+                                        <h4 class="text-lg font-medium text-gray-900">Admin User</h4>
+                                        <p class="text-gray-500">admin@realitea.com</p>
+                                        <button class="mt-4 text-sm text-amber-600 hover:text-amber-800 font-medium">Change Photo</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Settings -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-lg shadow overflow-hidden">
+                                <div class="p-6 border-b border-gray-200">
+                                    <h3 class="font-semibold text-gray-800">Account Settings</h3>
+                                </div>
+                                <div class="p-6">
+                                    <form>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                                <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" value="Admin">
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                                <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" value="User">
+                                            </div>
+                                        </div>
+                                        <div class="mb-6">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                            <input type="email" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" value="admin@realitea.com">
+                                        </div>
+                                        <div class="mb-6">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                            <input type="password" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" placeholder="••••••••">
+                                            <p class="mt-1 text-xs text-gray-500">Leave blank to keep current password</p>
+                                        </div>
+                                        <div class="mb-6">
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                                            <input type="password" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" placeholder="••••••••">
+                                        </div>
+                                        <div class="flex justify-end">
+                                            <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md font-medium mr-3">
+                                                Cancel
+                                            </button>
+                                            <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-md font-medium">
+                                                Save Changes
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cafe Settings -->
+                    <div class="mt-6 bg-white rounded-lg shadow overflow-hidden">
+                        <div class="p-6 border-b border-gray-200">
+                            <h3 class="font-semibold text-gray-800">Cafe Settings</h3>
+                        </div>
+                        <div class="p-6">
+                            <form>
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Cafe Name</label>
+                                    <input type="text" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" value="Cafe Realitea">
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Business Hours</label>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Opening Time</label>
+                                            <input type="time" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" value="08:00">
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs text-gray-500 mb-1">Closing Time</label>
+                                            <input type="time" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" value="22:00">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-6">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tax Rate (%)</label>
+                                    <input type="number" class="w-full border-gray-300 rounded-md shadow-sm focus:border-amber-500 focus:ring-amber-500" value="12">
+                                </div>
+                                <div class="flex justify-end">
+                                    <button type="button" class="bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded-md font-medium mr-3">
+                                        Cancel
+                                    </button>
+                                    <button type="submit" class="bg-amber-600 hover:bg-amber-700 text-white py-2 px-4 rounded-md font-medium">
+                                        Save Settings
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Simple page navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile menu toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            
+            mobileMenuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+
+            // Hide mobile menu when clicking a link
+            const mobileLinks = document.querySelectorAll('.mobile-link');
+            mobileLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    mobileMenu.classList.add('hidden');
+                });
+            });
+
+            // Page switching
+            const pages = {
+                'dashboard': document.getElementById('dashboard-page'),
+                'sales': document.getElementById('sales-page'),
+                'orders': document.getElementById('orders-page'),
+                'profile': document.getElementById('profile-page')
+            };
+
+            // Show dashboard by default
+            pages['dashboard'].classList.remove('hidden');
+
+            // Handle hash changes
+            function handleHashChange() {
+                const hash = window.location.hash.substring(1);
+                
+                // Hide all pages
+                Object.values(pages).forEach(page => {
+                    page.classList.add('hidden');
+                });
+                
+                // Show the requested page
+                if (pages[hash]) {
+                    pages[hash].classList.remove('hidden');
+                } else {
+                    pages['dashboard'].classList.remove('hidden');
+                }
+                
+                // Update active link in sidebar
+                const sidebarLinks = document.querySelectorAll('.sidebar-link');
+                sidebarLinks.forEach(link => {
+                    if (link.getAttribute('href') === `#${hash}`) {
+                        link.classList.add('bg-amber-800', 'text-white');
+                        link.classList.remove('text-amber-100');
+                    } else {
+                        link.classList.remove('bg-amber-800', 'text-white');
+                        link.classList.add('text-amber-100');
+                    }
+                });
+            }
+
+            // Initial check
+            handleHashChange();
+            
+            // Listen for hash changes
+            window.addEventListener('hashchange', handleHashChange);
+
+            // Coffee type toggle
+            const coffeeTypeBtns = document.querySelectorAll('.coffee-type-btn');
+            const hotCoffeeItems = document.getElementById('hot-coffee-items');
+            const coldCoffeeItems = document.getElementById('cold-coffee-items');
+            
+            coffeeTypeBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    coffeeTypeBtns.forEach(b => {
+                        b.classList.remove('bg-amber-600', 'text-white');
+                        b.classList.add('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    });
+                    
+                    this.classList.add('bg-amber-600', 'text-white');
+                    this.classList.remove('bg-gray-200', 'text-gray-700', 'hover:bg-gray-300');
+                    
+                    if (this.textContent.trim() === 'Hot') {
+                        hotCoffeeItems.classList.remove('hidden');
+                        coldCoffeeItems.classList.add('hidden');
+                    } else {
+                        hotCoffeeItems.classList.add('hidden');
+                        coldCoffeeItems.classList.remove('hidden');
+                    }
+                });
+            });
+
+            // Simple order items functionality (for demo)
+            const itemBtns = document.querySelectorAll('.item-btn');
+            const orderItemsContainer = document.getElementById('order-items-container');
+            
+            itemBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const itemName = this.querySelector('span:first-child').textContent;
+                    const itemPrice = this.querySelector('span:last-child').textContent;
+                    
+                    // For demo purposes, just add the item to the container
+                    if (orderItemsContainer.querySelector('.italic')) {
+                        orderItemsContainer.innerHTML = '';
+                    }
+                    
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'flex justify-between items-center';
+                    itemDiv.innerHTML = `
+                        <div>
+                            <span class="text-sm font-medium">${itemName}</span>
+                            <div class="flex items-center mt-1">
+                                <button class="text-xs text-gray-500 hover:text-gray-700 mr-2">-</button>
+                                <span class="text-xs">1</span>
+                                <button class="text-xs text-gray-500 hover:text-gray-700 ml-2">+</button>
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-sm font-medium mr-3">${itemPrice}</span>
+                            <button class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    orderItemsContainer.appendChild(itemDiv);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

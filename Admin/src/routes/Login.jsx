@@ -1,4 +1,4 @@
-import { useState, useEffect, use } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -37,13 +37,12 @@ export default function Login() {
         } catch (err) {
             console.error("Login failed:", err);
             setError(err.response?.status === 401
-                                                    ? "Invalid Credentials"
-                                                    : err.response?.data?.message || "Login failed. Please try again."
-        );
+                ? "Invalid Credentials"
+                : err.response?.data?.message || "Login failed. Please try again."
+            );
             setIsLoading(false);
         }
     };
-
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -62,27 +61,36 @@ export default function Login() {
     }, [navigate])
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-amber-50 to-amber-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
-                    <div className="w-24 h-24 rounded-full bg-white shadow-md flex items-center justify-center mb-6 border-2 border-amber-200">
-                        <span className="text-amber-700 text-3xl font-serif font-bold">CR</span>
+                    <div className="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-100">
+                        <img 
+                            src="/Logo.jpg" 
+                            alt="Café Realitea Logo" 
+                            className="w-16 h-16 rounded-full object-cover"
+                        />
                     </div>
                 </div>
-                <div className="text-center">
-                    <h2 className="text-3xl font-extrabold text-gray-900 font-serif">
+                
+                <div className="text-center mt-6">
+                    <h1 className="text-3xl font-bold text-gray-900 font-sans">
                         Café Realitea
-                    </h2>
-                    <p className="mt-2 text-sm text-gray-600">
+                    </h1>
+                    <p className="mt-2 text-sm text-gray-600 font-medium tracking-wide uppercase">
                         Staff Portal
                     </p>
+                    <div className="mt-4 w-16 h-1 bg-amber-500 mx-auto rounded-full"></div>
                 </div>
             </div>
 
             <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="bg-white py-8 px-6 shadow-lg rounded-lg sm:px-10 border border-amber-100">
+                <div className="bg-white py-8 px-6 shadow-sm rounded-lg sm:px-10 border border-gray-100">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm">
+                        <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-md text-sm flex items-center">
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
                             {error}
                         </div>
                     )}
@@ -92,6 +100,11 @@ export default function Login() {
                                 Username
                             </label>
                             <div className="mt-1 relative rounded-md shadow-sm">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
                                 <input
                                     id="username"
                                     name="username"
@@ -99,7 +112,7 @@ export default function Login() {
                                     required
                                     value={loginData.username}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                                    className="block w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                                     placeholder="Enter your username"
                                 />
                             </div>
@@ -110,6 +123,11 @@ export default function Login() {
                                 Password
                             </label>
                             <div className="mt-1 relative rounded-md shadow-sm">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                    </svg>
+                                </div>
                                 <input
                                     id="password"
                                     name="password"
@@ -117,17 +135,19 @@ export default function Login() {
                                     required
                                     value={loginData.password}
                                     onChange={handleChange}
-                                    className="block w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                                    className="block w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                                     placeholder="Enter your password"
                                 />
                             </div>
                         </div>
 
+
+
                         <div>
                             <button
                                 type="submit"
                                 disabled={isLoading}
-                                className={`w-full flex justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isLoading ? 'bg-amber-400' : 'bg-amber-600 hover:bg-amber-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200`}
+                                className={`w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${isLoading ? 'bg-amber-400' : 'bg-amber-600 hover:bg-amber-700'} focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 transition-colors duration-200`}
                             >
                                 {isLoading ? (
                                     <>
@@ -142,7 +162,7 @@ export default function Login() {
                         </div>
                     </form>
                 </div>
-                <div className="mt-6 text-center text-sm text-gray-600">
+                <div className="mt-8 text-center text-xs text-gray-500">
                     <p>© {new Date().getFullYear()} Café Realitea. All rights reserved.</p>
                 </div>
             </div>
