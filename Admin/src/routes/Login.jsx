@@ -52,6 +52,7 @@ export default function Login() {
 
     // check user session
     useEffect(() => {
+        document.title = "Café Realitea - Login";
         axios.get('http://localhost:5000/user', { withCredentials: true })
              .then((res) => {
                 if (res.data.logged_in) {

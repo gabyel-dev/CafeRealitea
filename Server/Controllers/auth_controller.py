@@ -65,4 +65,5 @@ def check_session():
     return jsonify({
         'user': session.get('user'),
         'logged_in': 'user' in session,
+        'role': session.get('user')['role'] if session.get('user') else None
     })

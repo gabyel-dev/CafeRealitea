@@ -11,10 +11,17 @@ export default function StaffDashboard() {
 
 
     useEffect(() => {
+    document.title = "Café Realitea - Staff";
     axios.get('http://localhost:5000/user', { withCredentials: true })
         .then((res) => {
             if (!res.data.logged_in) {
                 navigate('/login');
+            }
+
+            if (res.data.role !== 'Staff') {
+                navigate('/dashboard/Admin')
+            } else {
+                navigate('/dashboard/Staff')
             }
         })
         .catch(() => {

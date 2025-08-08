@@ -9,12 +9,18 @@ export default function AdminDashboard() {
         .then(() => navigate('/login'));
 }
 
-
     useEffect(() => {
+    document.title = "Café Realitea - Admin";
     axios.get('http://localhost:5000/user', { withCredentials: true })
         .then((res) => {
             if (!res.data.logged_in) {
                 navigate('/login');
+            }
+
+            if (res.data.role !== 'Admin') {
+                navigate('/dashboard/Staff')
+            } else {
+                navigate('/dashboard/Admin')
             }
         })
         .catch(() => {
