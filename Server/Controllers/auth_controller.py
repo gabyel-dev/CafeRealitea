@@ -28,9 +28,12 @@ def Login():
         if password != db_password:
             return jsonify({'error': 'Invalid credentials'}), 401
         
-        session['user_id'] = db_id
-        session['username'] = db_user
-        session['role'] = role
+        session['user'] = {
+            'id': db_id,
+            'username': db_user,
+            'role': role
+            }
+
         
         return jsonify({
             'message': 'Login successful',
@@ -48,3 +51,18 @@ def Login():
     finally:
         cursor.close()
         conn.close()
+
+#LOGOUT
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    session.clear()
+    return jsonify({'message': 'logged out successfully', 'redirect': '/login' })
+
+
+#CHECK USER SESSION
+@auth_bp.route('/user', methods=['GET'])
+def check_session():
+    return jsonify({
+        'user': session.get('user'),
+        'logged_in': 'user' in session,
+    })
