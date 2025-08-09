@@ -67,3 +67,36 @@ def check_session():
         'logged_in': 'user' in session,
         'role': session.get('user')['role'] if session.get('user') else None
     })
+
+@auth_bp.route('/items', methods=['GET'])
+def items():
+        conn = get_db_conn()
+        cursor = conn.cursor()
+
+
+        cursor.execute("""SELECT c.id as category_id,
+        c.name as category_name,
+        i.id as item_id,
+        i.name as item_name, 
+        i.price as price FROM category c LEFT JOIN itemss i ON c.id = i.category_id ORDER BY c.id, i.id""")
+        rows = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        
+        categories = {}
+        for row in rows:
+            cat_id = row["category_id"]
+            if cat_id not in categories:
+                categories[cat_id] = {
+                    "category_id": cat_id,
+                    "category_name": row["category_name"],
+                    "items": []
+                }
+            if row["item_id"]:  # Skip empty categories
+                categories[cat_id]["items"].append({
+                    "id": row["item_id"],
+                    "name": row["item_name"],
+                    "price": float(row["price"])
+                })
+
+        return jsonify(list(categories.values()))

@@ -6,6 +6,12 @@ export default function AdminDashboard() {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState([])
+
+    useEffect(() => {
+        axios.get('http://localhost:5000/items')
+        .then((res) => setCategories(res.data))
+    }, [])
 
     const handleLogout = () => {
         axios.post('http://localhost:5000/logout', {}, { withCredentials: true })
@@ -80,6 +86,20 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </main>
+
+            {categories.map((cat) => (
+                <div key={cat.category_id}>
+                    <p>{cat.category_name}</p>
+                    {cat.items.map((item) => (
+                        <p key={item.id}>{item.name}</p>
+                    ))}
+
+                    {cat.items.map((item) => (
+                        <p key={item.id}>{item.price}</p>
+                    ))}
+                </div>
+            ))}
+
         </div>
     );
 }
