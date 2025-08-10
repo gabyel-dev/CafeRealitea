@@ -3,11 +3,9 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import SidePanel from "../../../../components/SidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
-const logout = <FontAwesomeIcon icon={faArrowRightFromBracket} className='text-amber-200 ' />
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -18,16 +16,7 @@ export default function AdminDashboard() {
         .then((res) => setCategories(res.data))
     }, [])
 
-    const handleLogout = () => {
-        axios.post('http://localhost:5000/logout', {}, { withCredentials: true })
-            .then(() => navigate('/login'))
-            .catch(err => {
-                console.error("Logout failed:", err);
-                // Still navigate to login even if logout request fails
-                navigate('/login');
-            });
-    };
-
+    
     useEffect(() => {
         document.title = "Café Realitea - Admin";
         setLoading(true);
@@ -65,26 +54,20 @@ export default function AdminDashboard() {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            <SidePanel />
-            <div className="w-full h-screen">
-                <header className="bg-white shadow-sm">
-                <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-                    <h1 className="text-xl font-bold text-gray-900">
-                        Admin Dashboard
-                    </h1>
-                    <button
-                        onClick={handleLogout}
-                        className="px-4 py-2 border flex items-center gap-2 border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 cursor-pointer"
-                    >
-                        
-                        Logout
-                        {logout}
-                    </button>
-                </div>
-            </header>
+            <SidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
+            <div className="w-full h-screen text-gray-800">
 
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                    <div className="w-full">
+                        <h1 className="text-3xl font-bold">
+                            Dashboard Overview
+                        </h1>
+                        <p className="text-sm">
+                            Welcome back! Here's what's happening with Cafe Realitea today.
+                        </p>
+                    </div>
                 <div className="px-4 py-6 sm:px-0">
+                    
                     <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
                         <h2 className="text-2xl font-semibold text-gray-800 mb-4">
                             Welcome, {userData?.user?.name || 'Admin Member'}!
