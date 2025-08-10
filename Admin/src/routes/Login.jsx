@@ -39,7 +39,8 @@ export default function Login() {
             setError(err.response?.status === 401
                 ? "Invalid Credentials"
                 : err.response?.data?.message || "Login failed. Please try again."
-            );
+            )
+            setTimeout(() => setError(""), 3000)
             setIsLoading(false);
         }
     };

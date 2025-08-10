@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import SidePanel from "../../components/SidePanel";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
+
+const logout = <FontAwesomeIcon icon={faArrowRightFromBracket} className='text-amber-200 ' />
 
 export default function AdminDashboard() {
     const navigate = useNavigate();
@@ -59,17 +64,21 @@ export default function AdminDashboard() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <header className="bg-white shadow-sm">
+        <div className="min-h-screen bg-gray-50 flex">
+            <SidePanel />
+            <div className="w-full h-screen">
+                <header className="bg-white shadow-sm">
                 <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
                     <h1 className="text-xl font-bold text-gray-900">
-                        Café Realitea - Admin Dashboard
+                        Admin Dashboard
                     </h1>
                     <button
                         onClick={handleLogout}
-                        className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                        className="px-4 py-2 border flex items-center gap-2 border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
                     >
+                        
                         Logout
+                        {logout}
                     </button>
                 </div>
             </header>
@@ -87,7 +96,7 @@ export default function AdminDashboard() {
                 </div>
             </main>
 
-            {categories.map((cat) => (
+            {/* {categories.map((cat) => (
                 <div key={cat.category_id}>
                     <p>{cat.category_name}</p>
                     {cat.items.map((item) => (
@@ -98,7 +107,8 @@ export default function AdminDashboard() {
                         <p key={item.id}>{item.price}</p>
                     ))}
                 </div>
-            ))}
+            ))} */}
+            </div>
 
         </div>
     );
