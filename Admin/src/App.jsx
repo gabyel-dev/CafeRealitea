@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
-import Admin from "./routes/Dashboard/Admin"
-import Staff from "./routes/Dashboard/Staff"
+import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin"
+import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff"
 
 const App = () => {
   return (
@@ -14,12 +14,12 @@ const App = () => {
 
       <Route 
           path="/dashboard/Staff" 
-          element={<Staff />} 
+          element={<StaffDashboard />} 
       />
 
       <Route 
           path="/dashboard/Admin" 
-          element={<Admin />} 
+          element={<AdminDashboard />} 
       />
       </Routes>
     </Router>

@@ -20,24 +20,24 @@ export default function SidePanel({ activeTab, setActiveTab }) {
             </div>
 
             <div className='__Middle__ flex flex-col gap-1 px-4 py-4'>
-                <div className='w-full h-10 flex items-center text-sm gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md'>
+                <div className='w-full h-10 flex items-center text-sm  gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md cursor-pointer'>
                     {Dashboard}
-                    <p className='text-amber-100 font-semibold'>Dashboard</p>
+                    <p className='text-amber-100 hover:text-white  font-semibold'>Dashboard</p>
                 </div>
 
-                <div className='w-full h-10 flex items-center text-sm  gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md'>
+                <div className='w-full h-10 flex items-center text-sm  gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md cursor-pointer'>
                     {History}
-                    <p className='text-amber-100 font-semibold'>Sales History</p>
+                    <p className='text-amber-100 hover:text-white font-semibold'>Sales History</p>
                 </div>
 
-                <div className='w-full h-10 flex items-center text-sm  gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md'>
+                <div className='w-full h-10 flex items-center text-sm  gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md cursor-pointer'>
                     {OrderManagement}
-                    <p className='text-amber-100 font-semibold'>Order Management</p>
+                    <p className='text-amber-100 hover:text-white font-semibold'>Order Management</p>
                 </div>
 
-                <div className='w-full h-10 flex items-center text-sm  gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md'>
+                <div className='w-full h-10 flex items-center text-sm  gap-2 p-2 hover:bg-amber-700/15 hover:border-0  hover:rounded-md cursor-pointer'>
                     {Admin}
-                    <p className='text-amber-100 font-semibold'>Admin Settings</p>
+                    <p className='text-amber-100 hover:text-white font-semibold'>Admin Settings</p>
                 </div>
             </div>
         </div>

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import SidePanel from "../../components/SidePanel";
+import SidePanel from "../../../../components/SidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 
@@ -74,7 +74,7 @@ export default function AdminDashboard() {
                     </h1>
                     <button
                         onClick={handleLogout}
-                        className="px-4 py-2 border flex items-center gap-2 border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                        className="px-4 py-2 border flex items-center gap-2 border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 cursor-pointer"
                     >
                         
                         Logout
