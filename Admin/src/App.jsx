@@ -1,9 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
 import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin";
+import OrderManagementAdmin from "./routes/Dashboard/Admin/pages/OrderManagement";
 
 import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff";
 import { useState } from "react";
+import NotFound from "./routes/NotFound";
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -34,13 +36,16 @@ const App = () => {
 
       <Route 
           path="/Admin/orders" 
-          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+          element={<OrderManagementAdmin activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 
           path="/Admin/settings" 
           element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
+
+      {/* Catch-all route for 404 */}
+        <Route path="*" element={<NotFound />} />
 
       </Routes>
     </Router>

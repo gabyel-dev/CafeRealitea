@@ -5,6 +5,7 @@ import axios from "axios";
 export default function Login() {
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [loginData, setLoginData] = useState({
         username: "",
@@ -24,6 +25,7 @@ export default function Login() {
             if (isLoading) return;
             setIsLoading(true);
             
+            
             const res = await axios.post('http://localhost:5000/login', loginData, {
                 withCredentials: true,
                 headers: {
@@ -42,7 +44,7 @@ export default function Login() {
             )
             setTimeout(() => setError(""), 3000)
             setIsLoading(false);
-        }
+        } 
     };
 
     const handleChange = (e) => {
@@ -53,13 +55,24 @@ export default function Login() {
     // check user session
     useEffect(() => {
         document.title = "Café Realitea - Login";
+        setLoading(true);
+
         axios.get('http://localhost:5000/user', { withCredentials: true })
              .then((res) => {
                 if (res.data.logged_in) {
                     navigate(`/${res.data.user.role}/dashboard`)
                 }
-             })
+             }).finally(() => setLoading(false))
+        
     }, [navigate])
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">

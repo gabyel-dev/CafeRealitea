@@ -57,14 +57,14 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
             <SidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="w-full h-screen text-gray-800">
 
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-80">
                     <div className="w-full">
                         <h1 className="text-3xl font-bold">
                             Dashboard Overview
                         </h1>
                         <p className="text-sm">
-                            Welcome back! Here's what's happening with Cafe Realitea today.
                         </p>
+                            Welcome back! Here's what's happening with Café Realitea today.
                     </div>
                 <div className="px-4 py-6 sm:px-0">
                     

@@ -30,7 +30,7 @@ export default function SidePanel({ activeTab, setActiveTab }) {
 
     return (
         <>
-        <div className="__sidePanel__ w-80  h-screen flex flex-col justify-between bg-amber-800">
+        <div className="__sidePanel__ w-80  h-screen flex flex-col justify-between bg-amber-800 fixed">
             
 
             <div className='flex flex-col'>
@@ -43,22 +43,22 @@ export default function SidePanel({ activeTab, setActiveTab }) {
                 </div>
 
                 <div className='__Middle__ flex flex-col gap-1 px-4 py-4'>
-                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Dashboard" ? "bg-amber-700/20 rounded-md" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() =>  { navigate('/Admin/dashboard'), setActiveTab("Dashboard") }}>
+                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Dashboard" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() =>  { navigate('/Admin/dashboard'), setActiveTab("Dashboard") }}>
                     {Dashboard}
                     <p className=' font-semibold'>Dashboard</p>
                 </div>
 
-                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Sales" ? "bg-amber-700/20 rounded-md" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/sales'), setActiveTab("Sales")}}>
+                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Sales" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/sales'), setActiveTab("Sales")}}>
                     {History}
                     <p className=' font-semibold'>Sales History</p>
                 </div>
 
-                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Order" ? "bg-amber-700/20 rounded-md" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/orders'), setActiveTab("Order")}}>
+                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Order" ? "bg-amber-700/20 rounded-md text-white"  : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/orders'), setActiveTab("Order")}}>
                     {OrderManagement}
                     <p className=' font-semibold'>Order Management</p>
                 </div>
 
-                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Admin" ? "bg-amber-700/20 rounded-md" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/settings'), setActiveTab("Admin")}}>
+                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Admin" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/settings'), setActiveTab("Admin")}}>
                     {Admin}
                     <p className='font-semibold'>Admin Settings</p>
                 </div>
