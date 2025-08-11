@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
-import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin"
-import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff"
+import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin";
+
+import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff";
 import { useState } from "react";
 
 const App = () => {
@@ -46,4 +47,4 @@ const App = () => {
   )
 }
 
-export default App
+export default App;

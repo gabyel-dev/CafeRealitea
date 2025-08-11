@@ -13,7 +13,7 @@ def Login():
     cursor = conn.cursor()
 
     try:
-        cursor.execute('SELECT * FROM Admin_Users WHERE username = %s', (username,))
+        cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
         user = cursor.fetchone()
 
         if user is None:
@@ -21,6 +21,8 @@ def Login():
         
         # Access dictionary keys from RealDictCursor result
         db_id = user['id']           # adjust key name as per your column
+        db_name = user['name']
+        db_email = user['email']
         db_user = user['username']
         db_password = user['password']
         role = user['role']
@@ -30,6 +32,8 @@ def Login():
         
         session['user'] = {
             'id': db_id,
+            'name': db_name,
+            'email': db_email,
             'username': db_user,
             'role': role
             }
