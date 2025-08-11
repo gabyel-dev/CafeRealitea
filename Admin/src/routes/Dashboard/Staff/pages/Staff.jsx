@@ -29,7 +29,7 @@ export default function StaffDashboard() {
                 }
 
                 if (res.data.role !== 'Staff') {
-                    navigate(`/dashboard/${res.data.role}`);
+                    navigate(`/${res.data.role}/dashboard`);
                     return;
                 }
 

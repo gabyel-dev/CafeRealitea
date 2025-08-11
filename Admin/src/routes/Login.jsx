@@ -32,7 +32,7 @@ export default function Login() {
             });
             
             const role = res.data.user.role;
-            navigate(`/dashboard/${role}`);
+            navigate(`/${role}/dashboard`);
 
         } catch (err) {
             console.error("Login failed:", err);
@@ -56,7 +56,7 @@ export default function Login() {
         axios.get('http://localhost:5000/user', { withCredentials: true })
              .then((res) => {
                 if (res.data.logged_in) {
-                    navigate(`/dashboard/${res.data.user.role}`)
+                    navigate(`/${res.data.user.role}/dashboard`)
                 }
              })
     }, [navigate])

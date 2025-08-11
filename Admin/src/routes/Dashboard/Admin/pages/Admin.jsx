@@ -29,7 +29,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 }
 
                 if (res.data.role !== 'Admin') {
-                    navigate(`/dashboard/${res.data.role}`);
+                    navigate(`/${res.data.role}/dashboard`);
                     return;
                 }
 

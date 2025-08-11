@@ -16,14 +16,31 @@ const App = () => {
         />
 
       <Route 
-          path="/dashboard/Staff" 
+          path="/Staff/dashboard" 
           element={<StaffDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
+    {/* Admin Routes */}
       <Route 
-          path="/dashboard/Admin" 
+          path="/Admin/dashboard" 
           element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
+
+      <Route 
+          path="/Admin/sales" 
+          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+      />
+
+      <Route 
+          path="/Admin/orders" 
+          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+      />
+
+      <Route 
+          path="/Admin/settings" 
+          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+      />
+
       </Routes>
     </Router>
   )
