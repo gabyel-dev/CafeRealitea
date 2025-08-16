@@ -41,9 +41,8 @@ export default function Register() {
                     "Content-Type": "application/json"
                 }
             });
-            
-            const role = res.data.user.role;
-            navigate(`/${role}/dashboard`);
+
+            navigate(`${res.data.redirect}`)
 
         } catch (err) {
             console.error("Login failed:", err);
@@ -69,14 +68,11 @@ useEffect(() => {
     axios.get("http://localhost:5000/user", { withCredentials: true })
         .then((res) => {
             if (!res.data.logged_in || res.data.role === null) {
-                // 🚫 Not logged in → kick to login
                 navigate("/login");
             } 
             else if (res.data.role === "Staff") {
-                // 🚫 Staff logged in → kick to staff dashboard
                 navigate("/Staff/dashboard");
             }
-            // ✅ Admin stays on register page
         })
         .catch((err) => {
             console.error("Session check failed:", err);

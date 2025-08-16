@@ -1,8 +1,7 @@
 from flask import Blueprint, request, jsonify, session
 from Models.database import get_db_conn
-import pdfkit
-from flask import make_response
 import json
+from utils.hash_passwords import hash_password, check_password
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -18,20 +17,18 @@ def Login():
     try:
         cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
         user = cursor.fetchone()
+        
+        
 
-        if user is None:
-            return jsonify({'error': 'Invalid Credentials'}), 401
+        if user is None and check_password(user['password'], password):
+            return jsonify({'message': 'invalid credentials'})
         
         # Access dictionary keys from RealDictCursor result
         db_id = user['id']           # adjust key name as per your column
         db_name = user['name']
         db_email = user['email']
         db_user = user['username']
-        db_password = user['password']
         role = user['role']
-
-        if password != db_password:
-            return jsonify({'error': 'Invalid credentials'}), 401
         
         session['user'] = {
             'id': db_id,
@@ -59,11 +56,40 @@ def Login():
         cursor.close()
         conn.close()
 
+#REGISTER 
+@auth_bp.route('/register', methods=['POST'])
+def register():
+    data = request.get_json()
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    email = data.get('email')
+    username = data.get('username')
+    password = data.get('password')
+    role = data.get('role')
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    hash_pass = hash_password(password)
+
+    try:
+        cursor.execute('INSERT INTO users_account (first_name, last_name, email, username, password, role) '
+                        'VALUES (%s, %s, %s, %s, %s, %s)', (first_name, last_name, email, username, hash_pass, role))
+        conn.commit()
+
+        print('success!!')
+
+        return jsonify({'message': 'Registered Successfully', 'redirect': '/login'})
+
+    except Exception as e:
+        print('failed to register')
+        
+
 #LOGOUT
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
     session.clear()
-    return jsonify({'message': 'logged out successfully', 'redirect': '/login' })
+    return jsonify({'message': 'logged out successfully', 'redirect': '/Admin/dashboard' })
 
 
 #CHECK USER SESSION
