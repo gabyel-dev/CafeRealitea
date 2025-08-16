@@ -15,17 +15,17 @@ def Login():
     cursor = conn.cursor()
 
     try:
-        cursor.execute('SELECT * FROM users WHERE username = %s', (username,))
+        cursor.execute('SELECT * FROM users_account WHERE username = %s', (username,))
         user = cursor.fetchone()
         
         
 
-        if user is None and check_password(user['password'], password):
-            return jsonify({'message': 'invalid credentials'})
+        if user is None or not check_password(user['password'], password):
+            return jsonify({'message': 'invalid credentials'}), 401
         
         # Access dictionary keys from RealDictCursor result
         db_id = user['id']           # adjust key name as per your column
-        db_name = user['name']
+        db_name = user['first_name']
         db_email = user['email']
         db_user = user['username']
         role = user['role']
