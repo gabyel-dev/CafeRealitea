@@ -13,6 +13,8 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState([])
 
+    const [itemsAdded, setItemsAdded] = useState([]);
+
     useEffect(() => {
         axios.get('http://localhost:5000/items')
         .then((res) => setCategories(res.data))
@@ -55,40 +57,21 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="bg-gray-50 flex">
             <SidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
-            <div className="w-full h-screen text-gray-800 ">
-
-            <main className="max-w-7xl mx-auto py-6  sm:px-6 lg:px-8 ml-80">
+            <div className="w-full h-screen text-gray-800">
+                <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-80">
                     <div className="w-full">
-                        <h1 className="text-3xl font-bold">
-                            Order Management
-                        </h1>
-                        <p className="text-sm">
-                        </p>
-                            Create and manage customer orders
+                        <h1 className="text-3xl font-bold">Order Management</h1>
+                        Create and manage customer orders
                     </div>
-            </main>
+                </main>
 
-            <div className="flex flex-row px-8 gap-6 ml-80 pb-8">
-                <CreateOrder />
-                <OrderSummary />
-            </div>
-
-            {/* {categories.map((cat) => (
-                <div key={cat.category_id}>
-                    <p>{cat.category_name}</p>
-                    {cat.items.map((item) => (
-                        <p key={item.id}>{item.name}</p>
-                    ))}
-
-                    {cat.items.map((item) => (
-                        <p key={item.id}>{item.price}</p>
-                    ))}
+                <div className="flex flex-row px-8 gap-6 ml-80 pb-8 bg-gray-50">
+                    <CreateOrder categories={categories} setItemsAdded={setItemsAdded} itemsAdded={itemsAdded} />
+                    <OrderSummary itemsAdded={itemsAdded} />
                 </div>
-            ))} */}
             </div>
-
         </div>
     );
 }

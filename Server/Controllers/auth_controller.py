@@ -1,5 +1,8 @@
 from flask import Blueprint, request, jsonify, session
 from Models.database import get_db_conn
+import pdfkit
+from flask import make_response
+import json
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -104,3 +107,122 @@ def items():
                 })
 
         return jsonify(list(categories.values()))
+
+@auth_bp.route('/orders', methods=['POST'])
+def create_order():
+    if 'user' not in session:
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    
+    try:
+        # Insert main order
+        cursor.execute("""
+            INSERT INTO orders (customer_name, order_type, payment_method, total)
+            VALUES (%s, %s, %s, %s)
+            RETURNING id
+        """, (
+            data.get('customer_name', 'Walk-in customer'),
+            data['order_type'],
+            data['payment_method'],
+            json.dump(data['total'])
+        ))
+        
+        order_id = cursor.fetchone()['id']
+        
+        # Insert order items
+        for item in data['items']:
+            cursor.execute("""
+                INSERT INTO order_items (order_id, item_id, quantity, price)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                order_id,
+                item['id'],
+                item.get('quantity', 1),
+                item['price']
+            ))
+        
+        conn.commit()
+        return jsonify({'message': 'Order created successfully', 'order_id': order_id}), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print("Order creation error:", e)
+        return jsonify({'error': 'Server error'}), 500
+    
+    finally:
+        cursor.close()
+        conn.close()
+
+
+@auth_bp.route('/orders/simple', methods=['POST'])
+def create_simple_order():
+    from traceback import print_exc
+    import json
+
+    data = request.get_json()
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        # Count orders for order_number
+        cursor.execute("SELECT COUNT(*) AS order_count FROM orders_")
+        result = cursor.fetchone()
+
+        # Handle dict or tuple result
+        if isinstance(result, dict):
+            order_count = result.get('order_count', 0)
+        else:
+            order_count = result[0] if result else 0
+
+        order_number = f"#{order_count + 1}"
+        print(f"Generated order_number: {order_number}")
+
+        # Store items as JSON
+        items_json = json.dumps(data.get('items', []), ensure_ascii=False)
+        print(f"Items JSON: {items_json}")
+
+        # Prepare query parameters
+        params = (
+            order_number,
+            data.get('customer_name', 'Walk-in customer'),
+            data.get('order_type'),
+            data.get('payment_method'),
+            data.get('total_amount'),
+            items_json
+        )
+
+        # Insert into DB
+        cursor.execute("""
+            INSERT INTO orders_ (order_number, customer_name, order_type, 
+                                 payment_method, total_amount, items)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
+        """, params)
+
+        order_id_result = cursor.fetchone()
+        if isinstance(order_id_result, dict):
+            order_id = order_id_result.get('id')
+        else:
+            order_id = order_id_result[0] if order_id_result else None
+
+        print(f"Inserted Order ID: {order_id}")
+
+        conn.commit()
+        return jsonify({
+            'message': 'Order saved successfully',
+            'order_number': order_number,
+            'order_id': order_id
+        }), 201
+
+    except Exception as e:
+        conn.rollback()
+        print("Order error:", e)
+        print_exc()
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()

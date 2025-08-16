@@ -1,11 +1,13 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
+import Register from "./routes/Register";
 import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin";
 import OrderManagementAdmin from "./routes/Dashboard/Admin/pages/OrderManagement";
 
 import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff";
 import { useState } from "react";
 import NotFound from "./routes/NotFound";
+
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -16,6 +18,11 @@ const App = () => {
         <Route 
           path="/login" 
           element={<Login />} 
+        />
+
+        <Route 
+          path="/register" 
+          element={<Register />} 
         />
 
       <Route 

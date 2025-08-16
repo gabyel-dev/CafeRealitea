@@ -1,1 +1,5 @@
-@import "tailwindcss"
+@import "tailwindcss";
+
+.__test__ {
+   background-color: #f9fafb;
+}
