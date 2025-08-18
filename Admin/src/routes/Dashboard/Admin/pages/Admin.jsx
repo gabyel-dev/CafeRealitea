@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import SidePanel from "../../../../components/SidePanel";
+import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 
@@ -54,7 +54,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
 
     return (
         <div className="min-h-screen bg-gray-50 flex">
-            <SidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
+            <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="w-full h-screen text-gray-800">
 
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-80">

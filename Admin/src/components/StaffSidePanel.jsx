@@ -14,7 +14,7 @@ const Admin = <FontAwesomeIcon icon={faUserGear} className='text-amber-300 ' />
 const logo = <FontAwesomeIcon icon={faMugHot} className='text-amber-300 text-2xl' />
 
 
-export default function SidePanel({ activeTab, setActiveTab }) {
+export default function StaffSidePanel({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
 
     const handleLogout = () => {

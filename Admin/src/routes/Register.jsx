@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { faEnvelope, faUser } from "@fortawesome/free-solid-svg-icons";
+import AccountCreation from "../components/success/Message";
 
 const email = <FontAwesomeIcon icon={faEnvelope} className="text-gray-400" />
 const user = <FontAwesomeIcon icon={faUser} className="text-gray-400" />
@@ -12,6 +13,7 @@ export default function Register() {
     const [isLoading, setIsLoading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [successMessage, setSuccessMessage] = useState(false);
     const [registerData, setRegisterData] = useState({
         first_name: "",
         last_name: "",
@@ -34,7 +36,6 @@ export default function Register() {
             if (isLoading) return;
             setIsLoading(true);
             
-            
             const res = await axios.post('http://localhost:5000/register', registerData, {
                 withCredentials: true,
                 headers: {
@@ -42,7 +43,9 @@ export default function Register() {
                 }
             });
 
-            navigate(`${res.data.redirect}`)
+            console.log(res.data.message);
+
+            setSuccessMessage(true);
 
         } catch (err) {
             console.error("Login failed:", err);
@@ -91,7 +94,10 @@ useEffect(() => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-100 flex flex-col justify-center ">
+            {successMessage && (
+                <AccountCreation Message={"You've succesfully created an account."} />
+            )}
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="flex justify-center">
                     <div className="w-20 h-20 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-100">
@@ -252,7 +258,8 @@ useEffect(() => {
                                         </svg>
                                         Signing in...
                                     </>
-                                ) : 'Sign in'}
+                                ) : 'Sign in' }
+                                
                             </button>
                         </div>
                     </form>
