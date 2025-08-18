@@ -135,10 +135,7 @@ def items():
         return jsonify(list(categories.values()))
 
 @auth_bp.route('/orders', methods=['POST'])
-def create_order():
-    if 'user' not in session:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
+def create_order(): 
     data = request.get_json()
     conn = get_db_conn()
     cursor = conn.cursor()
@@ -153,7 +150,7 @@ def create_order():
             data.get('customer_name', 'Walk-in customer'),
             data['order_type'],
             data['payment_method'],
-            json.dump(data['total'])
+            data['total']
         ))
         
         order_id = cursor.fetchone()['id']
@@ -171,7 +168,7 @@ def create_order():
             ))
         
         conn.commit()
-        return jsonify({'message': 'Order created successfully', 'order_id': order_id}), 201
+        return jsonify({'message': 'Created successfully', 'order_id': order_id}), 201
     
     except Exception as e:
         conn.rollback()
@@ -182,73 +179,39 @@ def create_order():
         cursor.close()
         conn.close()
 
+@auth_bp.route('/orders/year', methods=['GET'])
+def years():
 
-@auth_bp.route('/orders/simple', methods=['POST'])
-def create_simple_order():
-    from traceback import print_exc
-    import json
-
-    data = request.get_json()
     conn = get_db_conn()
     cursor = conn.cursor()
 
     try:
-        # Count orders for order_number
-        cursor.execute("SELECT COUNT(*) AS order_count FROM orders_")
-        result = cursor.fetchone()
+        cursor.execute("""SELECT 
+                            EXTRACT (YEAR FROM order_time) AS YEAR, 
+                            COUNT (*) AS total_orders, 
+                            SUM(total) AS total_sales 
+                        FROM orders
+                        GROUP BY year
+                        ORDER BY year """)
+        rows = cursor.fetchall()
 
-        # Handle dict or tuple result
-        if isinstance(result, dict):
-            order_count = result.get('order_count', 0)
-        else:
-            order_count = result[0] if result else 0
-
-        order_number = f"#{order_count + 1}"
-        print(f"Generated order_number: {order_number}")
-
-        # Store items as JSON
-        items_json = json.dumps(data.get('items', []), ensure_ascii=False)
-        print(f"Items JSON: {items_json}")
-
-        # Prepare query parameters
-        params = (
-            order_number,
-            data.get('customer_name', 'Walk-in customer'),
-            data.get('order_type'),
-            data.get('payment_method'),
-            data.get('total_amount'),
-            items_json
-        )
-
-        # Insert into DB
-        cursor.execute("""
-            INSERT INTO orders_ (order_number, customer_name, order_type, 
-                                 payment_method, total_amount, items)
-            VALUES (%s, %s, %s, %s, %s, %s)
-            RETURNING id
-        """, params)
-
-        order_id_result = cursor.fetchone()
-        if isinstance(order_id_result, dict):
-            order_id = order_id_result.get('id')
-        else:
-            order_id = order_id_result[0] if order_id_result else None
-
-        print(f"Inserted Order ID: {order_id}")
-
-        conn.commit()
-        return jsonify({
-            'message': 'Order saved successfully',
-            'order_number': order_number,
-            'order_id': order_id
-        }), 201
-
+        return jsonify(rows)
+    
     except Exception as e:
-        conn.rollback()
-        print("Order error:", e)
-        print_exc()
-        return jsonify({'error': str(e)}), 500
+        print(e)
+        return jsonify({"error message": e})
 
-    finally:
-        cursor.close()
-        conn.close()
+"""         result = []
+
+        for row in rows:
+            result.append({
+                "year": row['year'],
+                "total_orders": row["total_orders"],
+                "total_sales": row["total_sales"]
+            }) """
+
+        
+    
+
+
+

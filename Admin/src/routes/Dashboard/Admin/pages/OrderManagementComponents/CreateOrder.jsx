@@ -4,7 +4,7 @@ export default function CreateOrder({ categories, setItemsAdded, itemsAdded }) {
     };
 
     return (
-        <div className="w-full bg-white shadow-md rounded-lg">
+        <div className="w-full h-fit bg-white shadow-md rounded-lg">
             <header className="w-full border-b-1 border-gray-200 p-6 flex items-center">
                 <h1 className="text-gray-800 font-semibold">Create New Order</h1>
             </header>

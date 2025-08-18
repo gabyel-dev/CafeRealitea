@@ -1,12 +1,11 @@
 import { useState } from "react";
 
 export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added setItemsAdded prop
-    const [customerMoney, setCustomerMoney] = useState(0);
+    const [customerMoney, setCustomerMoney] = useState();
     const [paymentMethod, setPaymentMethod] = useState("Cash");
     const [customerName, setCustomerName] = useState("Walk-in customer");
     const [orderType, setOrderType] = useState("Dine-in");
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [receiptType, setReceiptType] = useState("pdf");  // Added receipt type state
     
     const total = itemsAdded.reduce((sum, item) => sum + item.price, 0);
     const change = customerMoney - total;
@@ -16,25 +15,25 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added 
         customer_name: customerName,
         order_type: orderType,
         payment_method: paymentMethod,
-        total_amount: total,
+        total: total,
         items: itemsAdded.map(item => ({
-            name: item.name,
-            quantity: 1,
+            id: item.id,
+            quantity: item.quantity,
             price: item.price
         }))
     };
 
     try {
-        const response = await fetch('http://localhost:5000/orders/simple', {
+        const response = await fetch('http://localhost:5000/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)
-        });
+        })
         
         if (!response.ok) throw new Error('Failed to save order');
         
-        const result = await response.json();
-        alert(`Order ${result.order_number} saved successfully`);
+        const data = await response.json();
+        alert(`Order #${data.order_id} - ${data.message}`)
         
     } catch (error) {
         alert(`Error: ${error.message}`);
@@ -63,6 +62,7 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added 
                     
                     <div>
                         <label className="font-semibold text-sm">Order Type</label>
+                        
                         <select 
                             value={orderType}
                             onChange={(e) => setOrderType(e.target.value)}
@@ -87,12 +87,17 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added 
                     
                     <div>
                         <label className="font-semibold text-sm">Customer Money</label>
+                        <div className="flex gap-2 items-center justify-center">
+                            <p className="text-xl pl-3 pr-3 border-r-1 border-gray-200">
+                            ₱
+                        </p>
                         <input 
-                            type="number" 
+                            type="text" 
                             value={customerMoney}
-                            onChange={(e) => setCustomerMoney(parseFloat(e.target.value) || 0)}
-                            className="w-full border-b border-gray-200 p-2 text-amber-500"
+                            onChange={(e) => setCustomerMoney(e.target.value)}
+                            className="w-full p-2 text-amber-500"
                         />
+                        </div>
                     </div>
                 </div>
 

@@ -9,13 +9,14 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [categories, setCategories] = useState([])
-
+    const [yearData, setYearData] = useState([])
+    
     useEffect(() => {
-        axios.get('http://localhost:5000/items')
-        .then((res) => setCategories(res.data))
+        axios.get('http://localhost:5000/orders/year')
+        .then((res) => {
+            setYearData(res.data)
+        })
     }, [])
-
     
     useEffect(() => {
         document.title = "Café Realitea - Admin";
@@ -79,18 +80,11 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 </div>
             </main>
 
-            {/* {categories.map((cat) => (
-                <div key={cat.category_id}>
-                    <p>{cat.category_name}</p>
-                    {cat.items.map((item) => (
-                        <p key={item.id}>{item.name}</p>
-                    ))}
-
-                    {cat.items.map((item) => (
-                        <p key={item.id}>{item.price}</p>
-                    ))}
+            {yearData.map((result) => (
+                <div key={result.year} className="pl-100">
+                    <p>{result.year} - {result.total_orders} - {result.total_sales}</p>
                 </div>
-            ))} */}
+            ))}
             </div>
 
         </div>
