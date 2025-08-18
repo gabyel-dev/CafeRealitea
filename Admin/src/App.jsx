@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./routes/Login";
-import Register from "./routes/Register";
+import Register from "./routes/Dashboard/Admin/pages/CreateAccount";
 import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin";
 import OrderManagementAdmin from "./routes/Dashboard/Admin/pages/OrderManagement";
 
@@ -21,8 +21,8 @@ const App = () => {
         />
 
         <Route 
-          path="/register" 
-          element={<Register />} 
+          path="/Admin/CreateAccount" 
+          element={<Register activeTab={activeTab} setActiveTab={setActiveTab} />} 
         />
 
       <Route 
@@ -44,6 +44,16 @@ const App = () => {
       <Route 
           path="/Admin/orders" 
           element={<OrderManagementAdmin activeTab={activeTab} setActiveTab={setActiveTab} />} 
+      />
+
+      <Route 
+          path="/Admin/CreateAccount" 
+          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+      />
+
+      <Route 
+          path="/Admin/UsersManagement" 
+          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 

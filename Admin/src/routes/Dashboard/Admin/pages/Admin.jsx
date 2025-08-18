@@ -10,6 +10,14 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [yearData, setYearData] = useState([])
+    const [monthData, setMonthData] = useState([])
+    
+    useEffect(() => {
+        axios.get('http://localhost:5000/orders/months')
+        .then((res) => {
+            setMonthData(res.data)
+        })
+    }, [])
     
     useEffect(() => {
         axios.get('http://localhost:5000/orders/year')
@@ -17,9 +25,9 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
             setYearData(res.data)
         })
     }, [])
-    
+
     useEffect(() => {
-        document.title = "Café Realitea - Admin";
+        document.title = "Café Realitea - Admin Dashboard";
         setLoading(true);
         
         axios.get('http://localhost:5000/user', { withCredentials: true })
@@ -80,11 +88,35 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 </div>
             </main>
 
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 ml-80">
             {yearData.map((result) => (
-                <div key={result.year} className="pl-100">
-                    <p>{result.year} - {result.total_orders} - {result.total_sales}</p>
-                </div>
+            <div key={result.year} className="bg-white shadow rounded-lg p-6">
+                <h3 className="text-xl font-semibold text-gray-800">{result.year}</h3>
+                <p className="text-gray-600 mt-2">Total Orders: {result.total_orders}</p>
+                <p className="text-gray-600">Total Sales: ₱{result.total_sales}</p>
+            </div>
             ))}
+        </div>
+
+        {/* Monthly Breakdown */}
+        <div className="bg-white shadow rounded-lg p-6 ml-80">
+            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Monthly Breakdown</h3>
+            {monthData.map((result, i) => (
+            <div key={`${result.year}-${result.month}`} className="mb-2">
+                {/* Show year heading only once */}
+                {(i === 0 || monthData[i - 1].year !== result.year) && (
+                <h4 className="text-lg font-bold mt-4 mb-2 text-amber-600">{result.year}</h4>
+                )}
+                <div className="flex justify-between border-b py-2 text-gray-700">
+                <span>
+                    {new Date(result.year, result.months - 1).toLocaleString("default", { month: "long" })}
+                </span>
+                <span>{result.total_orders} orders</span>
+                <span className="font-medium">₱{result.total_sales}</span>
+                </div>
+            </div>
+            ))}
+        </div>
             </div>
 
         </div>

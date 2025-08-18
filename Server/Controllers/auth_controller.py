@@ -179,6 +179,38 @@ def create_order():
         cursor.close()
         conn.close()
 
+@auth_bp.route('/orders/months', methods=['GET'])
+def months():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""SELECT 
+                            EXTRACT (YEAR FROM order_time) AS YEAR, 
+                            EXTRACT (MONTH FROM order_time) AS MONTH,
+                            COUNT (*) AS total_orders, 
+                            SUM(total) AS total_sales 
+                        FROM orders
+                        GROUP BY year, month
+                        ORDER BY year, month """)
+        rows = cursor.fetchall()
+
+        result = []
+
+        for row in rows:
+            result.append({
+                "year": row['year'],
+                "months": row['month'],
+                "total_orders": row["total_orders"],
+                "total_sales": row["total_sales"]
+            })
+
+        return jsonify(result)
+    
+    except Exception as e:
+        print(e)
+        return jsonify({"error message": e})
+
 @auth_bp.route('/orders/year', methods=['GET'])
 def years():
 
@@ -195,20 +227,21 @@ def years():
                         ORDER BY year """)
         rows = cursor.fetchall()
 
-        return jsonify(rows)
-    
-    except Exception as e:
-        print(e)
-        return jsonify({"error message": e})
-
-"""         result = []
+        result = []
 
         for row in rows:
             result.append({
                 "year": row['year'],
                 "total_orders": row["total_orders"],
                 "total_sales": row["total_sales"]
-            }) """
+            })
+
+        return jsonify(result)
+    
+    except Exception as e:
+        print(e)
+        return jsonify({"error message": e})
+
 
         
     

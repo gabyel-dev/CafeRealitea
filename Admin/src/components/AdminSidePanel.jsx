@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faClipboardList, faClockRotateLeft, faGauge, faMugHot, faUserGear} from '@fortawesome/free-solid-svg-icons';
+import {faClipboardList, faClockRotateLeft, faGauge, faMugHot, faUserGear, faUserPlus, faUsers} from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
@@ -11,7 +11,10 @@ const Dashboard = <FontAwesomeIcon icon={faGauge} className='text-amber-300 ' />
 const History = <FontAwesomeIcon icon={faClockRotateLeft} className='text-amber-300 ' />
 const OrderManagement = <FontAwesomeIcon icon={faClipboardList} className='text-amber-300 ' />
 const Admin = <FontAwesomeIcon icon={faUserGear} className='text-amber-300 ' />
+const Account = <FontAwesomeIcon icon={faUserPlus} className='text-amber-300 ' />
+const Users = <FontAwesomeIcon icon={faUsers} className='text-amber-300 ' />
 const logo = <FontAwesomeIcon icon={faMugHot} className='text-amber-300 text-2xl' />
+
 
 
 export default function AdminSidePanel({ activeTab, setActiveTab }) {
@@ -56,6 +59,18 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
                 <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Order" ? "bg-amber-700/20 rounded-md text-white"  : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/orders'), setActiveTab("Order")}}>
                     {OrderManagement}
                     <p className=' font-semibold'>Order Management</p>
+                </div>
+
+                
+
+                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "AccountCreation" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/CreateAccount'), setActiveTab("AccountCreation")}}>
+                    {Account}
+                    <p className='font-semibold'>Account Creation</p>
+                </div>
+
+                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Users" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/UserManagement'), setActiveTab("UsersManagement ")}}>
+                    {Users}
+                    <p className='font-semibold'>Users Management</p>
                 </div>
 
                 <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Admin" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/settings'), setActiveTab("Admin")}}>

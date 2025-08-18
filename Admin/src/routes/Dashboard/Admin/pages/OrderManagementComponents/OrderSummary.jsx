@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added setItemsAdded prop
-    const [customerMoney, setCustomerMoney] = useState();
+    const [customerMoney, setCustomerMoney] = useState(0);
     const [paymentMethod, setPaymentMethod] = useState("Cash");
     const [customerName, setCustomerName] = useState("Walk-in customer");
     const [orderType, setOrderType] = useState("Dine-in");
@@ -127,8 +127,8 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added 
                     <button 
                         onClick={handleCompleteOrder}
                         disabled={isSubmitting || itemsAdded.length === 0}
-                        className={`bg-amber-600 w-full py-3 rounded-md text-white ${
-                            isSubmitting || itemsAdded.length === 0 ? 'opacity-50 cursor-not-allowed' : ''
+                        className={`bg-amber-600 w-full py-3 rounded-md text-white  ${
+                        isSubmitting  || customerMoney <= 0 || customerMoney < total ? 'opacity-50 cursor-not-allowed' : 'hover:bg-amber-700 transition-all cursor-pointer'
                         }`}
                     >
                         {isSubmitting ? "Processing..." : "Complete Order"}

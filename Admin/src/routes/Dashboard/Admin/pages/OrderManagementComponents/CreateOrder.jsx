@@ -19,11 +19,13 @@ export default function CreateOrder({ categories, setItemsAdded, itemsAdded }) {
                                 {cat.items.map((item) => (
                                     <div
                                         key={item.id}
-                                        className="flex justify-between items-center border border-gray-300 p-3 rounded-lg shadow-sm cursor-pointer hover:bg-gray-100"
+                                        className="group flex justify-between items-center border border-gray-300 p-3 rounded-lg shadow-sm cursor-pointer hover:bg-amber-600 hover:text-white transition-all duration-100"
                                         onClick={() => addItem(item)}
                                     >
                                         <span>{item.name}</span>
-                                        <span className="text-orange-600 font-semibold">₱{item.price}</span>
+                                        <div className="text-amber-500 group-hover:text-white ">
+                                            <span className="font-semibold">₱{item.price}</span>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
