@@ -26,7 +26,7 @@ export default function Login() {
             setIsLoading(true);
             
             
-            const res = await axios.post('http://localhost:5000/login', loginData, {
+            const res = await axios.post('https://caferealitea.onrender.com/login', loginData, {
                 withCredentials: true,
                 headers: {
                     "Content-Type": "application/json"
@@ -57,7 +57,7 @@ export default function Login() {
         document.title = "Café Realitea - Login";
         setLoading(true);
 
-        axios.get('http://localhost:5000/user', { withCredentials: true })
+        axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
              .then((res) => {
                 if (res.data.logged_in) {
                     navigate(`/${res.data.user.role}/dashboard`)
