@@ -116,7 +116,7 @@ def items():
         c.name as category_name,
         i.id as item_id,
         i.name as item_name, 
-        i.price as price FROM category c LEFT JOIN itemss i ON c.id = i.category_id ORDER BY c.id, i.id""")
+        i.price as price FROM categories c LEFT JOIN itemss i ON c.id = i.category_id ORDER BY c.id, i.id""")
         rows = cursor.fetchall()
         cursor.close()
         conn.close()
