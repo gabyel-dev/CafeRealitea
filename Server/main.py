@@ -9,7 +9,7 @@ get_db_conn()
 
 app = Flask(__name__)
 app.secret_key = Config.SECRET_KEY
-CORS(app, supports_credentials=True) 
+CORS(app, supports_credentials=True, origins="https://cafe-realitea.vercel.app/") 
 bcrypt.init_app(app)
 
 
