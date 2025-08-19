@@ -11,5 +11,6 @@ class Config():
     SESSION_USE_SIGNER = True   
     SESSION_KEY_PREFIX = "flask_session"
     SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "None"   # important for cross-origin
     SESSION_COOKIE_NAME = 'session_cookies'
-    SESSION_COOKIE_SECURE = os.getenv('FLASK_ENV') == 'production'
+    SESSION_COOKIE_SECURE = False
