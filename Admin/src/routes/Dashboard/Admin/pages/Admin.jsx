@@ -42,7 +42,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                     return;
                 }
 
-                setUserData(res.data);
+                setUserData(res.data.user);
             })
             .catch((err) => {
                 console.error("Authentication check failed:", err);
@@ -73,7 +73,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         </h1>
                         <p className="text-sm">
                         </p>
-                            Welcome back, <b>{userData.user?.name}</b>! Here's what's happening with Café Realitea today.
+                            Welcome back, <b>{userData?.user?.name}</b>! Here's what's happening with Café Realitea today.
                     </div>
                 <div className="px-4 py-6 sm:px-0">
                 </div>
