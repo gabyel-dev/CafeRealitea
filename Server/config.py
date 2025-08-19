@@ -5,9 +5,9 @@ load_dotenv()
 
 class Config():
     DB_URL = os.getenv('DB_URL')
-    SECRET_KEY = os.getenv('SECRET_KEY')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'supersecretkey')
     SESSION_PERMANENT = True
-    SESSION_TYPE = 'filesystem'
+    SESSION_TYPE = 'filesystem'   # <- make sure this is hardcoded or properly set
     SESSION_USE_SIGNER = True   
     SESSION_KEY_PREFIX = "flask_session"
     SESSION_COOKIE_HTTPONLY = True
