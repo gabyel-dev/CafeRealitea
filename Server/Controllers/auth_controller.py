@@ -57,7 +57,6 @@ def Login():
         cursor.close()
         conn.close()
 
-#REGISTER 
 @auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -68,22 +67,27 @@ def register():
     password = data.get('password')
     role = data.get('role')
 
+    if not all([first_name, last_name, email, username, password, role]):
+        return jsonify({'error': 'All fields are required'}), 400
+
     conn = get_db_conn()
     cursor = conn.cursor()
 
     hash_pass = hash_password(password)
 
     try:
-        cursor.execute('INSERT INTO users_account (first_name, last_name, email, username, password, role) '
-                        'VALUES (%s, %s, %s, %s, %s, %s)', (first_name, last_name, email, username, hash_pass, role))
+        cursor.execute(
+            'INSERT INTO users_account (first_name, last_name, email, username, password, role) '
+            'VALUES (%s, %s, %s, %s, %s, %s)',
+            (first_name, last_name, email, username, hash_pass, role)
+        )
         conn.commit()
-
-        print('success!!')
-
-        return jsonify({'message': 'Registered Successfully', 'redirect': '/login'})
+        return jsonify({'message': 'Registered Successfully', 'redirect': '/login'}), 201
 
     except Exception as e:
-        print('failed to register')
+        print('failed to register', e)
+        return jsonify({'error': 'Registration failed', 'details': str(e)}), 500
+
         
 
 #LOGOUT
