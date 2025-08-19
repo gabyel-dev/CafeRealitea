@@ -11,7 +11,7 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
 
     
         useEffect(() => {
-            axios.get('http://localhost:5000/daily-sales')
+            axios.get('https://caferealitea.onrender.com/daily-sales')
             .then((res) => {
                 setDailySalesData(res.data);
             })

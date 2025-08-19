@@ -39,7 +39,7 @@ export default function Register({ activeTab, setActiveTab}) {
             if (isLoading) return;
             setIsLoading(true);
             
-            const res = await axios.post('http://localhost:5000/register', registerData, {
+            const res = await axios.post('https://caferealitea.onrender.com/register', registerData, {
                 withCredentials: true,
                 headers: {
                     "Content-Type": "application/json"
@@ -70,14 +70,14 @@ export default function Register({ activeTab, setActiveTab}) {
         document.title = "Café Realitea - Create Account";
         setLoading(true);
 
-        axios.get("http://localhost:5000/user", { withCredentials: true })
+        axios.get("https://caferealitea.onrender.com/user", { withCredentials: true })
             .then((res) => {
-                if (!res.data.logged_in || res.data.role === null) {
+/*                 if (!res.data.logged_in || res.data.role === null) {
                     navigate("/login");
                 } 
                 else if (res.data.role === "Staff") {
                     navigate("/Staff/dashboard");
-                }
+                } */
             })
             .catch((err) => {
                 console.error("Session check failed:", err);

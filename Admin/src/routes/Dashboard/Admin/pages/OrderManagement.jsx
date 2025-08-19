@@ -16,7 +16,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
     const [itemsAdded, setItemsAdded] = useState([]);
 
     useEffect(() => {
-        axios.get('http://localhost:5000/items')
+        axios.get('https://caferealitea.onrender.com/items')
         .then((res) => setCategories(res.data))
     }, [])
 
@@ -25,7 +25,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
         document.title = "Café Realitea - Order Management";
         setLoading(true);
         
-        axios.get('http://localhost:5000/user', { withCredentials: true })
+        axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
             .then((res) => {
                 if (!res.data.logged_in || res.data.role === "") {
                     navigate('/login');

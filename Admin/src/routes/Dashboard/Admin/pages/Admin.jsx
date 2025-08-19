@@ -13,14 +13,14 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [monthData, setMonthData] = useState([])
     
     useEffect(() => {
-        axios.get('http://localhost:5000/orders/months')
+        axios.get('https://caferealitea.onrender.com/orders/months')
         .then((res) => {
             setMonthData(res.data)
         })
     }, [])
     
     useEffect(() => {
-        axios.get('http://localhost:5000/orders/year')
+        axios.get('https://caferealitea.onrender.com/orders/year')
         .then((res) => {
             setYearData(res.data)
         })
@@ -30,7 +30,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
         document.title = "Café Realitea - Admin Dashboard";
         setLoading(true);
         
-        axios.get('http://localhost:5000/user', { withCredentials: true })
+        axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
             .then((res) => {
                 if (!res.data.logged_in || res.data.role === "") {
                     navigate('/login');

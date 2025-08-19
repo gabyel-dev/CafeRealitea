@@ -24,7 +24,7 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added 
     };
 
     try {
-        const response = await fetch('http://localhost:5000/orders', {
+        const response = await fetch('https://caferealitea.onrender.com/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(orderData)

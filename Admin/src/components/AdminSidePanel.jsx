@@ -21,7 +21,7 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
 
     const handleLogout = () => {
-        axios.post('http://localhost:5000/logout', {}, { withCredentials: true })
+        axios.post('https://caferealitea.onrender.com/logout', {}, { withCredentials: true })
             .then(() => navigate('/login'))
             .catch(err => {
                 console.error("Logout failed:", err);
