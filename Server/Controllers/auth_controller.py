@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify, session
 from Models.database import get_db_conn
 import json
 from utils.hash_passwords import hash_password, check_password
+from datetime import datetime, timedelta
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -179,6 +180,7 @@ def create_order():
         cursor.close()
         conn.close()
 
+#all months
 @auth_bp.route('/orders/months', methods=['GET'])
 def months():
     conn = get_db_conn()
@@ -211,6 +213,7 @@ def months():
         print(e)
         return jsonify({"error message": e})
 
+#all years
 @auth_bp.route('/orders/year', methods=['GET'])
 def years():
 
@@ -243,8 +246,82 @@ def years():
         return jsonify({"error message": e})
 
 
-        
+@auth_bp.route('/orders/current-month', methods=['GET'])
+def monthly():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+                            SELECT 
+                                EXTRACT(YEAR FROM order_time) AS year, 
+                                EXTRACT(MONTH FROM order_time) AS month,
+                                COUNT(*) AS total_orders, 
+                                SUM(total) AS total_sales 
+                            FROM orders
+                            WHERE EXTRACT(YEAR FROM order_time) = EXTRACT(YEAR FROM CURRENT_DATE)
+                            AND EXTRACT(MONTH FROM order_time) = EXTRACT(MONTH FROM CURRENT_DATE)
+                            GROUP BY year, month
+                        """)
+
+        rows = cursor.fetchall()
+
+        result = []
+
+        for row in rows:
+            result.append({
+                "year": row['year'],
+                "months": row['month'],
+                "total_orders": row["total_orders"],
+                "total_sales": row["total_sales"]
+            })
+
+        return jsonify(result)
+    
+    except Exception as e:
+        print(e)
+        return jsonify({"error message": e})
     
 
+#daily sales
+@auth_bp.route('/daily-sales', methods=['GET'])
+def daily():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    
+    try: 
+        cursor.execute('SELECT * FROM orders ORDER BY order_time DESC')
+        rows = cursor.fetchall()
 
+        
+        today = datetime.today().date()
+        result = []
 
+        for row in rows:
+
+            date = row['order_time'] if isinstance(row['order_time'], datetime) else datetime.strptime(str(row['order_time']), "%Y-%m-%d %H:%M:%S.%f")
+
+            if date.date() == today:
+                formatted = "Today / " + date.strftime("%I:%M %p")
+            elif date.date() == today - timedelta(days=1): 
+                formatted =  "Yesterday / " + date.strftime("%I:%M %p")
+            else: 
+                formatted = date.strftime("%b %d, %Y / %I:%M %p")
+
+            result.append({
+                "id": row['id'],
+                "order_type": row['order_type'],
+                "payment_method": row['payment_method'],
+                "total": row['total'],
+                "order_time": formatted
+            })
+
+        return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+    
+    finally:
+        cursor.close()
+        conn.close()

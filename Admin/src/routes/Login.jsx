@@ -1,8 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import AdminSidePanel from "../components/AdminSidePanel";
-import StaffSidePanel from "../components/StaffSidePanel";
 
 export default function Login() {
     const navigate = useNavigate();

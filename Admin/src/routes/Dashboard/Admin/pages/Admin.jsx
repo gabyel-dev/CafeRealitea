@@ -73,18 +73,9 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         </h1>
                         <p className="text-sm">
                         </p>
-                            Welcome back! Here's what's happening with Café Realitea today.
+                            Welcome back, <b>{userData.user?.name}</b>! Here's what's happening with Café Realitea today.
                     </div>
                 <div className="px-4 py-6 sm:px-0">
-                    
-                    <div className="border-2 border-dashed border-gray-200 rounded-lg p-8 text-center">
-                        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-                            Welcome, {userData?.user?.name || 'Admin Member'}!
-                        </h2>
-                        <p className="text-gray-600">
-                            You have successfully logged in as a Admin member.
-                        </p>
-                    </div>
                 </div>
             </main>
 
