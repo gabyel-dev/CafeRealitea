@@ -5,15 +5,3 @@ load_dotenv()
 
 class Config:
     DB_URL = os.getenv('DB_URL')
-    SECRET_KEY = os.getenv('SECRET_KEY', 'supersecretkey')
-
-    SESSION_PERMANENT = True
-    SESSION_TYPE = 'filesystem'
-    SESSION_USE_SIGNER = True
-    SESSION_KEY_PREFIX = "flask_session"
-    SESSION_COOKIE_NAME = "session_cookies"
-
-    # For cross-site cookies (Vercel <-> Render)
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "None"
-    SESSION_COOKIE_SECURE = True   # must be True in production HTTPS
