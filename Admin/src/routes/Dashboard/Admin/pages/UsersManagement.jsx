@@ -10,7 +10,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
         .then((res) => {
             setUsers(res.data)
         })
-    })
+    }, [])
     return (
         <>
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
