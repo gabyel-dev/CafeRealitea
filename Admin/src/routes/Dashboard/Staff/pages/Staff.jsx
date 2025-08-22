@@ -9,11 +9,11 @@ export default function StaffDashboard() {
 
     const handleLogout = () => {
         axios.post('http://localhost:5000/logout', {}, { withCredentials: true })
-            .then(() => navigate('/login'))
+            .then(() => navigate('/'))
             .catch(err => {
                 console.error("Logout failed:", err);
                 // Still navigate to login even if logout request fails
-                navigate('/login');
+                navigate('/');
             });
     };
 
@@ -24,7 +24,7 @@ export default function StaffDashboard() {
         axios.get('http://localhost:5000/user', { withCredentials: true })
             .then((res) => {
                 if (!res.data.logged_in || res.data.role === "") {
-                    navigate('/login');
+                    navigate('/');
                     return;
                 }
 
@@ -37,7 +37,7 @@ export default function StaffDashboard() {
             })
             .catch((err) => {
                 console.error("Authentication check failed:", err);
-                navigate('/login');
+                navigate('/');
             })
             .finally(() => {
                 setLoading(false);

@@ -1,12 +1,13 @@
 import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { useState, useEffect } from "react";
 import axios from "axios";
-
+import { useNavigate } from "react-router-dom";
 
 
 
 
 export default function SalesHistory({ activeTab, setActiveTab }) {
+    const navigate = useNavigate();
     const [dailySalesData, setDailySalesData] = useState([])
 
     
@@ -14,6 +15,15 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
             axios.get('https://caferealitea.onrender.com/daily-sales')
             .then((res) => {
                 setDailySalesData(res.data);
+            })
+        }, [])
+
+        useEffect(() => {
+            axios.get('https://caferealitea.onrender.com/user')
+            .then((res) => {
+                if (res.data.logged_in) {
+                    navigate(`${res.data.user.role}/dashboard`)
+                }
             })
         }, [])
 

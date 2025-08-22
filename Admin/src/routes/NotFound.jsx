@@ -14,7 +14,7 @@ export default function NotFound() {
       </p>
 
       <Link
-        to="/login"
+        to="/"
         className="mt-6 inline-block px-6 py-3 bg-gray-700 hover:bg-gray-900 text-white font-medium rounded-lg shadow-md transition-all duration-200"
       >
         Go Back Home

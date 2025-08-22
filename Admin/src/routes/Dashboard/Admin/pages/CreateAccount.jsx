@@ -72,16 +72,16 @@ export default function Register({ activeTab, setActiveTab}) {
 
         axios.get("https://caferealitea.onrender.com/user", { withCredentials: true })
             .then((res) => {
-/*                 if (!res.data.logged_in || res.data.role === null) {
-                    navigate("/login");
+                if (!res.data.logged_in || res.data.role === null) {
+                    navigate("/");
                 } 
                 else if (res.data.role === "Staff") {
                     navigate("/Staff/dashboard");
-                } */
+                }
             })
             .catch((err) => {
                 console.error("Session check failed:", err);
-                navigate("/login"); // fallback
+                navigate("/"); // fallback
             })
             .finally(() => setLoading(false));
     }, [navigate]);

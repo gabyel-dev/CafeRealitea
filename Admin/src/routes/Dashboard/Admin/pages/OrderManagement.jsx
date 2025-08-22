@@ -28,7 +28,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
         axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
             .then((res) => {
                 if (!res.data.logged_in || res.data.role === "") {
-                    navigate('/login');
+                    navigate('/');
                     return;
                 }
 
@@ -41,7 +41,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
             })
             .catch((err) => {
                 console.error("Authentication check failed:", err);
-                navigate('/login');
+                navigate('/');
             })
             .finally(() => {
                 setLoading(false);
