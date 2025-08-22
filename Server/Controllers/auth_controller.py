@@ -331,7 +331,7 @@ def daily():
         conn.close()
 
 #fetch users
-@auth_bp.route('/users_account', method=['GET'])
+@auth_bp.route('/users_account', methods=['GET'])
 def users():
     conn = get_db_conn()
     cursor = conn.cursor()
