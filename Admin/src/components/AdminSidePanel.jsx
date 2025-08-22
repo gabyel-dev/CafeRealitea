@@ -68,7 +68,7 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
                     <p className='font-semibold'>Account Creation</p>
                 </div>
 
-                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Users" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/UserManagement'), setActiveTab("UsersManagement ")}}>
+                <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Users" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/Admin/UserManagement'), setActiveTab("Users")}}>
                     {Users}
                     <p className='font-semibold'>Users Management</p>
                 </div>

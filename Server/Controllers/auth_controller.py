@@ -329,3 +329,28 @@ def daily():
     finally:
         cursor.close()
         conn.close()
+
+#fetch users
+@auth_bp.route('/users_account', method=['GET'])
+def users():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('SELECT * FROM users_account')
+        rows = cursor.fetchall()
+
+        result = []
+
+        for row in rows:
+            result.append({
+                "id": row['id'],
+                "first_name": row['first_name'],
+                "last_name": row['last_name'],
+                "email": row['email'],
+                "role": row['role']
+            })
+    
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'error': str(e)})

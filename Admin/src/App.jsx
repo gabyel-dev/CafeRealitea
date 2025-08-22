@@ -8,6 +8,7 @@ import SalesHistory from "./routes/Dashboard/Admin/pages/SalesHistory";
 import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff";
 import { useState } from "react";
 import NotFound from "./routes/NotFound";
+import UsersManagement from "./routes/Dashboard/Admin/pages/UsersManagement";
 
 
 const App = () => {
@@ -26,11 +27,6 @@ const App = () => {
           element={<Register activeTab={activeTab} setActiveTab={setActiveTab} />} 
         />
 
-      <Route 
-          path="/Staff/dashboard" 
-          element={<StaffDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
-      />
-
     {/* Admin Routes */}
       <Route 
           path="/Admin/dashboard" 
@@ -46,16 +42,25 @@ const App = () => {
           path="/Admin/orders" 
           element={<OrderManagementAdmin activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
-      
+
       <Route 
-          path="/Admin/UsersManagement" 
-          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+          path="/Admin/UserManagement" 
+          element={<UsersManagement activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 
           path="/Admin/settings" 
           element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
+
+
+
+      {/* Staff Route */}
+      <Route 
+          path="/Staff/dashboard" 
+          element={<StaffDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+      />
+
 
       {/* Catch-all route for 404 */}
         <Route path="*" element={<NotFound />} />
