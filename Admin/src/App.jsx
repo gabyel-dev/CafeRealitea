@@ -46,12 +46,7 @@ const App = () => {
           path="/Admin/orders" 
           element={<OrderManagementAdmin activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
-
-      <Route 
-          path="/Admin/CreateAccount" 
-          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
-      />
-
+      
       <Route 
           path="/Admin/UsersManagement" 
           element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
