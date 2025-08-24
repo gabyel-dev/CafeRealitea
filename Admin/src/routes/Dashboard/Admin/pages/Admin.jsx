@@ -13,17 +13,11 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [loading, setLoading] = useState(true);
     const [yearData, setYearData] = useState([])
     const [monthData, setMonthData] = useState([])
-    const [currentMonthData, setCurrentMonthData] = useState([{}])
+    const [currentMonthData, setCurrentMonthData] = useState([])
 
     const format = (data) => {
         return parseInt(data).toLocaleString();
     }
-
-    const calculate = (data) => {
-        const final = data.length();
-        const addAll = data.reduce((acc, currVal) => acc + currVal, 0);
-        return data
-    };
 
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/orders/current-month')
@@ -98,34 +92,40 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         </p>
                            
                     </div>
-                <div className="px-4 py-6 sm:px-0">
-                </div>
+
             </main>
 
             <div className="ml-80 flex gap-6 px-8 mb-10">
-                <div className="__profit__ w-full shadow-md">
+                <div className="__profit__ w-full shadow-md bg-white rounded-lg">
                         <div>
                             <MonthlyGraph nameOfData={"This Month Sales"} valOfData={"2000"} />
                         </div>
 
                 </div>  
 
-                <div className="flex flex-col gap-6 w-full ">
-                    <div className="__monthlysales__ shadow-md w-full p-6">
-                        <p className="text-md text-gray-500">Monthly Sales</p>
+                <div className="flex flex-col gap-6 lg:w-[50%]">
+                    <div className="__monthlysales__ shadow-md w-full p-6 bg-white rounded-md">
+                        
                         <div>
                             {currentMonthData.map((res) => (
-                                <div key={res.month} className="flex items-center justify-between" >
-                                    <p className="text-3xl font-bold">₱ {format(res.total_sales)}</p>
-                                    {<FontAwesomeIcon icon={faPesoSign} className="m-4 bg-amber-200 px-4 py-4.5 rounded-full text-amber-700" />}
-
+                                <div key={res.month} className="flex flex-col " >
                                     <div>
-                                        <div className="__orders_today">
+                                        <p className="text-lg font-semibold text-gray-500">Monthly Sales</p>
+                                        <div  className="__monthly_sales flex items-center justify-between pb-4">
+                                            <p className="text-3xl font-bold">₱ {format(res.total_sales)}</p>
+                                            {<FontAwesomeIcon icon={faPesoSign} className="m-4 bg-amber-200 px-4 py-4.5 rounded-full text-amber-700" />}
+                                        </div>
+                                    </div>
 
+                                    <div className="flex items-center justify-between ">
+                                        <div className="__orders_today">
+                                        <p className="text-sm text-gray-400">Orders This Month  </p>
+                                            <p className="font-semibold">{res.total_orders}</p>
                                         </div>
 
                                         <div className="__avg_order__">
-
+                                            <p className="text-sm text-gray-400">Avg Order  </p>
+                                            <p className="font-semibold ">₱{(res.total_sales / res.total_orders).toFixed(2)}</p>
                                         </div>
                                     </div>
                                 </div>

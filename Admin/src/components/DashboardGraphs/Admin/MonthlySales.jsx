@@ -13,7 +13,8 @@ export default function ProfitGraph({ nameOfData, valOfData }) {
     ]
     return (
         <>
-            <div className="flex items-center justify-center p-6">
+            <div className="flex flex-col items-center justify-center p-6">
+                <h1 className="font-semibold text-lg text-gray-500">Monthly Profit</h1>
                 <PieChart width={400} height={400}>
                     <Pie 
                         data={data}
