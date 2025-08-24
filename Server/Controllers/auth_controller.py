@@ -362,7 +362,7 @@ def daily():
 
 #daily sales
 @auth_bp.route('/recent-sales', methods=['GET'])
-def daily():
+def recentSale():
     conn = get_db_conn()
     cursor = conn.cursor()
     

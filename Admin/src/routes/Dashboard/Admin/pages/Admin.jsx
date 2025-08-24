@@ -22,7 +22,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     }
 
     useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/daily-sales')
+        axios.get('https://caferealitea.onrender.com/recent-sales')
         .then((res) => {
             
             setFetchSales(res.data);
