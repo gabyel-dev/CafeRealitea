@@ -280,7 +280,7 @@ def monthly():
                             GROUP BY year, month
                         """)
 
-        rows = cursor.fetchall()
+        rows = cursor.fetchone()
 
         cursor.execute("""
                     SELECT *
