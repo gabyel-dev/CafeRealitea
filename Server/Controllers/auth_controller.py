@@ -215,7 +215,7 @@ def months():
                 "total_sales": row["total_sales"]
             })
 
-        return jsonify([result])
+        return jsonify(result)
     
     except Exception as e:
         print(e)
@@ -306,7 +306,7 @@ def monthly():
                 "total": o["total"]
             })
 
-        return jsonify(result)
+        return jsonify([result])
     
     except Exception as e:
         print(e)
