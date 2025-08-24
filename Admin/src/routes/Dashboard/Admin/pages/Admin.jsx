@@ -13,7 +13,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [loading, setLoading] = useState(true);
     const [yearData, setYearData] = useState([])
     const [monthData, setMonthData] = useState([])
-    const [currentMonthData, setCurrentMonthData] = useState([])
+    const [currentMonthData, setCurrentMonthData] = useState([{}])
 
     const format = (data) => {
         return parseInt(data).toLocaleString();
@@ -28,7 +28,9 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/orders/current-month')
         .then((res) => {
+            
             setCurrentMonthData(res.data);
+            console.log(currentMonthData)
         }) 
     }, [])
     
@@ -113,7 +115,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         <p className="text-md text-gray-500">Monthly Sales</p>
                         <div>
                             {currentMonthData.map((res) => (
-                                <div key={res.months} className="flex items-center justify-between" >
+                                <div key={res.month} className="flex items-center justify-between" >
                                     <p className="text-3xl font-bold">₱ {format(res.total_sales)}</p>
                                     {<FontAwesomeIcon icon={faPesoSign} className="m-4 bg-amber-200 px-4 py-4.5 rounded-full text-amber-700" />}
 
