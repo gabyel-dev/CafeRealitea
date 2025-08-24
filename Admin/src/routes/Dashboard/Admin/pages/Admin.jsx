@@ -3,6 +3,8 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import MonthlyGraph from "../../../../components/DashboardGraphs/Admin/MonthlySales";
+import { faPesoSign } from "@fortawesome/free-solid-svg-icons";
 
 
 export default function AdminDashboard({ activeTab, setActiveTab }) {
@@ -11,18 +13,36 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [loading, setLoading] = useState(true);
     const [yearData, setYearData] = useState([])
     const [monthData, setMonthData] = useState([])
+    const [currentMonthData, setCurrentMonthData] = useState([])
+
+    const format = (data) => {
+        return parseInt(data).toLocaleString();
+    }
+
+    const calculate = (data) => {
+        const final = data.length();
+        const addAll = data.reduce((acc, currVal) => acc + currVal, 0);
+        return data
+    };
+
+    useEffect(() => {
+        axios.get('https://caferealitea.onrender.com/orders/current-month')
+        .then((res) => {
+            setCurrentMonthData(res.data);
+        }) 
+    }, [])
     
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/orders/months')
         .then((res) => {
-            setMonthData(res.data)
+            setMonthData(res.data);
         })
     }, [])
     
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/orders/year')
         .then((res) => {
-            setYearData(res.data)
+            setYearData(res.data);
         })
     }, [])
 
@@ -42,7 +62,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                     return;
                 }
 
-                setUserData(res.data.user);
+                setUserData(res.data);
             })
             .catch((err) => {
                 console.error("Authentication check failed:", err);
@@ -71,13 +91,54 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         <h1 className="text-3xl font-bold">
                             Dashboard Overview
                         </h1>
-                        <p className="text-sm">
+                        <p className="text-md text-gray-500">
+                             Welcome back, <b>{userData?.user?.name}</b>! Here's what's happening with Café Realitea today.
                         </p>
-                            Welcome back, <b>{userData?.user?.name}</b>! Here's what's happening with Café Realitea today.
+                           
                     </div>
                 <div className="px-4 py-6 sm:px-0">
                 </div>
             </main>
+
+            <div className="ml-80 flex gap-6 px-8 mb-10">
+                <div className="__profit__ w-full shadow-md">
+                    {currentMonthData.map((sales) => (
+                        <div key={sales.months}>
+                            <MonthlyGraph nameOfData={"This Month Sales"} valOfData={sales.total_sales} />
+                            <p>Total Orders this Month - {sales.total_orders}</p>
+                        </div>
+                    ))}
+                </div>  
+
+                <div className="flex flex-col gap-6 w-full ">
+                    <div className="__monthlysales__ shadow-md w-full p-6">
+                        <p className="text-md text-gray-500">Monthly Sales</p>
+                        <div>
+                            {currentMonthData.map((res) => (
+                                <div key={res.months} className="flex items-center justify-between" >
+                                    <p className="text-3xl font-bold">₱ {format(res.total_sales)}</p>
+                                    {<FontAwesomeIcon icon={faPesoSign} className="m-4 bg-amber-200 px-4 py-4.5 rounded-full text-amber-700" />}
+
+                                    <div>
+                                        <div className="__orders_today">
+
+                                        </div>
+
+                                        <div className="__avg_order__">
+
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="__top_items__ ">
+
+                    </div>
+                </div>
+            </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 ml-80">
             {yearData.map((result) => (

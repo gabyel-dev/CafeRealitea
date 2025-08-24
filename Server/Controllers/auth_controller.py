@@ -87,7 +87,9 @@ def register():
     except Exception as e:
         print('failed to register', e)
         return jsonify({'error': 'Registration failed', 'details': str(e)}), 500
-
+    finally:
+        cursor.close()
+        conn.close()
         
 
 #LOGOUT
@@ -138,6 +140,8 @@ def items():
                 })
 
         return jsonify(list(categories.values()))
+
+    
 
 @auth_bp.route('/orders', methods=['POST'])
 def create_order(): 
@@ -216,6 +220,10 @@ def months():
     except Exception as e:
         print(e)
         return jsonify({"error message": e})
+    
+    finally:
+        cursor.close()
+        conn.close()
 
 #all years
 @auth_bp.route('/orders/year', methods=['GET'])
@@ -248,6 +256,10 @@ def years():
     except Exception as e:
         print(e)
         return jsonify({"error message": e})
+    
+    finally:
+        cursor.close()
+        conn.close()
 
 
 @auth_bp.route('/orders/current-month', methods=['GET'])
@@ -270,14 +282,29 @@ def monthly():
 
         rows = cursor.fetchall()
 
+        cursor.execute("""
+                    SELECT *
+                    FROM orders
+                    WHERE EXTRACT(YEAR FROM order_time) = EXTRACT(YEAR FROM CURRENT_DATE)
+                    AND EXTRACT(MONTH FROM order_time) = EXTRACT(MONTH FROM CURRENT_DATE);
+
+                       """)
+        orders = cursor.fetchall()
+
         result = []
 
-        for row in rows:
-            result.append({
-                "year": row['year'],
-                "months": row['month'],
-                "total_orders": row["total_orders"],
-                "total_sales": row["total_sales"]
+        result = {
+                "year": rows['year'],
+                "month": rows['month'],
+                "total_orders": rows['total_orders'],
+                "total_sales": rows['total_sales']
+        }
+
+
+        for o in orders:
+            result['orders'].append({
+                "id": o['0'],
+                "total": o[4]
             })
 
         return jsonify(result)
@@ -285,6 +312,10 @@ def monthly():
     except Exception as e:
         print(e)
         return jsonify({"error message": e})
+    
+    finally:
+        cursor.close()
+        conn.close()
     
 
 #daily sales
@@ -354,3 +385,7 @@ def users():
         return jsonify(result)
     except Exception as e:
         return jsonify({'error': str(e)})
+    
+    finally:
+        cursor.close()
+        conn.close()
