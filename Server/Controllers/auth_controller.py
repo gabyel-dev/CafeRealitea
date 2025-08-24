@@ -292,18 +292,18 @@ def monthly():
         orders = cursor.fetchall()
 
         result = {
-            "year": int(rows[0]),
-            "month": int(rows[1]),
-            "total_orders": int(rows[2]),
-            "total_sales": int(rows[3]),
+            "year": int(rows["year"]),
+            "month": int(rows["month"]),
+            "total_orders": int(rows["total_orders"]),
+            "total_sales": int(rows["total_sales"]),
             "orders": []
         }
 
 
         for o in orders:
             result['orders'].append({
-                "id": o['0'],
-                "total": o[4]
+                "id": o['id'],
+                "total": o["total"]
             })
 
         return jsonify(result)
