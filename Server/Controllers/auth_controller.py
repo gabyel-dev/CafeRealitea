@@ -292,11 +292,11 @@ def monthly():
         orders = cursor.fetchall()
 
         result = {
-                "year": rows['year'],
-                "month": rows['month'],
-                "total_orders": rows['total_orders'],
-                "total_sales": rows['total_sales'],
-                "orders": []
+            "year": int(rows[0]),
+            "month": int(rows[1]),
+            "total_orders": int(rows[2]),
+            "total_sales": int(rows[3]),
+            "orders": []
         }
 
 

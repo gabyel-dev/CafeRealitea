@@ -102,12 +102,10 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
 
             <div className="ml-80 flex gap-6 px-8 mb-10">
                 <div className="__profit__ w-full shadow-md">
-                    {currentMonthData.map((sales) => (
-                        <div key={sales.months}>
-                            <MonthlyGraph nameOfData={"This Month Sales"} valOfData={sales.total_sales} />
-                            <p>Total Orders this Month - {sales.total_orders}</p>
+                        <div>
+                            <MonthlyGraph nameOfData={"This Month Sales"} valOfData={"2000"} />
                         </div>
-                    ))}
+
                 </div>  
 
                 <div className="flex flex-col gap-6 w-full ">
