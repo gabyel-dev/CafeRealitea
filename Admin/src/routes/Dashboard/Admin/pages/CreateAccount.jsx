@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
-import { faEnvelope, faUser, faLock, faIdBadge } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faUser, faLock, faIdBadge, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import AccountCreation from "../../../../components/success/Message";
 import AdminSidePanel from "../../../../components/AdminSidePanel";
 
@@ -25,6 +25,11 @@ export default function Register({ activeTab, setActiveTab}) {
         password: "",
         role: "",
     });
+    const [showPassword, setShowPassword] = useState(false);
+
+    const showPass = () => {
+        setShowPassword(!showPassword);
+    }
 
     const handleRegister = async (e) => {
         e.preventDefault();
@@ -106,7 +111,7 @@ export default function Register({ activeTab, setActiveTab}) {
                 <div className="max-w-4xl py-6 px-10">
                     <div className="w-full mb-5">
                         <h1 className="text-3xl font-bold">Create an Account</h1>
-                        Create and manage customer orders
+                        Create Account for Staff
                     </div>
 
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -254,13 +259,25 @@ export default function Register({ activeTab, setActiveTab}) {
                                         <input
                                             id="password"
                                             name="password"
-                                            type="password"
+                                            type={showPassword ? "text" : "password"}
                                             required
                                             value={registerData.password}
                                             onChange={handleChange}
                                             className="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                                             placeholder="••••••••"
                                         />
+
+                                        <button
+                                            type="button"
+                                            onClick={showPass}
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                                            >
+                                            {showPassword ? (
+                                                <FontAwesomeIcon icon={faEyeSlash} className="h-5 w-5" />
+                                            ) : (
+                                                <FontAwesomeIcon icon={faEye} className="h-5 w-5" />
+                                            )}
+                                    </button>
                                     </div>
                                     <p className="mt-2 text-xs text-gray-500">
                                         Password must be at least 8 characters long

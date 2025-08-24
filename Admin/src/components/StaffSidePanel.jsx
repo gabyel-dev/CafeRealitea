@@ -19,11 +19,11 @@ export default function StaffSidePanel({ activeTab, setActiveTab }) {
 
     const handleLogout = () => {
         axios.post('https://caferealitea.onrender.com/logout', {}, { withCredentials: true })
-            .then(() => navigate('/login'))
+            .then(() => navigate('/'))
             .catch(err => {
                 console.error("Logout failed:", err);
                 // Still navigate to login even if logout request fails
-                navigate('/login');
+                navigate('/');
             });
     };
 

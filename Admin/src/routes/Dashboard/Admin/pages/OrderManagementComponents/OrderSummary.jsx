@@ -24,20 +24,24 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {  // Added 
     };
 
     try {
-        const response = await fetch('https://caferealitea.onrender.com/orders', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        })
-        
-        if (!response.ok) throw new Error('Failed to save order');
-        
-        const data = await response.json();
-        alert(`Order #${data.order_id} - ${data.message}`)
-        
+    setIsSubmitting(true)   // ✅ use setter function
+    const response = await fetch('https://caferealitea.onrender.com/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(orderData)
+    })
+    
+    if (!response.ok) throw new Error('Failed to save order');
+    
+    const data = await response.json();
+    alert(`Order #${data.order_id} - ${data.message}`)
+    
     } catch (error) {
         alert(`Error: ${error.message}`);
+    } finally {
+        setIsSubmitting(false)  // ✅ reset after done
     }
+
 };
 
 

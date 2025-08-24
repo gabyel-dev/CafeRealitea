@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 export default function Login() {
     const navigate = useNavigate();
@@ -11,6 +13,11 @@ export default function Login() {
         username: "",
         password: "",
     });
+    const [showPassword, setShowPassword] = useState(false);
+
+    const showPass = () => {
+       setShowPassword(!showPassword);
+    }
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -133,27 +140,57 @@ export default function Login() {
                         </div>
 
                         <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                Password
-                            </label>
-                            <div className="mt-1 relative rounded-md shadow-sm">
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                        <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+                                <label
+                                    htmlFor="password"
+                                    className="block text-sm font-medium text-gray-700 mb-1"
+                                >
+                                    Password
+                                </label>
+
+                                <div className="mt-1 relative rounded-md shadow-sm">
+                                    {/* Left-side lock icon */}
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg
+                                        className="h-5 w-5 text-gray-400"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 20 20"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                        fillRule="evenodd"
+                                        d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                                        clipRule="evenodd"
+                                        />
                                     </svg>
-                                </div>
-                                <input
+                                    </div>
+
+                                    {/* Password input */}
+                                    <input
                                     id="password"
                                     name="password"
-                                    type="password"
+                                    type={showPassword ? "text" : "password"}
                                     required
                                     value={loginData.password}
                                     onChange={handleChange}
-                                    className="block w-full pl-10 px-4 py-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                                    className="block w-full pl-10 pr-10 px-4 py-2 border border-gray-300 rounded-md focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                                     placeholder="Enter your password"
-                                />
-                            </div>
-                        </div>
+                                    />
+
+                                    {/* Show/Hide button on right side */}
+                                    <button
+                                    type="button"
+                                    onClick={showPass}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
+                                    >
+                                    {showPassword ? (
+                                        <FontAwesomeIcon icon={faEyeSlash} className="h-5 w-5" />
+                                    ) : (
+                                        <FontAwesomeIcon icon={faEye} className="h-5 w-5" />
+                                    )}
+                                    </button>
+                                </div>
+                                </div>
+
 
 
 

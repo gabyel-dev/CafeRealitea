@@ -1,15 +1,15 @@
 import { PieChart, Pie, Tooltip, Legend, Cell } from "recharts";
 
-const COLORS = [ "#FF8F00", "#FF6F00"];
+const COLORS = [ "#b5540e", "#27c227", "#ffed21"];
 
 
 
 export default function ProfitGraph({ nameOfData, valOfData }) {
 
     const data = [
-       { name: "Ingredients", value: 2000 },
+       { name: "Gross Profit", value: 2000 },
        { name: "Equipments", value: 4000 },
-       { name: "Electricity", value: 1500 },
+       { name: "Net Profit", value: 1500 },
     ]
     return (
         <>
