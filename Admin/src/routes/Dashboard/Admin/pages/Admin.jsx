@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MonthlyGraph from "../../../../components/DashboardGraphs/Admin/MonthlySales";
-import { faPesoSign } from "@fortawesome/free-solid-svg-icons";
+import { faCoffee, faPesoSign, faStar } from "@fortawesome/free-solid-svg-icons";
 
 
 export default function AdminDashboard({ activeTab, setActiveTab }) {
@@ -14,31 +14,33 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [yearData, setYearData] = useState([])
     const [monthData, setMonthData] = useState([])
     const [currentMonthData, setCurrentMonthData] = useState([])
+    const [PopularItems, setPopularItems] = useState([])
+    const [fetchSales, setFetchSales] = useState([])
 
     const format = (data) => {
         return parseInt(data).toLocaleString();
     }
 
     useEffect(() => {
+        axios.get('https://caferealitea.onrender.com/daily-sales')
+        .then((res) => {
+            
+            setFetchSales(res.data);
+        }) 
+    }, [])
+
+    useEffect(() => {
         axios.get('https://caferealitea.onrender.com/orders/current-month')
         .then((res) => {
             
             setCurrentMonthData(res.data);
-            console.log(currentMonthData)
         }) 
     }, [])
-    
+
     useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/orders/months')
+        axios.get('https://caferealitea.onrender.com/top_items')
         .then((res) => {
-            setMonthData(res.data);
-        })
-    }, [])
-    
-    useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/orders/year')
-        .then((res) => {
-            setYearData(res.data);
+            setPopularItems(res.data);
         })
     }, [])
 
@@ -113,7 +115,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                                         <p className="text-lg font-semibold text-gray-500">Monthly Sales</p>
                                         <div  className="__monthly_sales flex items-center justify-between pb-4">
                                             <p className="text-3xl font-bold">₱ {format(res.total_sales)}</p>
-                                            {<FontAwesomeIcon icon={faPesoSign} className="m-4 bg-amber-200 px-4 py-4.5 rounded-full text-amber-700" />}
+                                            {<FontAwesomeIcon icon={faPesoSign} className="m-4 bg-amber-100 px-2 py-4.5 rounded-full text-amber-700" />}
                                         </div>
                                     </div>
 
@@ -134,41 +136,48 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         </div>
                     </div>
 
-                    <div className="__top_items__ ">
-
+                    <div className="__monthlysales__ shadow-md w-full px-6 bg-white rounded-md pb-6 h-full">
+                            <div  className="__popular_items__ flex items-center justify-between py-6">
+                                <p className="text-lg font-semibold text-gray-500">Popular Items</p>
+                            </div>
+                            
+                                {PopularItems.map((res) => (
+                                <div key={res.item_id} className="flex justify-between  items-center pb-3">
+                                    <div className="flex gap-4 items-center">
+                                        {<FontAwesomeIcon icon={faCoffee} className="bg-amber-100 text-amber-600 px-3 py-2 rounded-sm" />}
+                                        <p>{res.product_name}</p>
+                                    </div>
+                                    <p className="font-semibold">{res.total_quantity} Sales</p>
+                                </div>
+                            ))}
                     </div>
                 </div>
             </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10 ml-80">
-            {yearData.map((result) => (
-            <div key={result.year} className="bg-white shadow rounded-lg p-6">
-                <h3 className="text-xl font-semibold text-gray-800">{result.year}</h3>
-                <p className="text-gray-600 mt-2">Total Orders: {result.total_orders}</p>
-                <p className="text-gray-600">Total Sales: ₱{result.total_sales}</p>
-            </div>
-            ))}
-        </div>
+            <div className=" ml-80 px-8">
+                <div className="bg-white rounded-lg w-full p-8 shadow-md">
+                    <div className="w-full  ">
+                        <h1>Recent Sales</h1>
 
-        {/* Monthly Breakdown */}
-        <div className="bg-white shadow rounded-lg p-6 ml-80">
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">Monthly Breakdown</h3>
-            {monthData.map((result, i) => (
-            <div key={`${result.year}-${result.month}`} className="mb-2">
-                {/* Show year heading only once */}
-                {(i === 0 || monthData[i - 1].year !== result.year) && (
-                <h4 className="text-lg font-bold mt-4 mb-2 text-amber-600">{result.year}</h4>
-                )}
-                <div className="flex justify-between border-b py-2 text-gray-700">
-                <span>
-                    {new Date(result.year, result.months - 1).toLocaleString("default", { month: "long" })}
-                </span>
-                <span>{result.total_orders} orders</span>
-                <span className="font-medium">₱{result.total_sales}</span>
+                        <div>
+                            {fetchSales.map((res) => (
+                                <div key={res.id} className="border-b-1 border-gray-200 flex items-center justify-between">
+                                    <p>Order #{res.id} </p>
+
+                                    <div >
+                                        <p>{res.total} </p>
+                                        <p>{res.order_time}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+
                 </div>
+                
             </div>
-            ))}
-        </div>
+
             </div>
 
         </div>

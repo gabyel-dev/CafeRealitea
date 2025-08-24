@@ -360,6 +360,49 @@ def daily():
         cursor.close()
         conn.close()
 
+#daily sales
+@auth_bp.route('/recent-sales', methods=['GET'])
+def daily():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    
+    try: 
+        cursor.execute('SELECT * FROM orders ORDER BY order_time DESC LIMIT 4;')
+        rows = cursor.fetchall()
+
+        
+        today = datetime.today().date()
+        result = []
+
+        for row in rows:
+
+            date = row['order_time'] if isinstance(row['order_time'], datetime) else datetime.strptime(str(row['order_time']), "%Y-%m-%d %H:%M:%S.%f")
+
+            if date.date() == today:
+                formatted = "Today / " + date.strftime("%I:%M %p")
+            elif date.date() == today - timedelta(days=1): 
+                formatted =  "Yesterday / " + date.strftime("%I:%M %p")
+            else: 
+                formatted = date.strftime("%b %d, %Y / %I:%M %p")
+
+            result.append({
+                "id": row['id'],
+                "order_type": row['order_type'],
+                "payment_method": row['payment_method'],
+                "total": row['total'],
+                "order_time": formatted
+            })
+
+        return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+    
+    finally:
+        cursor.close()
+        conn.close()
+
 #fetch users
 @auth_bp.route('/users_account', methods=['GET'])
 def users():
