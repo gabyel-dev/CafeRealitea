@@ -3,6 +3,7 @@ from Models.database import get_db_conn
 import json
 from utils.hash_passwords import hash_password, check_password
 from datetime import datetime, timedelta
+import pytz
 
 auth_bp = Blueprint('auth', __name__)
 
@@ -336,18 +337,18 @@ def daily():
             date = row['order_time'] if isinstance(row['order_time'], datetime) else datetime.strptime(str(row['order_time']), "%Y-%m-%d %H:%M:%S.%f")
 
             if date.date() == today:
-                formatted = "Today / " + date.strftime("%I:%M %p")
+                pht = "Today • " + date.astimezone(pytz.timezone('Asia/Manila')).strftime("%I:%M %p")
             elif date.date() == today - timedelta(days=1): 
-                formatted =  "Yesterday / " + date.strftime("%I:%M %p")
+                pht =  "Yesterday • " + date.astimezone(pytz.timezone('Asia/Manila')).strftime("%I:%M %p")
             else: 
-                formatted = date.strftime("%b %d, %Y / %I:%M %p")
+                pht = date.astimezone(pytz.timezone('Asia/Manila')).strftime("%b %d, %Y • %I:%M %p")
 
             result.append({
                 "id": row['id'],
                 "order_type": row['order_type'],
                 "payment_method": row['payment_method'],
                 "total": row['total'],
-                "order_time": formatted
+                "order_time": pht
             })
 
         return jsonify(result)
@@ -379,18 +380,18 @@ def recentSale():
             date = row['order_time'] if isinstance(row['order_time'], datetime) else datetime.strptime(str(row['order_time']), "%Y-%m-%d %H:%M:%S.%f")
 
             if date.date() == today:
-                formatted = "Today • " + date.strftime("%I:%M %p")
+                pht = "Today • " + date.astimezone(pytz.timezone('Asia/Manila')).strftime("%I:%M %p")
             elif date.date() == today - timedelta(days=1): 
-                formatted =  "Yesterday • " + date.strftime("%I:%M %p")
+                pht =  "Yesterday • " + date.astimezone(pytz.timezone('Asia/Manila')).strftime("%I:%M %p")
             else: 
-                formatted = date.strftime("%b %d, %Y • %I:%M %p")
+                pht = date.astimezone(pytz.timezone('Asia/Manila')).strftime("%b %d, %Y • %I:%M %p")
 
             result.append({
                 "id": row['id'],
                 "order_type": row['order_type'],
                 "payment_method": row['payment_method'],
                 "total": row['total'],
-                "order_time": formatted
+                "order_time": pht
             })
 
         return jsonify(result)
