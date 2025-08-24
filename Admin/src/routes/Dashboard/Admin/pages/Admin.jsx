@@ -5,6 +5,7 @@ import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MonthlyGraph from "../../../../components/DashboardGraphs/Admin/MonthlySales";
 import { faCoffee, faPesoSign, faStar } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
 
 export default function AdminDashboard({ activeTab, setActiveTab }) {
@@ -80,7 +81,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="h-screen flex bg-gray-50 ">
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="w-full h-screen text-gray-800">
 
@@ -154,18 +155,20 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 </div>
             </div>
 
-            <div className=" ml-80 px-8">
-                <div className="bg-white rounded-lg w-full p-8 shadow-md">
+            <div className=" ml-80 px-8 bg-gray-50 pb-8">
+                <div className="bg-white  rounded-lg w-full shadow-md">
                     <div className="w-full  ">
-                        <h1>Recent Sales</h1>
+                        <div className="border-b-1 border-gray-300 py-6 px-6">
+                            <h1>Recent Sales</h1>
+                        </div>
 
                         <div>
                             {fetchSales.map((res) => (
-                                <div key={res.id} className="border-b-1 border-gray-200 flex items-center justify-between">
-                                    <p>Order #{res.id} </p>
+                                <div key={res.id} className="border-b-1 border-gray-200 flex items-center justify-between px-6 py-3">
+                                    <p className="text-lg font-semibold">Order #{res.id} </p>
 
-                                    <div >
-                                        <p>{res.total} </p>
+                                    <div className="flex flex-col items-end" >
+                                        <p className="text-lg font-semibold">{res.total} </p>
                                         <p>{res.order_time}</p>
                                     </div>
                                 </div>
@@ -173,7 +176,9 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         </div>
                     </div>
 
-
+                    <div className="text-center py-4 text-amber-600 hover:text-amber-900 font-semibold">
+                        <Link to={"/Admin/sales"}> View all sales</Link>
+                    </div>
                 </div>
                 
             </div>

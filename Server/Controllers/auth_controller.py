@@ -379,11 +379,11 @@ def recentSale():
             date = row['order_time'] if isinstance(row['order_time'], datetime) else datetime.strptime(str(row['order_time']), "%Y-%m-%d %H:%M:%S.%f")
 
             if date.date() == today:
-                formatted = "Today / " + date.strftime("%I:%M %p")
+                formatted = "Today • " + date.strftime("%I:%M %p")
             elif date.date() == today - timedelta(days=1): 
-                formatted =  "Yesterday / " + date.strftime("%I:%M %p")
+                formatted =  "Yesterday • " + date.strftime("%I:%M %p")
             else: 
-                formatted = date.strftime("%b %d, %Y / %I:%M %p")
+                formatted = date.strftime("%b %d, %Y • %I:%M %p")
 
             result.append({
                 "id": row['id'],
