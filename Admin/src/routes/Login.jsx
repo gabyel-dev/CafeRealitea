@@ -40,8 +40,7 @@ export default function Login() {
                 }
             });
             
-            const role = res.data.user.role;
-            navigate(`/${role}/dashboard`);
+            navigate('/dashboard')
 
         } catch (err) {
             console.error("Login failed:", err);
@@ -67,7 +66,7 @@ export default function Login() {
         axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
              .then((res) => {
                 if (res.data.logged_in) {
-                    navigate(`/${res.data.user.role}/dashboard`)
+                    navigate(`/dashboard`)
                 }
              }).finally(() => setLoading(false))
         

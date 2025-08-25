@@ -24,38 +24,38 @@ const App = () => {
         />
 
         <Route 
-          path="/Admin/CreateAccount" 
+          path="/CreateAccount" 
           element={<Register activeTab={activeTab} setActiveTab={setActiveTab} />} 
         />
 
     {/* Admin Routes */}
       <Route 
-          path="/Admin/dashboard" 
+          path="/dashboard" 
           element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 
-          path="/Admin/sales" 
+          path="/sales" 
           element={<SalesHistory activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 
-          path="/Admin/orders" 
+          path="/orders" 
           element={<OrderManagementAdmin activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 
-          path="/Admin/UserManagement" 
+          path="/UserManagement" 
           element={<UsersManagement activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 
-          path="/Admin/UserManagement/:id" 
+          path="/UserManagement/:id" 
           element={<UserDetails activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 
-          path="/Admin/settings" 
+          path="/settings" 
           element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 

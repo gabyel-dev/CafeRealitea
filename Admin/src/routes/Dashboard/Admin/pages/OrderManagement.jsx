@@ -32,10 +32,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
                     return;
                 }
 
-                if (res.data.role !== 'Admin') {
-                    navigate(`/${res.data.role}/dashboard`);
-                    return;
-                }
+               
 
                 setUserData(res.data);
             })
@@ -49,12 +46,47 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
     }, [navigate]);
 
     if (loading) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-500"></div>
+    return (
+        <div className="flex flex-col justify-center items-center h-screen bg-amber-50">
+            {/* Coffee Icon */}
+            <div className="relative">
+                {/* Cup */}
+                <div className="w-16 h-12 border-4 border-amber-900 rounded-b-xl rounded-t-sm overflow-hidden">
+                    {/* Liquid Fill - Now fills from bottom up */}
+                    <div 
+                        className="absolute bottom-0 left-0 w-full bg-amber-700 transition-all duration-2000"
+                        style={{ 
+                            height: '0%',
+                            animation: 'coffeeFill 1.5s ease-in-out forwards',
+                            animationDelay: '0.3s'
+                        }}
+                    ></div>
+                </div>
+                
+                {/* Cup rim (to cover the top of the liquid) */}
+                <div className="absolute -top-0.5 -inset-x-0.5 h-1 bg-amber-900 rounded-t-sm"></div>
+                
+                {/* Plate */}
+                <div className="absolute -bottom-2 -inset-x-4 h-2 bg-amber-200 rounded-full"></div>
             </div>
-        );
-    }
+            
+            {/* Text */}
+            <p className="mt-6 text-amber-900 font-medium">Brewing your experience...</p>
+            
+            <style>
+                {`
+                @keyframes coffeeFill {
+                    0% { height: 0%; }
+                    20% { height: 20%; }
+                    50% { height: 50%; }
+                    80% { height: 80%; }
+                    100% { height: 85%; }
+                }
+                `}
+            </style>
+        </div>
+    );
+}
 
     return (
         <div className="bg-gray-50 flex">

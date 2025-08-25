@@ -25,7 +25,7 @@ export default function AccountCreation({ Message }) {
 
                 {/* Redirect Button */}
                 <Link 
-                    to={"/Admin/dashboard"} 
+                    to={"/dashboard"} 
                     className="inline-block w-full py-3 mt-4 text-white font-medium bg-amber-500 rounded-xl shadow-md hover:bg-amber-600 transition"
                 >
                     Go to Dashboard

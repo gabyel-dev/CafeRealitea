@@ -11,10 +11,11 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
     const [paymentFilter, setPaymentFilter] = useState('all');
     const [availableYears, setAvailableYears] = useState([]);
     const [availableMonths, setAvailableMonths] = useState([]);
+    const [orderTypeFilter, setOrderTypeFilter] = useState('all');
     const [filters, setFilters] = useState({
         year: 'all',
         month: 'all',
-        day: 'all'
+        
     });
 
     useEffect(() => {
@@ -51,13 +52,19 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
     }, []);
 
     useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/user')
-            .then((res) => {
-                if (res.data.logged_in) {
-                    navigate(`${res.data.user.role}/dashboard`)
-                }
-            })
-    }, []);
+  axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
+    .then((res) => {
+      const { logged_in, role } = res.data;
+
+      // Allow Admin and Super Admin roles
+      if (!logged_in ) {
+        navigate('/');
+      }
+
+    })
+    .catch(() => navigate('/'));
+}, []);
+
 
     // Apply all filters
     const applyFilters = () => {
@@ -66,6 +73,10 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
         // Apply payment method filter
         if (paymentFilter !== 'all') {
             result = result.filter(item => item.payment_method === paymentFilter);
+        }
+
+        if (orderTypeFilter !== 'all' ) {
+            result = result.filter(item => item.order_type === orderTypeFilter)
         }
         
         // Note: For year/month/day filtering, you would need to implement additional logic
@@ -89,6 +100,7 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
     // Reset all filters
     const resetFilters = () => {
         setPaymentFilter('all');
+        setOrderTypeFilter('all');
         setFilters({
             year: 'all',
             month: 'all',
@@ -164,19 +176,21 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                         </div>
                         
                         {/* Day Filter - This would need additional backend support */}
+                        {/* Order Type Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Day</label>
-                            <select
-                                name="day"
-                                value={filters.day}
-                                onChange={handleFilterChange}
-                                className="w-full p-2 border border-gray-300 rounded-md"
-                                disabled={filters.month === 'all' || filters.year === 'all'}
-                            >
-                                <option value="all">All Days</option>
-                                {/* Days would be populated based on selected year/month */}
-                            </select>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
+                        <select
+                            name="orderType"
+                            value={orderTypeFilter}
+                            onChange={(e) => setOrderTypeFilter(e.target.value)}
+                            className="w-full p-2 border border-gray-300 rounded-md"
+                        >
+                            <option value="all">All Orders</option>
+                            <option value="Dine-in">Dine-in</option>
+                            <option value="Delivery">Delivery</option>
+                        </select>
                         </div>
+
                         
                         {/* Payment Method Filter */}
                         <div>
