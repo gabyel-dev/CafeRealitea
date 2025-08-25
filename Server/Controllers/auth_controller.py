@@ -476,28 +476,38 @@ def top_items():
         cursor.close()
         conn.close()
 
-# Fetch User by ID
+import psycopg2.extras
+
 @auth_bp.route('/api/users/<int:id>', methods=['GET'])
 def user_details(id):
     conn = get_db_conn()
-    cursor = conn.cursor(dictionary=True)  # ✅ Important: return rows as dicts
+    cursor = conn.cursor()  # ✅ DictCursor for key-based access
 
     try:
         cursor.execute(
             'SELECT id, first_name, last_name, email, username, role FROM users_account WHERE id = %s',
             (id,)
         )
-        user = cursor.fetchone()  # only one row
+        user = cursor.fetchone()  # single row
 
-        if user:  
-            return jsonify(user)  # return directly as dict
+        if user:
+            user_details = {
+                "id": user["id"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"],
+                "email": user["email"],
+                "username": user["username"],
+                "role": user["role"]
+            }
+            return jsonify(user_details)
         else:
-            return jsonify({'error': 'User not found'}), 404
+            return jsonify({"error": "User not found"}), 404
 
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
+    
     finally:
         cursor.close()
         conn.close()
+
 

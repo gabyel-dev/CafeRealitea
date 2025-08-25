@@ -17,6 +17,7 @@ export default function UserDetails() {
         <>
         <div>
             USER ID: {id}
+            {userDetails.first_name}
         </div>
         </>
     )
