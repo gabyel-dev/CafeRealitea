@@ -476,8 +476,6 @@ def top_items():
         cursor.close()
         conn.close()
 
-import psycopg2.extras
-
 @auth_bp.route('/api/users/<int:id>', methods=['GET'])
 def user_details(id):
     conn = get_db_conn()
