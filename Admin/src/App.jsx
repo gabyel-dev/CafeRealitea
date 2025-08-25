@@ -9,6 +9,7 @@ import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff";
 import { useState } from "react";
 import NotFound from "./routes/NotFound";
 import UsersManagement from "./routes/Dashboard/Admin/pages/UsersManagement";
+import UserDetails from "./routes/Dashboard/Admin/pages/UserDetails";
 
 
 const App = () => {
@@ -46,6 +47,11 @@ const App = () => {
       <Route 
           path="/Admin/UserManagement" 
           element={<UsersManagement activeTab={activeTab} setActiveTab={setActiveTab} />} 
+      />
+
+      <Route 
+          path="/Admin/UserManagement/:id" 
+          element={<UserDetails activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
       <Route 

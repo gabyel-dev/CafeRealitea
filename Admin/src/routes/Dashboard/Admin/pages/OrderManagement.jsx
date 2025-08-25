@@ -60,14 +60,14 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
         <div className="bg-gray-50 flex">
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="w-full h-screen text-gray-800">
-                <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-80">
+                <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-65">
                     <div className="w-full">
                         <h1 className="text-3xl font-bold">Order Management</h1>
                         Create and manage customer orders
                     </div>
                 </main>
 
-                <div className="flex flex-row px-8 gap-6 ml-80 pb-8 bg-gray-50">
+                <div className="flex flex-row px-8 gap-6 ml-65 pb-8 bg-gray-50">
                     <CreateOrder categories={categories} setItemsAdded={setItemsAdded} itemsAdded={itemsAdded} />
                     <OrderSummary itemsAdded={itemsAdded} />
                 </div>

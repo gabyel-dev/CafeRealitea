@@ -33,7 +33,7 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
 
     return (
         <>
-        <div className="__sidePanel__ w-80  h-screen flex flex-col justify-between bg-amber-800 fixed">
+        <div className="__sidePanel__ w-65  h-screen flex flex-col justify-between bg-amber-800 fixed">
             
 
             <div className='flex flex-col'>

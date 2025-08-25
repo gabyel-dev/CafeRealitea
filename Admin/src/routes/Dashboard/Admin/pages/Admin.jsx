@@ -85,7 +85,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="w-full h-screen text-gray-800">
 
-            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-80">
+            <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-65">
                     <div className="w-full">
                         <h1 className="text-3xl font-bold">
                             Dashboard Overview
@@ -98,7 +98,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
 
             </main>
 
-            <div className="ml-80 flex gap-6 px-8 mb-10">
+            <div className="ml-65 flex gap-6 px-8 mb-10">
                 <div className="__profit__ w-full shadow-md bg-white rounded-lg">
                         <div>
                             <MonthlyGraph nameOfData={"This Month Sales"} valOfData={"2000"} />
@@ -155,7 +155,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 </div>
             </div>
 
-            <div className=" ml-80 px-8 bg-gray-50 pb-8">
+            <div className=" ml-65 px-8 bg-gray-50 pb-8">
                 <div className="bg-white  rounded-lg w-full shadow-md">
                     <div className="w-full  ">
                         <div className="border-b-1 border-gray-300 py-6 px-6">

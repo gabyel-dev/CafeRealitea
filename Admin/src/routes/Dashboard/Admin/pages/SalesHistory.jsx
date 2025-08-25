@@ -114,7 +114,7 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
     return (
         <>
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
-            <div className="ml-80 py-6 px-8 bg-gray-50 min-h-screen">
+            <div className="ml-65 py-6 px-8 bg-gray-50 min-h-screen">
                 <div className="w-full mb-6">
                     <h1 className="text-3xl font-bold">Sales History</h1>
                     <p className="text-gray-600">View and manage all sales records</p>

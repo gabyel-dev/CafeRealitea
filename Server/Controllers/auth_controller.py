@@ -476,3 +476,28 @@ def top_items():
         cursor.close()
         conn.close()
 
+# Fetch User by ID
+@auth_bp.route('/api/users/<int:id>', methods=['GET'])
+def user_details(id):
+    conn = get_db_conn()
+    cursor = conn.cursor(dictionary=True)  # ✅ Important: return rows as dicts
+
+    try:
+        cursor.execute(
+            'SELECT id, first_name, last_name, email, username, role FROM users_account WHERE id = %s',
+            (id,)
+        )
+        user = cursor.fetchone()  # only one row
+
+        if user:  
+            return jsonify(user)  # return directly as dict
+        else:
+            return jsonify({'error': 'User not found'}), 404
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
