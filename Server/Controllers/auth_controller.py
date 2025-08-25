@@ -27,14 +27,16 @@ def Login():
         
         # Access dictionary keys from RealDictCursor result
         db_id = user['id']           # adjust key name as per your column
-        db_name = user['first_name']
+        db_fname = user['first_name']
+        db_lname = user['last_name']
         db_email = user['email']
         db_user = user['username']
         role = user['role']
         
         session['user'] = {
             'id': db_id,
-            'name': db_name,
+            'first_name': db_fname,
+            'last_name': db_lname,
             'email': db_email,
             'username': db_user,
             'role': role

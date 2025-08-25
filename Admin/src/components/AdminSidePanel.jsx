@@ -21,6 +21,7 @@ const logo = <FontAwesomeIcon icon={faMugHot} className='text-amber-300 text-2xl
 export default function AdminSidePanel({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
     const [isStaff, setIsStaff] = useState();
+    const [userData, setUserData] = useState()
 
     const handleLogout = () => {
         axios.post('https://caferealitea.onrender.com/logout', {}, { withCredentials: true })
@@ -38,6 +39,8 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
                 .then((res) => {
                 const role = res.data.user?.role;
                 setIsStaff(role === "Staff"); // true if Staff
+                console.log(res.data);
+                
                 });
             }, []);
 
