@@ -11,6 +11,7 @@ export default function UserDetails() {
     const [userDetails, setUserDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [checkRole, setCheckRole] = useState()
 
     const location = useLocation();
     const query = new URLSearchParams(location.search);
@@ -23,6 +24,9 @@ export default function UserDetails() {
                     navigate('/');
                     return;
                 } 
+
+                setCheckRole(res.data)
+
             })
     }, []);
 
@@ -44,7 +48,9 @@ export default function UserDetails() {
             <AdminSidePanel />
 
             {showForm && (
-                <EditUser showForm={setShowForm} id={id} />
+                <EditUser showForm={setShowForm} id={id} onRoleUpdate={(newRole) => 
+                    setUserDetails((prev) => ({ ...prev, role: newRole }))
+                }  />
             )}
             
             <div className="flex-1 p-8 ml-65">
@@ -108,8 +114,10 @@ export default function UserDetails() {
                             
                             <div className="mt-8 flex space-x-4">
                                 <button 
+                                disabled={["Admin", "Staff"].includes(checkRole.role)}
                                 onClick={() => setShowForm(true)}
-                                className="px-4 py-2 bg-amber-800 text-white rounded-md hover:bg-amber-900 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2">
+                                className={`px-4 py-2  bg-amber-800 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 
+                                ${["Admin", "Staff"].includes(checkRole.role) ? "bg-gray-500" : "bg-amber-800"}`}>
                                     Edit User Role
                                 </button>
                                 <button className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-auto">
