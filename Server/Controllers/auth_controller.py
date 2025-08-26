@@ -5,6 +5,8 @@ from utils.hash_passwords import hash_password, check_password
 from datetime import datetime, timedelta
 import pytz
 
+ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
+
 auth_bp = Blueprint('auth', __name__)
 #login
 @auth_bp.route('/login', methods=['POST'])
@@ -69,6 +71,9 @@ def register():
     username = data.get('username')
     password = data.get('password')
     role = data.get('role')
+
+    if role not in ALLOWED_ROLES:
+            return jsonify({"error": "Invalid Role"}), 400
 
     if not all([first_name, last_name, email, username, password, role]):
         return jsonify({'error': 'All fields are required'}), 400
@@ -568,6 +573,7 @@ def order_details(id):
         conn.close()
 
 
+
 #change role 
 @auth_bp.route('/update_role', methods=['POST'])
 def change_role():
@@ -576,6 +582,9 @@ def change_role():
     role = data.get('role')
     conn = get_db_conn()
     cursor = conn.cursor()
+
+    if role not in ALLOWED_ROLES:
+            return jsonify({"error": "Invalid Role"}), 400
 
     try:
         cursor.execute("UPDATE users_account SET role = %s WHERE id = %s", (role, id))
