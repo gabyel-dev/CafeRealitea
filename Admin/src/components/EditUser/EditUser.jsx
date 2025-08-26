@@ -39,7 +39,7 @@ export default function EditUser({ showForm, id, onRoleUpdate}) {
                         <option value="">-- Select Role --</option>
                         <option value="Staff">Staff</option>
                         <option value="Admin">Admin</option>
-                        <option value="System Administrator">System Administrator</option>
+                        <option value="Super Admin">System Administrator</option>
                     </select>
                 </div>
                 
