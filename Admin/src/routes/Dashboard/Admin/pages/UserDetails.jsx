@@ -122,16 +122,16 @@ export default function UserDetails() {
                                 <button 
                                 disabled={["Admin", "Staff"].includes(checkRole?.role)}
                                 onClick={() => setShowForm(true)}
-                                className={`px-4 py-2  bg-amber-800 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 
+                                className={`px-4 py-2  bg-amber-800 cursor-pointer text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 
                                 ${["Admin", "Staff"].includes(checkRole?.role) ? "bg-gray-500" : "bg-amber-800"}`}>
                                     Edit User Role
                                 </button>
                                 <button 
                                 disabled={["Admin", "Staff"].includes(checkRole?.role)}
                                 onClick={() => setShowFormDelete(true)}
-                                className={`px-4 py-2 bg-red-100 text-red-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-auto
-                                ${["Admin", "Staff"].includes(checkRole?.role) ? "bg-gray-300 text-gray-500" : "bg-red-100 hover:bg-red-200"}`}>
-                                    Deactivate Account
+                                className={`px-4 cursor-pointer py-2 bg-red-500 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-auto
+                                ${["Admin", "Staff"].includes(checkRole?.role) ? "bg-gray-300 text-gray-500" : "bg-red-100 hover:bg-red-700"}`}>
+                                    Terminate Account
                             </button>
                             </div>
                         </div>

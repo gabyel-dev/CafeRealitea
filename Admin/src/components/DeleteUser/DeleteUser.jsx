@@ -6,6 +6,17 @@ export default function DeleteUser({ showForm, id, userDetails }) {
     const navigate = useNavigate();
     const [isDeleting, setIsDeleting] = useState(false); // Added loading state
 
+    useEffect(() => {
+        axios.get('https://caferealitea.onrender.com/user', {withCredentials: true})
+            .then((res) => {
+                if (!res.data.logged_in || res.data.role === "") {
+                    navigate('/');
+                    showForm(false)
+                    return;
+                } 
+            })
+    }, []);
+
     const handleDelete = async (e) => { // Made async for better error handling
         e.preventDefault();
         setIsDeleting(true);
@@ -51,7 +62,7 @@ export default function DeleteUser({ showForm, id, userDetails }) {
                         </div>
                         <div className="flex">
                             <span className="text-gray-600 w-24">Username:</span>
-                            <span className="font-medium">@{userDetails.username}</span> {/* Added @ symbol */}
+                            <span className="font-medium">{userDetails.username}</span> {/* Added @ symbol */}
                         </div>
                         <div className="flex">
                             <span className="text-gray-600 w-24">Email:</span>
@@ -68,14 +79,14 @@ export default function DeleteUser({ showForm, id, userDetails }) {
                     <button 
                         onClick={() => showForm(false)}
                         disabled={isDeleting} // Disable during deletion
-                        className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-5 py-2.5 text-sm cursor-pointer font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Cancel
                     </button>
                     <button 
                         onClick={handleDelete}
                         disabled={isDeleting} // Disable during deletion
-                        className="px-5 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                        className="px-5 cursor-pointer py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors duration-200 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                     >
                         {isDeleting ? (
                             <>
@@ -83,10 +94,10 @@ export default function DeleteUser({ showForm, id, userDetails }) {
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Deleting...
+                                Terminating...
                             </>
                         ) : (
-                            "Delete Account"
+                            "Terminate Account"
                         )}
                     </button>
                 </div>

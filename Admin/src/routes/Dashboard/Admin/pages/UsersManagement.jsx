@@ -66,7 +66,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     const getRoleIcon = (role) => {
         switch(role) {
             case "Admin": return faUserTie;
-            case "Super Admin": return faUserShield;
+            case "System Administrator": return faUserShield;
             default: return faUserTag;
         }
     };
@@ -74,7 +74,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     const getRoleColor = (role) => {
         switch(role) {
             case "Admin": return "bg-blue-100 text-blue-800";
-            case "Super Admin": return "bg-purple-900 text-blue-100";
+            case "System Administrator": return "bg-purple-900 text-blue-100";
             default: return "bg-gray-100 text-gray-800";
         }
     };
@@ -96,9 +96,9 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                     </div>
                     
                     <Link 
-                        to={["Super Admin"].includes(role) ? "/CreateAccount" : "#"}
+                        to={["System Administrator"].includes(role) ? "/CreateAccount" : "#"}
                         className={`text-white px-4 py-2 rounded-lg font-medium transition-colors
-                        ${["Super Admin"].includes(role)
+                        ${["System Administrator"].includes(role)
                                             ? "bg-amber-600 hover:bg-amber-700 text-white"
                                             : "bg-gray-400 cursor-not-allowed pointer-events-none"}`}
                     >
@@ -133,7 +133,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                                 <option value="all">All Roles</option>
                                 <option value="Staff">Staff</option>
                                 <option value="Admin">Admin</option>
-                                <option value="Super Admin">Super Admin</option>
+                                <option value="System Administrator">System Administrator</option>
                             </select>
                         </div>
                     </div>
@@ -177,13 +177,13 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                     
                     <div className="bg-white p-4 rounded-xl shadow border-l-4 border-blue-900">
                         <div className="flex justify-between items-center">
-                            <h3 className="text-gray-500">Super Admin</h3>
+                            <h3 className="text-gray-500">System Administrator</h3>
                             <div className="bg-blue-100 p-2 rounded-lg">
                                 <FontAwesomeIcon icon={faUserShield} className="text-blue-900" />
                             </div>
                         </div>
                         <p className="text-2xl font-bold mt-2">
-                            {users.filter(user => user.role === 'Super Admin').length} Super Admin
+                            {users.filter(user => user.role === 'System Administrator').length} System Administrator
                         </p>
                     </div>
                 </div>
@@ -235,14 +235,14 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
 
                                         {/* Right: View Button */}
                                         <Link
-                                        to={["Admin", "Super Admin" ].includes(role) ? `user?id=${user.id}&role=${user.role}` : "#"}
+                                        to={["Admin", "System Administrator"].includes(role) ? `user?id=${user.id}&role=${user.role}` : "#"}
                                         onClick={(e) => {
-                                            if (!["Admin", "Super Admin"].includes(role)) e.preventDefault(); // block staff
+                                            if (!["Admin", "System Administrator"].includes(role)) e.preventDefault(); // block staff
                                         }}
                                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors
-                                            ${["Admin", "Super Admin"].includes(role)
-                                            ? "bg-amber-600 hover:bg-amber-700 text-white"
-                                            : "bg-gray-400 cursor-not-allowed pointer-events-none"}
+                                            ${["Admin", "System Administrator"].includes(role)
+                                            ? "bg-amber-600 cursor-pointer   hover:bg-amber-700 text-white"
+                                            : "bg-gray-400 cursor-not-allowed text-white pointer-events-none"}
                                         `}
                                         >
                                         <span>View Details</span>
