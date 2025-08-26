@@ -5,6 +5,7 @@ import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CreateOrder from "./OrderManagementComponents/CreateOrder";
 import OrderSummary from "./OrderManagementComponents/OrderSummary";
+import { faListCheck } from "@fortawesome/free-solid-svg-icons";
 
 
 export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
@@ -92,12 +93,15 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
         <div className="bg-gray-50 flex">
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="w-full h-screen text-gray-800">
-                <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8 ml-65">
-                    <div className="w-full">
-                        <h1 className="text-3xl font-bold">Order Management</h1>
-                        Create and manage customer orders
-                    </div>
-                </main>
+                <div className="flex items-center mb-8 ml-65 px-8 pt-6">
+                                                        <div className="bg-amber-100 p-3 rounded-lg mr-4">
+                                                                <FontAwesomeIcon icon={faListCheck} className="text-amber-600 text-xl" />
+                                                            </div>
+                                                            <div>
+                                                                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Order Management</h1>
+                                                                <p className="text-gray-500">Create and manage customer orders</p>
+                                                            </div>
+                                                        </div>
 
                 <div className="flex flex-row px-8 gap-6 ml-65 pb-8 bg-gray-50">
                     <CreateOrder categories={categories} setItemsAdded={setItemsAdded} itemsAdded={itemsAdded} />

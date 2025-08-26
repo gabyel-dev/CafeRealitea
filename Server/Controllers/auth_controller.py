@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 import pytz
 
 auth_bp = Blueprint('auth', __name__)
-
+#login
 @auth_bp.route('/login', methods=['POST'])
 def Login():
     data = request.get_json()
@@ -111,6 +111,7 @@ def check_session():
         'role': session.get('user')['role'] if session.get('user') else None
     })
 
+#view items in orders
 @auth_bp.route('/items', methods=['GET'])
 def items():
         conn = get_db_conn()
@@ -144,8 +145,7 @@ def items():
 
         return jsonify(list(categories.values()))
 
-    
-
+#handle orders
 @auth_bp.route('/orders', methods=['POST'])
 def create_order(): 
     data = request.get_json()
@@ -264,7 +264,7 @@ def years():
         cursor.close()
         conn.close()
 
-
+#current month
 @auth_bp.route('/orders/current-month', methods=['GET'])
 def monthly():
     conn = get_db_conn()
@@ -363,7 +363,7 @@ def daily():
         cursor.close()
         conn.close()
 
-#daily sales
+#recent
 @auth_bp.route('/recent-sales', methods=['GET'])
 def recentSale():
     conn = get_db_conn()
@@ -435,6 +435,7 @@ def users():
         cursor.close()
         conn.close()
 
+#top items
 @auth_bp.route('/top_items', methods=['GET'])
 def top_items():
     conn = get_db_conn()
@@ -478,6 +479,7 @@ def top_items():
         cursor.close()
         conn.close()
 
+#fetch users
 @auth_bp.route('/api/users/<int:id>', methods=['GET'])
 def user_details(id):
     conn = get_db_conn()
@@ -510,4 +512,30 @@ def user_details(id):
         cursor.close()
         conn.close()
 
+#order details
+@auth_bp.route('/api/order/<int:id>', methods=['GET'])
+def order_details(id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
 
+    try:
+        cursor.execute('SELECT id, order_id, item_id, price', (id,))
+        row = cursor.fetchone()
+
+        if row:
+            order_details = {
+                "id": row['id'],
+                "order_id": row['order_id'],
+                "item_id": row['item_id'],
+                "price": row['price']
+            }
+            return jsonify(order_details)
+        else:
+            return jsonify({"error": "Order not found"}), 404
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        cursor.close()
+        conn.close()

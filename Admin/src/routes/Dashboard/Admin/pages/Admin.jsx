@@ -12,8 +12,6 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [yearData, setYearData] = useState([])
-    const [monthData, setMonthData] = useState([])
     const [currentMonthData, setCurrentMonthData] = useState([])
     const [PopularItems, setPopularItems] = useState([])
     const [fetchSales, setFetchSales] = useState([])
@@ -122,7 +120,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                             Dashboard Overview
                         </h1>
                         <p className="text-md text-gray-500">
-                             Welcome back, <b>{userData?.user?.name}</b>! Here's what's happening with Café Realitea today.
+                             Welcome back, <b>{userData?.user?.first_name}</b>! Here's what's happening with Café Realitea today.
                         </p>
                            
                     </div>

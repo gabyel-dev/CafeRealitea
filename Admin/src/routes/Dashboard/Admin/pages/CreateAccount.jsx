@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
-import { faEnvelope, faUser, faLock, faIdBadge, faEye, faEyeSlash, faShield } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope, faUser, faLock, faIdBadge, faEye, faEyeSlash, faShield, faUserPlus } from "@fortawesome/free-solid-svg-icons";
 import AccountCreation from "../../../../components/success/Message";
 import AdminSidePanel from "../../../../components/AdminSidePanel";
 
@@ -116,7 +116,7 @@ export default function Register({ activeTab, setActiveTab }) {
                     navigate("/");
                 } 
 
-                if (["Staff"].includes(res.data.role)) {
+                if (["Staff", "Admin"].includes(res.data.role)) {
                   navigate('/dashboard')
                 }
             })
@@ -181,16 +181,16 @@ export default function Register({ activeTab, setActiveTab }) {
                 />
             )}
             
-            <div className="flex-1 ml-0 lg:ml-64 transition-all duration-300">
-                <div className="w-full mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <div className="flex-1 ml-0 lg:ml-65 transition-all duration-300">
+                <div className="w-full mx-auto py-6 sm:px-6 lg:px-6">
                     {/* Header */}
                      <div className="flex items-center mb-8">
                                             <div className="bg-amber-100 p-3 rounded-lg mr-4">
-                                                <FontAwesomeIcon icon={faUser} className="text-amber-600 text-xl" />
+                                                <FontAwesomeIcon icon={faUserPlus} className="text-amber-600 text-xl" />
                                             </div>
                                             <div>
-                                                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Users Management</h1>
-                                                <p className="text-gray-500">Manage all user accounts and permissions</p>
+                                                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Create an Account</h1>
+                                                <p className="text-gray-500">Account Creation for Staff's</p>
                                             </div>
                                         </div>
 

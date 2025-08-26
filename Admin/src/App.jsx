@@ -5,11 +5,11 @@ import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin";
 import OrderManagementAdmin from "./routes/Dashboard/Admin/pages/OrderManagement";
 import SalesHistory from "./routes/Dashboard/Admin/pages/SalesHistory";
 
-import StaffDashboard from "./routes/Dashboard/Staff/pages/Staff";
 import { useState } from "react";
 import NotFound from "./routes/NotFound";
 import UsersManagement from "./routes/Dashboard/Admin/pages/UsersManagement";
 import UserDetails from "./routes/Dashboard/Admin/pages/UserDetails";
+import OrderDetails from "./routes/Dashboard/Admin/pages/OrderDetails";
 
 
 const App = () => {
@@ -55,16 +55,13 @@ const App = () => {
       />
 
       <Route 
-          path="/settings" 
-          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+          path="/sales/order/:id" 
+          element={<OrderDetails activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
-
-
-      {/* Staff Route */}
       <Route 
-          path="/Staff/dashboard" 
-          element={<StaffDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+          path="/settings" 
+          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
 

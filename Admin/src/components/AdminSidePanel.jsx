@@ -1,11 +1,11 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import {faClipboardList, faClockRotateLeft, faGauge, faMugHot, faUserGear, faUserPlus, faUsers} from '@fortawesome/free-solid-svg-icons';
+import {faClipboardList, faClockRotateLeft, faGauge, faMugHot, faUser, faUserGear, faUserPlus, faUsers} from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { faArrowRightFromBracket } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from 'react';
 
-const logout = <FontAwesomeIcon icon={faArrowRightFromBracket} className='text-amber-300 ' />
+const logout = <FontAwesomeIcon icon={faArrowRightFromBracket} className='text-amber-300 text-xl ' />
 
 
 const Dashboard = <FontAwesomeIcon icon={faGauge} className='text-amber-300 ' />
@@ -21,7 +21,7 @@ const logo = <FontAwesomeIcon icon={faMugHot} className='text-amber-300 text-2xl
 export default function AdminSidePanel({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
     const [isStaff, setIsStaff] = useState();
-    const [userData, setUserData] = useState()
+    const [userData, setUserData] = useState(null)
 
     const handleLogout = () => {
         axios.post('https://caferealitea.onrender.com/logout', {}, { withCredentials: true })
@@ -35,11 +35,11 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
 
 
             useEffect(() => {
-            axios.get('https://caferealitea.onrender.com/user')
+            axios.get('https://caferealitea.onrender.com/user', {withCredentials: true })
                 .then((res) => {
                 const role = res.data.user?.role;
-                setIsStaff(role === "Staff"); // true if Staff
-                console.log(res.data);
+                setIsStaff(role === "Staff" || role === "Admin"); // true if Staff
+                setUserData(res.data)
                 
                 });
             }, []);
@@ -80,7 +80,7 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
 
                 <div
                     className={`w-full h-10 flex items-center text-sm 
-                                ${!isStaff ? "text-amber-100 cursor-pointer hover:text-white hover:bg-amber-700/20" 
+                                ${!isStaff ? "text-amber-100 cursor-pointer hover:text-white hover:bg-amber-700/20"
                                             : "text-gray-400 cursor-not-allowed"} 
                                 ${activeTab === "AccountCreation" ? "bg-amber-700/20 rounded-md text-white" : ""} 
                                 gap-2 p-2 hover:border-0 hover:rounded-md`}
@@ -98,7 +98,7 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
 
                 <div className={`w-full h-10 flex items-center  text-sm text-amber-100 ${activeTab === "Admin" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2  hover:border-0  hover:rounded-md cursor-pointer`} onClick={() => { navigate('/settings'), setActiveTab("Admin")}}>
                     {Admin}
-                    <p className='font-semibold'>Admin Settings</p>
+                    <p className='font-semibold'>Settings</p>
                 </div>
 
                 
@@ -107,16 +107,38 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
             
             </div>
 
-            <div className='__Middle__ flex flex-col gap-1 px-4 py-4'>
+            <div>
+                
+
+            <div className='__bottom__ flex gap-2 items-center justify-between w-full border-t-1 border-amber-600/60 px-6 '>
+                <div className='flex  gap-2'>
+                    <div className='text-amber-700 bg-amber-100 rounded-full px-2 py-2 text-center   ' >
+                    {<FontAwesomeIcon icon={faUserGear} className='-translate-y-0.2 -translate-x-0.3 text-lg' /> }
+                </div>
+
+                <div className='text-amber-50 items-center -translate-y-0.5'>
+                    <p className='font-semibold'>
+                        {userData?.user?.first_name} {userData?.user?.last_name}
+                    </p>
+                    <p className='text-xs text-amber-200'>
+                        {userData?.user?.email}
+                    </p>
+                </div>
+                </div>
+
+                <div className='__Middle__ flex flex-col gap-1 px-4 py-4'>
                 <button
                         onClick={handleLogout}
-                        className='w-full h-10 flex items-center text-sm text-amber-100 font-semibold hover:text-white gap-2 p-2 hover:bg-amber-700/20 hover:border-0  hover:rounded-md cursor-pointer'
+                        className='h-10 flex items-center text-sm text-amber-100 font-semibold hover:text-white   hover:bg-amber-700/20 hover:border-0  hover:rounded-md cursor-pointer'
                         >
                         {logout}
-                        Logout
+            
                         
                 </button>
             </div>
+            </div>
+            </div>
+
         </div>
         </>
     )

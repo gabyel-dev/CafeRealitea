@@ -2,6 +2,9 @@ import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from "react-router-dom";
 
 export default function SalesHistory({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
@@ -107,11 +110,6 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
             day: 'all'
         });
         setFilteredData(dailySalesData);
-    };
-
-    // Format currency with peso sign
-    const formatCurrency = (amount) => {
-        return `₱${parseFloat(amount).toFixed(2)}`;
     };
 
     // Get month name from number
@@ -248,19 +246,25 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                         <div className="divide-y divide-gray-200">
                             {filteredData.map((sale) => (
-                                <div key={sale.id} className="p-6 hover:bg-gray-50">
+                                <div key={sale.id} className="p-6 hover:bg-amber-50 transition-all duration-200">
                                     <div className="flex justify-between items-center">
                                         <div className="flex-1">
                                             <div className="text-lg font-medium text-gray-900">
-                                                {sale.order_time} - {sale.payment_method} - {formatCurrency(sale.total)}
+                                                {sale.order_time}
                                             </div>
                                             <div className="mt-1 text-sm text-gray-500">
                                                 Order ID: #{sale.id} • {sale.order_type}
                                             </div>
                                         </div>
-                                        <button className="ml-4 px-3 py-1 bg-amber-100 text-amber-700 text-sm rounded-md hover:bg-amber-200 transition-colors">
-                                            Details
-                                        </button>
+
+                                        <Link
+                                        to={`order?#${sale.id}`}
+                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white
+                                        `}
+                                        >
+                                        <span>View Details</span>
+                                        <FontAwesomeIcon icon={faArrowRight} />
+                                        </Link>
                                     </div>
                                 </div>
                             ))}

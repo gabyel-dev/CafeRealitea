@@ -61,16 +61,16 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
 
     const getRoleIcon = (role) => {
         switch(role) {
-            case "admin": return faCrown;
-            case "manager": return faUserShield;
+            case "Admin": return faUserTie;
+            case "Super Admin": return faUserShield;
             default: return faUserTag;
         }
     };
 
     const getRoleColor = (role) => {
         switch(role) {
-            case "dmin": return "bg-purple-100 text-purple-800";
-            case "manager": return "bg-blue-100 text-blue-800";
+            case "Admin": return "bg-blue-100 text-blue-800";
+            case "Super Admin": return "bg-purple-900 text-blue-100";
             default: return "bg-gray-100 text-gray-800";
         }
     };
