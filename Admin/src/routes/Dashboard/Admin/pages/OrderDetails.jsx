@@ -12,14 +12,21 @@ import {
   faTag,
   faShoppingBasket
 } from "@fortawesome/free-solid-svg-icons";
+import { useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 export default function OrderDetails() {
-    const { id } = useParams();
     const [orderDetails, setOrderDetails] = useState({
         items: []
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const location = useLocation();
+    const query = new URLSearchParams(location.search);
+    const id = query.get('id');
+    const navigate = useNavigate()
+
 
     useEffect(() => {
         axios.get(`https://caferealitea.onrender.com/api/order/${id}`)
@@ -33,6 +40,19 @@ export default function OrderDetails() {
             console.error(err);
         });
     }, [id]);
+
+    useEffect(() => {
+        document.title = "Café Realitea - Order Details";
+
+        axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
+            .then((res) => {
+                if (!res.data.logged_in || res.data.role === "") {
+                    navigate('/');
+                    return;
+                }
+                setUserData(res.data);
+            })
+    }, []);
 
     if (loading) {
     return (

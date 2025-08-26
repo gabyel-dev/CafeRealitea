@@ -44,7 +44,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     }, [])
 
     useEffect(() => {
-        document.title = "Café Realitea - Admin Dashboard";
+        document.title = "Café Realitea - Dashboard";
         setLoading(true);
         
         axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
@@ -206,7 +206,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                     </div>
 
                     <div className="text-center py-4 text-amber-600 hover:text-amber-900 font-semibold">
-                        <Link to={"/Admin/sales"}> View all sales</Link>
+                        <Link to={"/sales"}> View all sales</Link>
                     </div>
                 </div>
                 

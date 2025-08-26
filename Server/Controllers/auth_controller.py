@@ -566,3 +566,26 @@ def order_details(id):
     finally:
         cursor.close()
         conn.close()
+
+
+#change role 
+@auth_bp.route('/update_role', methods=['POST'])
+def change_role():
+    data = request.get_json()
+    id = data.get('id')
+    role = data.get('role')
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("UPDATE users_account SET role = %s WHERE id = %s", (role, id))
+        conn.commit()
+
+        return jsonify({"message": "Role updated successfully"})
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        cursor.close()
+        conn.close()

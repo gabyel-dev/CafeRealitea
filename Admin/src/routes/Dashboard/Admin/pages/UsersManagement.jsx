@@ -5,6 +5,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUsers, faUser, faArrowRight, faSearch, faCrown, faUserShield, faUserTag, faUserTie } from "@fortawesome/free-solid-svg-icons";
 
+
 export default function UsersManagement({ activeTab, setActiveTab }) {
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
@@ -12,6 +13,8 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     const [roleFilter, setRoleFilter] = useState("all");
     const [role, setRole] = useState("")
     const navigate = useNavigate();
+
+    
 
     // Check session/role
     useEffect(() => {
@@ -30,6 +33,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
 
     // Fetch all users
     useEffect(() => {
+        document.title = "Café Realitea - User Management";
         axios.get('https://caferealitea.onrender.com/users_account', { withCredentials: true })
             .then((res) => {
                 setUsers(res.data);
@@ -231,7 +235,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
 
                                         {/* Right: View Button */}
                                         <Link
-                                        to={["Admin", "Super Admin" ].includes(role) ? `/UserManagement/${user.id}` : "#"}
+                                        to={["Admin", "Super Admin" ].includes(role) ? `user?id=${user.id}&role=${user.role}` : "#"}
                                         onClick={(e) => {
                                             if (!["Admin", "Super Admin"].includes(role)) e.preventDefault(); // block staff
                                         }}
