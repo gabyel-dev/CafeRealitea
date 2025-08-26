@@ -6,11 +6,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import EditUser from "../../../../components/EditUser/EditUser";
+import DeleteUser from "../../../../components/DeleteUser/DeleteUser";
 
 export default function UserDetails() {
     const [userDetails, setUserDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
+    const [showFormDelete, setShowFormDelete] = useState(false);
     const [checkRole, setCheckRole] = useState(null)
 
     const location = useLocation();
@@ -51,6 +53,10 @@ export default function UserDetails() {
                 <EditUser showForm={setShowForm} id={id} onRoleUpdate={(newRole) => 
                     setUserDetails((prev) => ({ ...prev, role: newRole }))
                 }  />
+            )}
+
+            {showFormDelete && (
+                <DeleteUser showForm={setShowFormDelete} id={id} userDetails={userDetails} />
             )}
             
             <div className="flex-1 p-8 ml-65">
@@ -120,9 +126,13 @@ export default function UserDetails() {
                                 ${["Admin", "Staff"].includes(checkRole?.role) ? "bg-gray-500" : "bg-amber-800"}`}>
                                     Edit User Role
                                 </button>
-                                <button className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-auto">
+                                <button 
+                                disabled={["Admin", "Staff"].includes(checkRole?.role)}
+                                onClick={() => setShowFormDelete(true)}
+                                className={`px-4 py-2 bg-red-100 text-red-700 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-auto
+                                ${["Admin", "Staff"].includes(checkRole?.role) ? "bg-gray-300 text-gray-500" : "bg-red-100 hover:bg-red-200"}`}>
                                     Deactivate Account
-                                </button>
+                            </button>
                             </div>
                         </div>
                     </div>

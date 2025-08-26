@@ -589,3 +589,41 @@ def change_role():
     finally:
         cursor.close()
         conn.close()
+
+@auth_bp.route('/delete/<int:id>', methods=['POST'])
+def delete_user(id):
+    # Add authentication/authorization check
+    if not session.get('user_id'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    # Optional: Check if user has admin privileges
+    # if session.get('role') != 'admin':
+    #     return jsonify({'error': 'Insufficient permissions'}), 403
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        # First check if user exists
+        cursor.execute('SELECT id FROM users_account WHERE id = %s', (id,))
+        user = cursor.fetchone()
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+
+        # Then delete
+        cursor.execute('DELETE FROM users_account WHERE id = %s', (id,))
+        conn.commit()
+    
+        return jsonify({"message": "User Deleted Successfully"}), 200
+    
+    except Exception as e:
+        conn.rollback()  # Rollback on error
+        return jsonify({'error': str(e)}), 500
+    
+    finally:
+        cursor.close()
+        conn.close()
+
+
+        
