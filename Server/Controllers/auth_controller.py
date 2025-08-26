@@ -592,10 +592,6 @@ def change_role():
 
 @auth_bp.route('/delete/<int:id>', methods=['POST'])
 def delete_user(id):
-    # Add authentication/authorization check
-    if not session.get('user_id'):
-        return jsonify({'error': 'Unauthorized'}), 401
-    
     # Optional: Check if user has admin privileges
     # if session.get('role') != 'admin':
     #     return jsonify({'error': 'Insufficient permissions'}), 403
