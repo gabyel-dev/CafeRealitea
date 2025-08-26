@@ -258,7 +258,7 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                                         </div>
 
                                         <Link
-                                        to={`order?#${sale.id}`}
+                                        to={`order/${sale.id}`}
                                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white
                                         `}
                                         >

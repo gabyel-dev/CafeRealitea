@@ -519,7 +519,7 @@ def order_details(id):
     cursor = conn.cursor()
 
     try:
-        cursor.execute('SELECT id, order_id, item_id, price', (id,))
+        cursor.execute('SELECT id, order_id, item_id, price WHERE id = %s', (id,))
         row = cursor.fetchone()
 
         if row:
