@@ -11,7 +11,7 @@ export default function UserDetails() {
     const [userDetails, setUserDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
-    const [checkRole, setCheckRole] = useState()
+    const [checkRole, setCheckRole] = useState(null)
 
     const location = useLocation();
     const query = new URLSearchParams(location.search);
@@ -105,7 +105,7 @@ export default function UserDetails() {
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600">Role</label>
                                             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mt-1 ${userDetails.role === 'admin' ? 'bg-purple-100 text-purple-800' : 'bg-green-100 text-green-800'}`}>
-                                                {userDetails.role || 'N/A'}
+                                                {userDetails?.role || 'N/A'}
                                             </span>
                                         </div>
                                     </div>
@@ -114,10 +114,10 @@ export default function UserDetails() {
                             
                             <div className="mt-8 flex space-x-4">
                                 <button 
-                                disabled={["Admin", "Staff"].includes(checkRole.role)}
+                                disabled={["Admin", "Staff"].includes(checkRole?.role)}
                                 onClick={() => setShowForm(true)}
                                 className={`px-4 py-2  bg-amber-800 text-white rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 
-                                ${["Admin", "Staff"].includes(checkRole.role) ? "bg-gray-500" : "bg-amber-800"}`}>
+                                ${["Admin", "Staff"].includes(checkRole?.role) ? "bg-gray-500" : "bg-amber-800"}`}>
                                     Edit User Role
                                 </button>
                                 <button className="px-4 py-2 bg-red-100 text-red-700 rounded-md hover:bg-red-200 transition-colors focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 ml-auto">

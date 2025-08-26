@@ -51,7 +51,7 @@ const App = () => {
 
       <Route 
           path="/UserManagement/user/" 
-          element={<UserDetails activeTab={activeTab} setActiveTab={setActiveTab} />} 
+          element={<UserDetails />} 
       />
 
       <Route 
