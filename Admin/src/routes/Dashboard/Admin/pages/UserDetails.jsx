@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import AdminSidePanel from "../../../../components/AdminSidePanel";
@@ -9,6 +9,7 @@ import EditUser from "../../../../components/EditUser/EditUser";
 import DeleteUser from "../../../../components/DeleteUser/DeleteUser";
 
 export default function UserDetails() {
+    const navigate = useNavigate()
     const [userDetails, setUserDetails] = useState({});
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
@@ -22,7 +23,7 @@ export default function UserDetails() {
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/user', {withCredentials: true})
             .then((res) => {
-                if (!res.data.logged_in || res.data.role === "") {
+                if (!res.data.logged_in || res.data.role === "Staff") {
                     navigate('/');
                     return;
                 } 
