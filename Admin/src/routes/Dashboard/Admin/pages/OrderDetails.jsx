@@ -123,7 +123,7 @@ export default function OrderDetails() {
                 </div>
 
                 {/* Order Summary Card */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-amber-50">
+                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                         <div className="flex items-center">
                             <div className="bg-amber-100 p-3 rounded-full mr-4">
@@ -179,7 +179,7 @@ export default function OrderDetails() {
                 </div>
 
                 {/* Order Items */}
-                <div className="bg-white rounded-xl shadow-md p-6 border border-amber-50">
+                <div className="bg-white rounded-xl shadow-md p-6  ">
                     <div className="flex items-center mb-6">
                         <div className="bg-amber-100 p-2 rounded-full mr-3">
                             <FontAwesomeIcon icon={faShoppingBasket} className="text-amber-600" />

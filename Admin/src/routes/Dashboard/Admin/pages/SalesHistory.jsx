@@ -18,11 +18,9 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
     const [filters, setFilters] = useState({
         year: 'all',
         month: 'all',
-        
     });
 
     useEffect(() => {
-        // Fetch sales data
         axios.get('https://caferealitea.onrender.com/daily-sales')
             .then((res) => {
                 setDailySalesData(res.data);
@@ -34,7 +32,6 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                 setLoading(false);
             });
 
-        // Fetch available years
         axios.get('https://caferealitea.onrender.com/orders/year')
             .then((res) => {
                 const years = res.data.map(item => item.year);
@@ -44,7 +41,6 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                 console.error("Error fetching years:", error);
             });
 
-        // Fetch available months
         axios.get('https://caferealitea.onrender.com/orders/months')
             .then((res) => {
                 setAvailableMonths(res.data);
@@ -56,43 +52,27 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
 
     useEffect(() => {
         document.title = "Café Realitea - Sales History";
-  axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
-    .then((res) => {
-      const { logged_in, role } = res.data;
+        axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
+            .then((res) => {
+                const { logged_in } = res.data;
+                if (!logged_in) {
+                    navigate('/');
+                }
+            })
+            .catch(() => navigate('/'));
+    }, []);
 
-      // Allow Admin and Super Admin roles
-      if (!logged_in ) {
-        navigate('/');
-      }
-
-    })
-    .catch(() => navigate('/'));
-}, []);
-
-
-    // Apply all filters
     const applyFilters = () => {
         let result = dailySalesData;
-        
-        // Apply payment method filter
         if (paymentFilter !== 'all') {
             result = result.filter(item => item.payment_method === paymentFilter);
         }
-
-        if (orderTypeFilter !== 'all' ) {
-            result = result.filter(item => item.order_type === orderTypeFilter)
+        if (orderTypeFilter !== 'all') {
+            result = result.filter(item => item.order_type === orderTypeFilter);
         }
-        
-        // Note: For year/month/day filtering, you would need to implement additional logic
-        // since your current backend endpoint doesn't support filtering by these parameters
-        // You would either need to:
-        // 1. Create a new backend endpoint that accepts year/month/day parameters
-        // 2. Or implement the filtering on the frontend if you have the raw date data
-        
         setFilteredData(result);
     };
 
-    // Handle filter changes
     const handleFilterChange = (e) => {
         const { name, value } = e.target;
         setFilters(prev => ({
@@ -101,7 +81,6 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
         }));
     };
 
-    // Reset all filters
     const resetFilters = () => {
         setPaymentFilter('all');
         setOrderTypeFilter('all');
@@ -113,7 +92,6 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
         setFilteredData(dailySalesData);
     };
 
-    // Get month name from number
     const getMonthName = (monthNumber) => {
         const months = [
             'January', 'February', 'March', 'April', 'May', 'June',
@@ -125,25 +103,33 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
     return (
         <>
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
-            <div className="ml-65 py-6 px-8 bg-gray-50 min-h-screen">
+            <div className="lg:ml-65 pt-18 lg:pt-6 py-6 lg:px-8 px-4 bg-gray-50 min-h-screen">
                 <div className="w-full mb-6">
-                    <h1 className="text-3xl font-bold">Sales History</h1>
-                    <p className="text-gray-600">View and manage all sales records</p>
+                    <h1 className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-bold">
+                        Sales History
+                    </h1>
+                    <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-600">
+                        View and manage all sales records
+                    </p>
                 </div>
 
                 {/* Filters Section */}
                 <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                    <h2 className="text-xl font-semibold mb-4">Filters</h2>
+                    <h2 className="text-base sm:text-lg md:text-xl lg:text-xl font-semibold mb-4">
+                        Filters
+                    </h2>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                         {/* Year Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <label className="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1">
+                                Year
+                            </label>
                             <select
                                 name="year"
                                 value={filters.year}
                                 onChange={handleFilterChange}
-                                className="w-full p-2 border border-gray-300 rounded-md"
+                                className="w-full p-2 border border-gray-300 rounded-md text-xs sm:text-sm md:text-base"
                             >
                                 <option value="all">All Years</option>
                                 {availableYears.map(year => (
@@ -154,12 +140,14 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                         
                         {/* Month Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Month</label>
+                            <label className="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1">
+                                Month
+                            </label>
                             <select
                                 name="month"
                                 value={filters.month}
                                 onChange={handleFilterChange}
-                                className="w-full p-2 border border-gray-300 rounded-md"
+                                className="w-full p-2 border border-gray-300 rounded-md text-xs sm:text-sm md:text-base"
                                 disabled={filters.year === 'all'}
                             >
                                 <option value="all">All Months</option>
@@ -173,32 +161,34 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                                 }
                             </select>
                         </div>
-                        
-                        {/* Day Filter - This would need additional backend support */}
+
                         {/* Order Type Filter */}
                         <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Order Type</label>
-                        <select
-                            name="orderType"
-                            value={orderTypeFilter}
-                            onChange={(e) => setOrderTypeFilter(e.target.value)}
-                            className="w-full p-2 border border-gray-300 rounded-md"
-                        >
-                            <option value="all">All Orders</option>
-                            <option value="Dine-in">Dine-in</option>
-                            <option value="Delivery">Delivery</option>
-                        </select>
+                            <label className="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1">
+                                Order Type
+                            </label>
+                            <select
+                                name="orderType"
+                                value={orderTypeFilter}
+                                onChange={(e) => setOrderTypeFilter(e.target.value)}
+                                className="w-full p-2 border border-gray-300 rounded-md text-xs sm:text-sm md:text-base"
+                            >
+                                <option value="all">All Orders</option>
+                                <option value="Dine-in">Dine-in</option>
+                                <option value="Delivery">Delivery</option>
+                            </select>
                         </div>
 
-                        
                         {/* Payment Method Filter */}
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method</label>
+                            <label className="block text-xs sm:text-sm md:text-base font-medium text-gray-700 mb-1">
+                                Payment Method
+                            </label>
                             <select
                                 name="paymentMethod"
                                 value={paymentFilter}
                                 onChange={(e) => setPaymentFilter(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-md"
+                                className="w-full p-2 border border-gray-300 rounded-md text-xs sm:text-sm md:text-base"
                             >
                                 <option value="all">All Methods</option>
                                 <option value="Cash">Cash</option>
@@ -210,13 +200,13 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                     <div className="flex justify-end space-x-2">
                         <button
                             onClick={resetFilters}
-                            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
+                            className="px-3 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm md:text-base bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-colors"
                         >
                             Reset All
                         </button>
                         <button
                             onClick={applyFilters}
-                            className="px-4 py-2 bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
+                            className="px-3 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm md:text-base bg-amber-600 text-white rounded-md hover:bg-amber-700 transition-colors"
                         >
                             Apply Filters
                         </button>
@@ -225,7 +215,7 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
 
                 {/* Results Count */}
                 <div className="mb-4 flex justify-between items-center">
-                    <p className="text-gray-600">
+                    <p className="text-xs sm:text-sm md:text-base lg:text-base text-gray-600">
                         Showing {filteredData.length} of {dailySalesData.length} records
                     </p>
                 </div>
@@ -240,8 +230,12 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                         <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m0 0V9m0 8h6m-6 0H7m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        <h3 className="mt-2 text-lg font-medium text-gray-900">No sales records found</h3>
-                        <p className="mt-1 text-gray-500">Try adjusting your filters.</p>
+                        <h3 className="mt-2 text-base sm:text-lg md:text-xl lg:text-lg font-medium text-gray-900">
+                            No sales records found
+                        </h3>
+                        <p className="mt-1 text-xs sm:text-sm md:text-base text-gray-500">
+                            Try adjusting your filters.
+                        </p>
                     </div>
                 ) : (
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
@@ -250,21 +244,20 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                                 <div key={sale.id} className="p-6 hover:bg-amber-50 transition-all duration-200">
                                     <div className="flex justify-between items-center">
                                         <div className="flex-1">
-                                            <div className="text-lg font-medium text-gray-900">
+                                            <div className="text-sm sm:text-base md:text-lg lg:text-lg font-medium text-gray-900">
                                                 {sale.order_time}
                                             </div>
-                                            <div className="mt-1 text-sm text-gray-500">
+                                            <div className="mt-1 text-xs sm:text-sm md:text-base text-gray-500">
                                                 Order ID: #{sale.id} • {sale.order_type}
                                             </div>
                                         </div>
 
                                         <Link
-                                        to={`order?id=${sale.id}`}
-                                        className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white
-                                        `}
+                                            to={`order?id=${sale.id}`}
+                                            className="flex items-center space-x-2 px-3 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm md:text-base rounded-lg font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white"
                                         >
-                                        <span>View Details</span>
-                                        <FontAwesomeIcon icon={faArrowRight} />
+                                            <span>View Details</span>
+                                            <FontAwesomeIcon icon={faArrowRight} className="text-xs sm:text-sm md:text-base" />
                                         </Link>
                                     </div>
                                 </div>
