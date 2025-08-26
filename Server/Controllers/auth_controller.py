@@ -512,7 +512,7 @@ def user_details(id):
         cursor.close()
         conn.close()
 
-#order details
+
 @auth_bp.route('/api/order/<int:id>', methods=['GET'])
 def order_details(id):
     conn = get_db_conn()
@@ -520,36 +520,35 @@ def order_details(id):
 
     try:
         cursor.execute("""
-                    SELECT 
-                        o.id AS order_id,
-                        o.customer_name,
-                        o.order_type,
-                        o.payment_method,
-                        o.total,
-                        i.name AS item_name,
-                        oi.quantity,
-                        oi.price,
-                        (oi.quantity * oi.price) AS subtotal
-                    FROM orders o
-                    JOIN order_items oi ON o.id = oi.order_id
-                    JOIN itemss i ON oi.item_id = i.id
-                    WHERE o.id = %s;
-                    """, (id,))
+            SELECT 
+                o.id AS order_id,
+                o.customer_name,
+                o.order_type,
+                o.payment_method,
+                o.total,
+                i.name AS item_name,
+                oi.quantity,
+                oi.price,
+                (oi.quantity * oi.price) AS subtotal
+            FROM orders o
+            JOIN order_items oi ON o.id = oi.order_id
+            JOIN itemss i ON oi.item_id = i.id
+            WHERE o.id = %s;
+        """, (id,))
         
-        row = cursor.fetchall()
+        rows = cursor.fetchall()
 
-
-        if row:
+        if rows:
             order_details = {
-                "order_id": row['id'],
-                "customer_name": row['customer_name'],
-                "order_type": row['order_type'],
-                "payment_method": row['payment_method'],
-                "order_type": row['order_type'],
+                "order_id": rows[0]["order_id"],
+                "customer_name": rows[0]["customer_name"],
+                "order_type": rows[0]["order_type"],
+                "payment_method": rows[0]["payment_method"],
+                "total": float(rows[0]["total"]),
                 "items": []
             }
 
-            for r in row:
+            for r in rows:
                 order_details['items'].append({
                     "name": r["item_name"],
                     "quantity": r["quantity"],
