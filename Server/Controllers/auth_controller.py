@@ -519,16 +519,44 @@ def order_details(id):
     cursor = conn.cursor()
 
     try:
-        cursor.execute('SELECT id, order_id, item_id, price FROM order_items WHERE id = %s', (id,))
-        row = cursor.fetchone()
+        cursor.execute("""
+                    SELECT 
+                        o.id AS order_id,
+                        o.customer_name,
+                        o.order_type,
+                        o.payment_method,
+                        o.total,
+                        i.name AS item_name,
+                        oi.quantity,
+                        oi.price,
+                        (oi.quantity * oi.price) AS subtotal
+                    FROM orders o
+                    JOIN order_items oi ON o.id = oi.order_id
+                    JOIN itemss i ON oi.item_id = i.id
+                    WHERE o.id = %s;
+                    """, (id,))
+        
+        row = cursor.fetchall()
+
 
         if row:
             order_details = {
-                "id": row['id'],
-                "order_id": row['order_id'],
-                "item_id": row['item_id'],
-                "price": row['price']
+                "order_id": row['id'],
+                "customer_name": row['customer_name'],
+                "order_type": row['order_type'],
+                "payment_method": row['payment_method'],
+                "order_type": row['order_type'],
+                "items": []
             }
+
+            for r in row:
+                order_details['items'].append({
+                    "name": r["item_name"],
+                    "quantity": r["quantity"],
+                    "price": float(r["price"]),
+                    "subtotal": float(r["subtotal"])
+                })
+
             return jsonify(order_details)
         else:
             return jsonify({"error": "Order not found"}), 404

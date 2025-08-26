@@ -26,7 +26,7 @@ export default function OrderDetails() {
     return (
         <>
         <div>
-
+            {OrderDetails.item_id}
         </div>
         </>
     )
