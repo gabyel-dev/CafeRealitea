@@ -7,6 +7,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import UserDetails from '../routes/Dashboard/Admin/pages/UserDetails';
 
 // Icon assignments
 const DashboardIcon = <FontAwesomeIcon icon={faGauge} className='text-amber-300' />;
@@ -104,7 +105,7 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
             <MobileNavItem 
               icon={AdminIcon} 
               label="Settings" 
-              onClick={() => { navigate('/settings'); setActiveTab("Admin"); setMobileMenuOpen(false); }}
+              onClick={() => { navigate(`/settings/user?=${userData.user?.id}&active=${userData.logged_in}`); setActiveTab("Admin"); setMobileMenuOpen(false); }}
               isActive={activeTab === "Admin"}
             />
 

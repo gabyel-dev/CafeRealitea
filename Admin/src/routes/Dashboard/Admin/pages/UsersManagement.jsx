@@ -3,7 +3,9 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUsers, faUser, faArrowRight, faSearch, faCrown, faUserShield, faUserTag, faUserTie, faHamburger, faBars } from "@fortawesome/free-solid-svg-icons";
+import { faUsers, faUser, faArrowRight, faSearch, faCrown, faUserShield, faUserTag, faUserTie, faHamburger, faBars, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { motion, AnimatePresence } from "framer-motion";
+
 
 
 export default function UsersManagement({ activeTab, setActiveTab }) {
@@ -74,7 +76,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     const getRoleColor = (role) => {
         switch(role) {
             case "Admin": return "bg-blue-100 text-blue-800";
-            case "System Administrator": return "bg-purple-900 text-blue-100";
+            case "System Administrator": return "bg-blue-100 text-blue-900";
             default: return "bg-gray-100 text-gray-800";
         }
     };
@@ -84,7 +86,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
            <div className="min-h-screen lg:ml-65 p-4 md:p-5 lg:p-6 bg-gray-50">
   {/* Page Header */}
-  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 pt-16 lg:pt-0">
+  <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-3 pt-16 lg:pt-0">
     <div className="flex items-center mb-4 md:mb-0">
       <div className="bg-amber-100 p-3 rounded-lg mr-4">
         <FontAwesomeIcon icon={faUsers} className="text-amber-600 text-lg sm:text-xl md:text-2xl" />
@@ -102,7 +104,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     <Link
       to={["System Administrator"].includes(role) ? "/CreateAccount" : "#"}
       className={`text-white px-3 sm:px-4 py-1.5 sm:py-2 md:py-2.5 rounded-lg font-medium transition-colors
-        text-xs sm:text-sm md:text-base
+        text-xs sm:text-sm md:text-base hidden md:block
         ${
           ["System Administrator"].includes(role)
             ? "bg-amber-600 hover:bg-amber-700 text-white"
@@ -114,6 +116,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
   </div>
 
   {/* Filters and Search */}
+  <div className="flex flex-col-reverse md:flex-col">
   <div className="bg-white p-3 sm:p-4 rounded-xl shadow mb-6">
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="md:col-span-2">
@@ -147,52 +150,83 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
   </div>
 
   {/* Stats Overview */}
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-    <div className="bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-amber-500">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xs sm:text-sm md:text-base text-gray-500">Total Users</h3>
-        <div className="bg-amber-100 p-2 rounded-lg">
-          <FontAwesomeIcon icon={faUsers} className="text-amber-600 text-sm sm:text-base md:text-lg" />
-        </div>
+<div className="md:flex grid gap-4 mb-6">
+  {/* Total Users */}
+  <div className="bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-amber-500 md:w-[30%]">
+    <div className="flex justify-between items-center">
+      <h3 className="text-xs sm:text-sm md:text-base text-gray-500">Total Users</h3>
+      <div className="bg-amber-100 p-2 rounded-lg">
+        <FontAwesomeIcon icon={faUsers} className="text-amber-600 text-sm sm:text-base md:text-lg" />
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl font-bold mt-2">{users.length} Users</p>
     </div>
+    <p className="text-lg sm:text-xl md:text-2xl font-bold mt-2">{users.length} Users</p>
+  </div>
 
-    <div className="bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-purple-500">
+  {/* Role Filters */}
+  <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
+    {/* Staff */}
+    <div
+      onClick={() => setRoleFilter("Staff")}
+      className={`cursor-pointer transition-all transform hover:scale-105 ${
+        roleFilter === "Staff" ? "ring-2 ring-purple-400" : ""
+      } bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-purple-500`}
+    >
       <div className="flex justify-between items-center">
         <h3 className="text-xs sm:text-sm md:text-base text-gray-500">Staff</h3>
         <div className="bg-purple-100 p-2 rounded-lg">
           <FontAwesomeIcon icon={faCrown} className="text-purple-600 text-sm sm:text-base md:text-lg" />
         </div>
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl font-bold mt-2">
-        {users.filter((user) => user.role === "Staff").length} Staff
+      <p className="text-sm md:text-xl font-bold mt-2">
+        {users.filter((user) => user.role === "Staff").length}  
+        <span className="hidden md:block"> Staff</span>
       </p>
     </div>
 
-    <div className="bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-blue-500">
+    {/* Admin */}
+    <div
+      onClick={() => setRoleFilter("Admin")}
+      className={`cursor-pointer transition-all transform hover:scale-105 ${
+        roleFilter === "Admin" ? "ring-2 ring-blue-400" : ""
+      } bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-blue-500`}
+    >
       <div className="flex justify-between items-center">
         <h3 className="text-xs sm:text-sm md:text-base text-gray-500">Admin</h3>
         <div className="bg-blue-100 p-2 rounded-lg">
           <FontAwesomeIcon icon={faUserTie} className="text-blue-600 text-sm sm:text-base md:text-lg" />
         </div>
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl font-bold mt-2">
-        {users.filter((user) => user.role === "Admin").length} Admin
+      <p className="text-sm md:text-xl font-bold mt-2">
+        {users.filter((user) => user.role === "Admin").length}  
+        <span className="hidden md:block"> Admin</span>
       </p>
     </div>
 
-    <div className="bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-blue-900">
+    {/* System Administrator */}
+    <div
+      onClick={() => setRoleFilter("System Administrator")}
+      className={`cursor-pointer transition-all transform hover:scale-105 ${
+        roleFilter === "System Administrator" ? "ring-2 ring-blue-800" : ""
+      } bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-blue-900`}
+    >
       <div className="flex justify-between items-center">
-        <h3 className="text-xs sm:text-sm md:text-base text-gray-500">System Administrator</h3>
+        <h3 className="text-xs sm:text-sm md:text-base text-gray-500 leading-tight">
+          <span className="block sm:hidden">SysAdmin</span>
+          <span className="hidden sm:block">System Administrator</span>
+        </h3>
         <div className="bg-blue-100 p-2 rounded-lg">
           <FontAwesomeIcon icon={faUserShield} className="text-blue-900 text-sm sm:text-base md:text-lg" />
         </div>
       </div>
-      <p className="text-lg sm:text-xl md:text-2xl font-bold mt-2">
-        {users.filter((user) => user.role === "System Administrator").length} System Administrator
+      <p className="text-sm md:text-xl font-bold mt-2">
+        {users.filter((user) => user.role === "System Administrator").length}  
+        <span className="hidden md:block"> System Administrator</span>
       </p>
     </div>
+  </div>
+</div>
+
+
   </div>
 
   {/* User List Card */}
@@ -203,6 +237,8 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
       </h2>
     </div>
 
+      
+<AnimatePresence>
     {filteredUsers.length === 0 ? (
       <div className="p-6 sm:p-8 text-center">
         <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center bg-gray-100 rounded-full mb-3 sm:mb-4">
@@ -218,9 +254,13 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     ) : (
       <ul className="">
         {filteredUsers.map((user) => (
-          <li
+          <motion.li
             key={user.id}
-            className="p-4 sm:p-5 md:p-6 hover:bg-amber-50 transition-all duration-200"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.10 }}
+      className="p-4 sm:p-5 md:p-6 hover:bg-amber-50 transition-all duration-500 "
           >
             <div className="flex justify-between items-center ">
               <div className="flex items-center space-x-3 sm:space-x-4">
@@ -281,10 +321,29 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                 <FontAwesomeIcon icon={faBars} />
               </Link>
             </div>
-          </li>
+          </motion.li>
         ))}
+        
       </ul>
+      
+
+      
     )}
+
+    </AnimatePresence>
+
+    <Link
+      to={["System Administrator"].includes(role) ? "/CreateAccount" : "#"}
+      className={`text-white px-3 sm:px-4 py-1.5 sm:py-4 md:py-2.5 rounded-b-lg font-medium transition-colors
+        text-xs sm:text-sm md:text-base block md:hidden text-center 
+        ${
+          ["System Administrator"].includes(role)
+            ? "bg-amber-600 hover:bg-amber-700 text-white"
+            : "bg-gray-400 cursor-not-allowed pointer-events-none"
+        }`}
+    >
+      Add New User <FontAwesomeIcon icon={faPlus} />
+    </Link>
   </div>
 </div>
 

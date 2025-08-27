@@ -42,7 +42,7 @@ export default function Settings() {
     <div className="flex h-screen bg-gray-50">
       <AdminSidePanel />
       
-      <div className="flex-1 p-8 overflow-auto lg:ml-65">
+      <div className="flex-1 p-8 overflow-auto lg:ml-65 pt-20 lg:pt-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">Settings</h1>
         <p className="text-gray-600 mb-8">Manage your account settings and preferences</p>
         

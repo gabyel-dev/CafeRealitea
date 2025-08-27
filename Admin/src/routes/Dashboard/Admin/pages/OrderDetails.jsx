@@ -111,7 +111,7 @@ export default function OrderDetails() {
             
             <div className="flex-1 p-4 sm:p-6 md:p-8 lg:pt-6 lg:ml-65">
                 {/* Header */}
-                <div className="flex items-center mb-4 sm:mb-6">
+                <div className="flex items-center mb-4 sm:mb-6 justify-between flex-row-reverse md:flex-row md:justify-start">
                     <Link 
                         to={'/sales'} 
                         className="flex items-center text-amber-700 hover:text-amber-900 transition-colors mr-4 text-sm sm:text-base"
