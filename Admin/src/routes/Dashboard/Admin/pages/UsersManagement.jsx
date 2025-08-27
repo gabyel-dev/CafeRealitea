@@ -216,13 +216,13 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
         </p>
       </div>
     ) : (
-      <ul className="divide-y divide-gray-200">
+      <ul className="">
         {filteredUsers.map((user) => (
           <li
             key={user.id}
             className="p-4 sm:p-5 md:p-6 hover:bg-amber-50 transition-all duration-200"
           >
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center ">
               <div className="flex items-center space-x-3 sm:space-x-4">
                 <div className="flex-shrink-0">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-full flex items-center justify-center">

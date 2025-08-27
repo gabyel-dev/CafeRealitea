@@ -21,12 +21,12 @@ export default function OrderDetails() {
     });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [userData, setUserData] = useState({});
 
     const location = useLocation();
     const query = new URLSearchParams(location.search);
     const id = query.get('id');
-    const navigate = useNavigate()
-
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get(`https://caferealitea.onrender.com/api/order/${id}`)
@@ -106,36 +106,36 @@ export default function OrderDetails() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-gray-50 flex pt-15 lg:pt-0 ">
             <AdminSidePanel />
             
-            <div className="flex-1 p-6 md:p-8 ml-65">
+            <div className="flex-1 p-4 sm:p-6 md:p-8 lg:pt-6 lg:ml-65">
                 {/* Header */}
-                <div className="flex items-center mb-6">
+                <div className="flex items-center mb-4 sm:mb-6">
                     <Link 
                         to={'/sales'} 
-                        className="flex items-center text-amber-700 hover:text-amber-900 transition-colors mr-4"
+                        className="flex items-center text-amber-700 hover:text-amber-900 transition-colors mr-4 text-sm sm:text-base"
                     >
                         <FontAwesomeIcon icon={faArrowLeft} className="mr-2" />
                         Back to Sales
                     </Link>
-                    <h1 className="text-3xl font-bold text-gray-800">Order Details</h1>
+                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800">Order Details</h1>
                 </div>
 
                 {/* Order Summary Card */}
-                <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+                <div className="bg-white rounded-xl shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 sm:mb-6">
                         <div className="flex items-center">
-                            <div className="bg-amber-100 p-3 rounded-full mr-4">
-                                <FontAwesomeIcon icon={faReceipt} className="text-amber-600 text-xl" />
+                            <div className="bg-amber-100 p-2 sm:p-3 rounded-full mr-3 sm:mr-4">
+                                <FontAwesomeIcon icon={faReceipt} className="text-amber-600 text-lg sm:text-xl" />
                             </div>
                             <div>
-                                <h2 className="text-xl font-semibold text-gray-800">Order #{orderDetails.order_id}</h2>
+                                <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Order #{orderDetails.order_id}</h2>
                             </div>
                         </div>
                         
                         <div className="mt-4 md:mt-0">
-                            <span className={`px-4 py-2 rounded-full text-sm font-medium ${
+                            <span className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${
                                 orderDetails.order_type === "Dine-in" 
                                     ? "bg-amber-100 text-amber-800" 
                                     : "bg-purple-100 text-purple-800"
@@ -145,79 +145,79 @@ export default function OrderDetails() {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1  md:grid-cols-3 gap-4  border-t border-amber-100 pt-4 mt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4 border-t border-amber-100 pt-4 mt-4">
                         <div className="flex items-center">
                             <div className="bg-amber-100 p-2 rounded-full mr-3">
-                                <FontAwesomeIcon icon={faUser} className="text-amber-600" />
+                                <FontAwesomeIcon icon={faUser} className="text-amber-600 text-sm" />
                             </div>
                             <div>
-                                <p className="text-sm text-amber-600">Customer</p>
-                                <p className="font-medium text-amber-900">{orderDetails.customer_name}</p>
+                                <p className="text-xs sm:text-sm text-amber-600">Customer</p>
+                                <p className="font-medium text-amber-900 text-sm sm:text-base">{orderDetails.customer_name}</p>
                             </div>
                         </div>
 
                         <div className="flex items-center">
                             <div className="bg-amber-100 p-2 rounded-full mr-3">
-                                <FontAwesomeIcon icon={faCreditCard} className="text-amber-600" />
+                                <FontAwesomeIcon icon={faCreditCard} className="text-amber-600 text-sm" />
                             </div>
                             <div>
-                                <p className="text-sm text-amber-600">Payment Method</p>
-                                <p className="font-medium text-amber-900">{orderDetails.payment_method}</p>
+                                <p className="text-xs sm:text-sm text-amber-600">Payment Method</p>
+                                <p className="font-medium text-amber-900 text-sm sm:text-base">{orderDetails.payment_method}</p>
                             </div>
                         </div>
 
                         <div className="flex items-center">
                             <div className="bg-amber-100 p-2 rounded-full mr-3">
-                                <FontAwesomeIcon icon={faTag} className="text-amber-600" />
+                                <FontAwesomeIcon icon={faTag} className="text-amber-600 text-sm" />
                             </div>
                             <div>
-                                <p className="text-sm text-amber-600">Total Amount</p>
-                                <p className="font-medium text-amber-900">₱{orderDetails.total.toFixed(2)}</p>
+                                <p className="text-xs sm:text-sm text-amber-600">Total Amount</p>
+                                <p className="font-medium text-amber-900 text-sm sm:text-base">₱{orderDetails.total?.toFixed(2)}</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Order Items */}
-                <div className="bg-white rounded-xl shadow-md p-6  ">
-                    <div className="flex items-center mb-6">
+                <div className="bg-white rounded-xl shadow-md p-4 sm:p-6">
+                    <div className="flex items-center mb-4 sm:mb-6">
                         <div className="bg-amber-100 p-2 rounded-full mr-3">
-                            <FontAwesomeIcon icon={faShoppingBasket} className="text-amber-600" />
+                            <FontAwesomeIcon icon={faShoppingBasket} className="text-amber-600 text-sm" />
                         </div>
-                        <h2 className="text-xl font-semibold text-amber-900">Order Items</h2>
+                        <h2 className="text-lg sm:text-xl font-semibold text-amber-900">Order Items</h2>
                     </div>
 
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead>
                                 <tr className="border-b border-amber-100">
-                                    <th className="text-left py-3 px-4 text-amber-600 font-medium">Item</th>
-                                    <th className="text-center py-3 px-4 text-amber-600 font-medium">Price</th>
-                                    <th className="text-center py-3 px-4 text-amber-600 font-medium">Quantity</th>
-                                    <th className="text-right py-3 px-4 text-amber-600 font-medium">Subtotal</th>
+                                    <th className="text-left py-2 sm:py-3 px-2 sm:px-4 text-amber-600 font-medium text-xs sm:text-sm">Item</th>
+                                    <th className="text-center py-2 sm:py-3 px-2 sm:px-4 text-amber-600 font-medium text-xs sm:text-sm">Price</th>
+                                    <th className="text-center py-2 sm:py-3 px-2 sm:px-4 text-amber-600 font-medium text-xs sm:text-sm">Quantity</th>
+                                    <th className="text-right py-2 sm:py-3 px-2 sm:px-4 text-amber-600 font-medium text-xs sm:text-sm">Subtotal</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {orderDetails.items.map((item, index) => (
                                     <tr key={index} className="border-b border-amber-50 hover:bg-amber-50 transition-colors">
-                                        <td className="py-4 px-4">
+                                        <td className="py-3 sm:py-4 px-2 sm:px-4">
                                             <div className="flex items-center">
-                                                <div className="bg-amber-100 text-amber-800 rounded-lg w-10 h-10 flex items-center justify-center mr-3">
+                                                <div className="bg-amber-100 text-amber-800 rounded-lg w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center mr-2 sm:mr-3 text-xs sm:text-sm">
                                                     <FontAwesomeIcon icon={faUtensils} />
                                                 </div>
-                                                <span className="font-medium text-amber-900">{item.name}</span>
+                                                <span className="font-medium text-amber-900 text-sm sm:text-base">{item.name}</span>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-4 text-center text-amber-700">₱{item.price.toFixed(2)}</td>
-                                        <td className="py-4 px-4 text-center text-amber-700">{item.quantity}</td>
-                                        <td className="py-4 px-4 text-right font-medium text-amber-900">₱{item.subtotal.toFixed(2)}</td>
+                                        <td className="py-3 sm:py-4 px-2 sm:px-4 text-center text-amber-700 text-sm sm:text-base">₱{item.price?.toFixed(2)}</td>
+                                        <td className="py-3 sm:py-4 px-2 sm:px-4 text-center text-amber-700 text-sm sm:text-base">{item.quantity}</td>
+                                        <td className="py-3 sm:py-4 px-2 sm:px-4 text-right font-medium text-amber-900 text-sm sm:text-base">₱{item.subtotal?.toFixed(2)}</td>
                                     </tr>
                                 ))}
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colSpan="3" className="py-4 px-4 text-right font-bold text-amber-800">Total</td>
-                                    <td className="py-4 px-4 text-right font-bold text-amber-900 text-lg">₱{orderDetails.total.toFixed(2)}</td>
+                                    <td colSpan="3" className="py-3 sm:py-4 px-2 sm:px-4 text-right font-bold text-amber-800 text-sm sm:text-base">Total</td>
+                                    <td className="py-3 sm:py-4 px-2 sm:px-4 text-right font-bold text-amber-900 text-base sm:text-lg">₱{orderDetails.total?.toFixed(2)}</td>
                                 </tr>
                             </tfoot>
                         </table>

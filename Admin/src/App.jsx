@@ -4,6 +4,7 @@ import Register from "./routes/Dashboard/Admin/pages/CreateAccount";
 import AdminDashboard from "./routes/Dashboard/Admin/pages/Admin";
 import OrderManagementAdmin from "./routes/Dashboard/Admin/pages/OrderManagement";
 import SalesHistory from "./routes/Dashboard/Admin/pages/SalesHistory";
+import Settings from "./routes/Dashboard/Admin/pages/AdminSettings";
 
 import { useState } from "react";
 import NotFound from "./routes/NotFound";
@@ -60,8 +61,8 @@ const App = () => {
       />
 
       <Route 
-          path="/settings" 
-          element={<AdminDashboard activeTab={activeTab} setActiveTab={setActiveTab} />} 
+          path="/settings/user" 
+          element={<Settings activeTab={activeTab} setActiveTab={setActiveTab} />} 
       />
 
 

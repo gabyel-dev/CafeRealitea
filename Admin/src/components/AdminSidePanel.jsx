@@ -204,7 +204,7 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
               <p className='font-semibold'>Users Management</p>
             </div>
 
-            <div className={`w-full h-10 flex items-center text-sm text-amber-100 ${activeTab === "Admin" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2 hover:border-0 hover:rounded-md cursor-pointer`} onClick={() => { navigate('/settings'); setActiveTab("Admin")}}>
+            <div className={`w-full h-10 flex items-center text-sm text-amber-100 ${activeTab === "Admin" ? "bg-amber-700/20 rounded-md text-white" : "hover:bg-amber-700/20"} hover:text-white gap-2 p-2 hover:border-0 hover:rounded-md cursor-pointer`} onClick={() => { navigate(`/settings/user?=${userData.user?.id}&active?=${userData.logged_in}`); setActiveTab("Admin")}}>
               {AdminIcon}
               <p className='font-semibold'>Settings</p>
             </div>

@@ -2,7 +2,7 @@ import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight, faBars } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 
@@ -238,10 +238,10 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                         </p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                        <div className="divide-y divide-gray-200">
+                    <div className="bg-white rounded-lg pl-6 shadow-sm overflow-hidden">
+                        <div className="">
                             {filteredData.map((sale) => (
-                                <div key={sale.id} className="p-6 hover:bg-amber-50 transition-all duration-200">
+                                <div key={sale.id} className="pr-6 py-6 pl-0 border- border-b-1 border-gray-200 hover:bg-amber-50 transition-all duration-200">
                                     <div className="flex justify-between items-center">
                                         <div className="flex-1">
                                             <div className="text-sm sm:text-base md:text-lg lg:text-lg font-medium text-gray-900">
@@ -256,8 +256,8 @@ export default function SalesHistory({ activeTab, setActiveTab }) {
                                             to={`order?id=${sale.id}`}
                                             className="flex items-center space-x-2 px-3 py-1 text-xs sm:px-4 sm:py-2 sm:text-sm md:text-base rounded-lg font-medium transition-colors bg-amber-600 hover:bg-amber-700 text-white"
                                         >
-                                            <span>View Details</span>
-                                            <FontAwesomeIcon icon={faArrowRight} className="text-xs sm:text-sm md:text-base" />
+                                            <span className="hidden md:block">View Details</span>
+                                            <FontAwesomeIcon icon={faBars} className="text-xs sm:text-sm md:text-base" />
                                         </Link>
                                     </div>
                                 </div>

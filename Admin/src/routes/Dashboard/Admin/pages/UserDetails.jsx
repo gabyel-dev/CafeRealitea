@@ -60,7 +60,7 @@ export default function UserDetails() {
                 <DeleteUser showForm={setShowFormDelete} id={id} userDetails={userDetails} />
             )}
             
-            <div className="flex-1 p-8 ml-65">
+            <div className="flex-1 p-8 pt-20 lg:pt-6 lg:ml-65">
                 <Link 
                     to={'/UserManagement'} 
                     className="inline-flex items-center text-gray-800 hover:text-gray-900 font-semibold transition-colors mb-6"
