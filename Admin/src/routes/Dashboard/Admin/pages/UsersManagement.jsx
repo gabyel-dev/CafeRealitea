@@ -163,7 +163,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
   </div>
 
   {/* Role Filters */}
-  <div className="grid grid-cols-3 md:grid-cols-3 gap-4">
+  <div className="grid grid-cols-3 md:grid-cols-3 md:w-full gap-4">
     {/* Staff */}
     <div
       onClick={() => setRoleFilter("Staff")}
@@ -171,9 +171,9 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
         roleFilter === "Staff" ? "ring-2 ring-purple-400" : ""
       } bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-purple-500`}
     >
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-between md:items-center ">
         <h3 className="text-xs sm:text-sm md:text-base text-gray-500">Staff</h3>
-        <div className="bg-purple-100 p-2 rounded-lg">
+        <div className="bg-purple-100 p-2 rounded-lg w-9">
           <FontAwesomeIcon icon={faCrown} className="text-purple-600 text-sm sm:text-base md:text-lg" />
         </div>
       </div>
@@ -190,9 +190,9 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
         roleFilter === "Admin" ? "ring-2 ring-blue-400" : ""
       } bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-blue-500`}
     >
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-between md:items-center ">
         <h3 className="text-xs sm:text-sm md:text-base text-gray-500">Admin</h3>
-        <div className="bg-blue-100 p-2 rounded-lg">
+        <div className="bg-blue-100 p-2 rounded-lg w-9">
           <FontAwesomeIcon icon={faUserTie} className="text-blue-600 text-sm sm:text-base md:text-lg" />
         </div>
       </div>
@@ -209,12 +209,12 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
         roleFilter === "System Administrator" ? "ring-2 ring-blue-800" : ""
       } bg-white p-3 sm:p-4 rounded-xl shadow border-l-4 border-blue-900`}
     >
-      <div className="flex justify-between items-center">
-        <h3 className="text-xs sm:text-sm md:text-base text-gray-500 leading-tight">
+      <div className="flex flex-col-reverse gap-2 md:flex-row md:justify-between md:items-center ">
+        <h3 className="text-xs sm:text-sm md:text-base text-gray-500 leading-tight ">
           <span className="block sm:hidden">SysAdmin</span>
           <span className="hidden sm:block">System Administrator</span>
         </h3>
-        <div className="bg-blue-100 p-2 rounded-lg">
+        <div className="bg-blue-100 p-2 rounded-lg w-9">
           <FontAwesomeIcon icon={faUserShield} className="text-blue-900 text-sm sm:text-base md:text-lg" />
         </div>
       </div>

@@ -4,6 +4,7 @@ import json
 from utils.hash_passwords import hash_password, check_password
 from datetime import datetime, timedelta
 import pytz
+import secrets
 
 ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
 
@@ -21,36 +22,36 @@ def Login():
     try:
         cursor.execute('SELECT * FROM users_account WHERE username = %s', (username,))
         user = cursor.fetchone()
-        
-        
 
         if user is None or not check_password(user['password'], password):
             return jsonify({'message': 'invalid credentials'}), 401
         
-        # Access dictionary keys from RealDictCursor result
-        db_id = user['id']           # adjust key name as per your column
-        db_fname = user['first_name']
-        db_lname = user['last_name']
-        db_email = user['email']
-        db_user = user['username']
-        role = user['role']
-        
+        if user['users_token'] is not None:
+            return jsonify({'message': 'Account already logged in elsewhere'}), 403
+
+        token = secrets.token_hex(32)
+
+        cursor.execute('UPDATE users_account SET users_token = %s WHERE id = %s', (token, user['id'],))
+        conn.commit()
+
         session['user'] = {
-            'id': db_id,
-            'first_name': db_fname,
-            'last_name': db_lname,
-            'email': db_email,
-            'username': db_user,
-            'role': role
-            }
+            'id': user['id'],
+            'first_name': user['first_name'],
+            'last_name': user['last_name'],
+            'email': user['email'],
+            'username': user['username'],
+            'role': user['role'],
+            'token': token   # ✅ include token in session
+        }
 
         
         return jsonify({
             'message': 'Login successful',
             'user': {
-                'id': db_id,
-                'username': db_user,
-                'role': role
+                'id': user['id'],
+                'username': user['username'],
+                'role': user['role'],
+                'token': token  # ✅ return token to frontend
             }
         }), 200
 
@@ -103,6 +104,16 @@ def register():
 #LOGOUT
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
+    user = session.get('user')
+
+    if user:
+        conn = get_db_conn()
+        cursor = conn.cursor()
+        cursor.execute('UPDATE users_account SET users_token = NULL WHERE id = %s', (user['id'],))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
     session.clear()
     return jsonify({'message': 'logged out successfully', 'redirect': '/Admin/dashboard' })
 
