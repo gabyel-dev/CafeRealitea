@@ -129,13 +129,17 @@ def checkSession():
     cursor = conn.cursor()
 
     user = session.get('user')
+    if not user:  # ✅ handle missing session
+        cursor.close()
+        conn.close()
+        return jsonify({'valid': False, 'error': 'No active session'}), 403
 
     cursor.execute('SELECT users_token FROM users_account WHERE id = %s', (user['id'],))
-    db_token = cursor.fetchone()
+    db_token = cursor.fetchone()    
     cursor.close()
     conn.close()
 
-    if not db_token or db_token != user['token']:
+    if not db_token or db_token[0] != user['token']:
         session.clear()
         return jsonify({'valid': False}), 403
 
