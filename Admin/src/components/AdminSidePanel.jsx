@@ -45,6 +45,33 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
       });
   }, []);
 
+  function logout() {
+    useEffect(() => {
+      const interval = setInterval(() => {
+          axios.get('https://caferealitea.onrender.com/check_session', { withCredentials: true })
+          .then((res) => {
+            if (!res.data.valid) {
+              callLogout()
+            }
+          })
+          .catch(err => {
+          if (err.response && (err.response.status === 401 || err.response.status === 403)) {
+            handleLogout();
+          }
+
+          return () => clearInterval(interval);
+        }, []);
+
+          const callLogout = () => {
+            localStorage.clear()
+            window.location.href = "/"
+          }
+
+      }, 5000)
+    })
+  }
+
+
   // Mobile navbar component
   const MobileNavbar = () => (
     <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-amber-800 shadow-md">

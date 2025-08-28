@@ -122,6 +122,26 @@ def check_session():
         'role': session.get('user')['role'] if session.get('user') else None
     })
 
+#check session
+@auth_bp.route('/check_session', methods=['GET'])
+def checkSession():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    user = session.get('user')
+
+    cursor.execute('SELECT users_token FROM users_account WHERE id = %s', (user['id'],))
+    db_token = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if not db_token or db_token != user['token']:
+        session.clear()
+        return jsonify({'valid': False}), 403
+
+    return jsonify({'valid': True, 'user': user}), 20
+
+
 #view items in orders
 @auth_bp.route('/items', methods=['GET'])
 def items():
