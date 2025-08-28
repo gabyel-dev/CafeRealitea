@@ -11,7 +11,7 @@ ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
 auth_bp = Blueprint('auth', __name__)
 #login
 @auth_bp.route('/login', methods=['POST'])
-def Login():
+def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
@@ -20,20 +20,20 @@ def Login():
     cursor = conn.cursor()
 
     try:
-        cursor.execute('SELECT * FROM users_account WHERE username = %s', (username,))
+        cursor.execute("SELECT * FROM users_account WHERE username = %s", (username,))
         user = cursor.fetchone()
 
         if user is None or not check_password(user['password'], password):
-            return jsonify({'message': 'invalid credentials'}), 401
-        
-        if user['users_token'] is not None:
-            return jsonify({'message': 'Account already logged in elsewhere'}), 403
+            return jsonify({'message': 'Invalid credentials'}), 401
 
+        # 🔹 Always generate a new secure random token (force logout)
         token = secrets.token_hex(32)
 
-        cursor.execute('UPDATE users_account SET users_token = %s WHERE id = %s', (token, user['id'],))
+        # Update DB token (overwrites old one if exists)
+        cursor.execute("UPDATE users_account SET users_token = %s WHERE id = %s", (token, user['id']))
         conn.commit()
 
+        # Save token + user info to session
         session['user'] = {
             'id': user['id'],
             'first_name': user['first_name'],
@@ -41,18 +41,12 @@ def Login():
             'email': user['email'],
             'username': user['username'],
             'role': user['role'],
-            'token': token   # ✅ include token in session
+            'token': token
         }
 
-        
         return jsonify({
             'message': 'Login successful',
-            'user': {
-                'id': user['id'],
-                'username': user['username'],
-                'role': user['role'],
-                'token': token  # ✅ return token to frontend
-            }
+            'user': session['user']
         }), 200
 
     except Exception as e:
@@ -62,6 +56,7 @@ def Login():
     finally:
         cursor.close()
         conn.close()
+
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
