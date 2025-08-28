@@ -12,9 +12,13 @@ import UsersManagement from "./routes/Dashboard/Admin/pages/UsersManagement";
 import UserDetails from "./routes/Dashboard/Admin/pages/UserDetails";
 import OrderDetails from "./routes/Dashboard/Admin/pages/OrderDetails";
 
+import useSessionWatcher from "./hook/SessionWatcher";
+
 
 const App = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
+
+  useSessionWatcher()
 
   return (
     <Router>

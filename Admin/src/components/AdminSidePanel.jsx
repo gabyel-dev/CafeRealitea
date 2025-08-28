@@ -45,31 +45,6 @@ export default function AdminSidePanel({ activeTab, setActiveTab }) {
       });
   }, []);
 
-  function logout() {
-    useEffect(() => {
-      const interval = setInterval(() => {
-          axios.get('https://caferealitea.onrender.com/check_session', { withCredentials: true })
-          .then((res) => {
-            if (!res.data.valid) {
-              callLogout()
-            }
-          })
-          .catch(err => {
-          if (err.response && (err.response.status === 401 || err.response.status === 403)) {
-            handleLogout();
-          }
-
-          return () => clearInterval(interval);
-        }, []);
-
-          const callLogout = () => {
-            localStorage.clear()
-            window.location.href = "/"
-          }
-
-      }, 5000)
-    })
-  }
 
 
   // Mobile navbar component
