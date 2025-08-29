@@ -46,7 +46,8 @@ def login():
 
         return jsonify({
             'message': 'Login successful',
-            'user': session['user']
+            'user': session['user'],
+            'redirect': '/dashboard'
         }), 200
 
     except Exception as e:
@@ -86,7 +87,7 @@ def register():
             (first_name, last_name, email, username, hash_pass, role)
         )
         conn.commit()
-        return jsonify({'message': 'Registered Successfully', 'redirect': '/login'}), 201
+        return jsonify({'message': 'Registered Successfully', 'redirect': '/members'}), 201
 
     except Exception as e:
         print('failed to register', e)
@@ -110,7 +111,7 @@ def logout():
         conn.close()
 
     session.clear()
-    return jsonify({'message': 'logged out successfully', 'redirect': '/Admin/dashboard' })
+    return jsonify({'message': 'logged out successfully', 'redirect': '/' })
 
 
 #CHECK USER SESSION

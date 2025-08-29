@@ -36,7 +36,7 @@ export default function DeleteUser({ showForm, id, userDetails }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/30 backdrop-blur-sm"></div>
-            
+s           
             <div className="relative bg-white rounded-xl shadow-2xl p-6 w-full max-w-md mx-4">
                 {/* Warning Icon */}
                 <div className="flex justify-center mb-4">

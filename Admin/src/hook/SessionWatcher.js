@@ -22,7 +22,7 @@ export default function useSessionWatcher() {
             handleLogout();
           }
         });
-    }, 60000); // 10 sec, not too heavy
+    }, 100000); // 10 sec, not too heavy
 
     // ✅ Clear interval when component unmounts
     return () => clearInterval(interval);

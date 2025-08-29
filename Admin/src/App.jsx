@@ -18,8 +18,6 @@ import useSessionWatcher from "./hook/SessionWatcher";
 const App = () => {
   const [activeTab, setActiveTab] = useState("Dashboard");
 
-  useSessionWatcher()
-
   return (
     <Router>
       <Routes>
