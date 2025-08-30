@@ -273,15 +273,16 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
             <div className="flex justify-between items-center ">
               <div className="flex items-center space-x-3 sm:space-x-4">
                 <div className="flex-shrink-0">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-full flex items-center justify-center">
-                    <FontAwesomeIcon
-                      icon={faUser}
-                        
-                      className="text-amber-600 text-sm sm:text-base md:text-lg"
-                    />
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-full flex items-center justify-center">
+                  <FontAwesomeIcon
+                    icon={faUser}
+                    className="text-amber-600 text-sm sm:text-base md:text-lg"
+                  />
 
-                    {isOnline[user.id] && <FontAwesomeIcon icon={faCircle} className={`relative right-0 translate-y-10 top-0 ${isOnline} ? "text-green-500 text-[3px]" : "text-gray-300 text-[3px]"`} /> }
-                  </div>
+                  <span className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white ${
+                    isOnline[user.id] ? "bg-green-500" : "bg-gray-300"
+                  }`}></span>
+                </div>
                 </div>
                 <div>
                   <div className="flex items-center space-x-2">
