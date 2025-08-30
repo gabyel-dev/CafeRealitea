@@ -13,7 +13,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [currentMonthData, setCurrentMonthData] = useState([]);
     const [PopularItems, setPopularItems] = useState([]);
     const [fetchSales, setFetchSales] = useState([]);
-    const [totalSale, setTotalSale] = useState([])
+    const [totalSale, setTotalSale] = useState()
 
     const format = (data) => {
         return parseInt(data).toLocaleString();
