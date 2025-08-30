@@ -32,10 +32,14 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/orders/year')
             .then((res) => {
-               const sum = parseInt(res.data.total_sales).reduce((curr, add) => add + curr, 0)
-               setTotalSale(sum)
+            const sum = res.data
+                .map((item) => parseFloat(item.total_sales)) // convert each string to number
+                .reduce((curr, add) => curr + add, 0);       // sum them up
+            console.log(sum);
+            setTotalSale(sum);
             });
-    }, []);
+        }, []);
+
 
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/top_items')
