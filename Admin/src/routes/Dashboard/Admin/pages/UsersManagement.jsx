@@ -15,6 +15,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     const [roleFilter, setRoleFilter] = useState("all");
     const [role, setRole] = useState("")
     const navigate = useNavigate();
+    const [isOnline, setIsOnline] = useState(false);
 
     
 
@@ -40,6 +41,11 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
             .then((res) => {
                 setUsers(res.data);
                 setFilteredUsers(res.data);
+
+                
+                if (res.data.user?.token !== null) {
+                  setIsOnline(true);
+                }
             })
             .catch((err) => console.error(err));
     }, []);
@@ -268,8 +274,11 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                   <div className="w-10 h-10 sm:w-12 sm:h-12 bg-amber-100 rounded-full flex items-center justify-center">
                     <FontAwesomeIcon
                       icon={faUser}
+                        
                       className="text-amber-600 text-sm sm:text-base md:text-lg"
                     />
+
+                    {isOnline ? "online" : "offline"}
                   </div>
                 </div>
                 <div>
