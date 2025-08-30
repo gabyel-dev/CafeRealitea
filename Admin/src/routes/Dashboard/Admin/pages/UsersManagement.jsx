@@ -280,7 +280,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                       className="text-amber-600 text-sm sm:text-base md:text-lg"
                     />
 
-                    {isOnline[user.id] && <FontAwesomeIcon icon={faCircle} className={`absolute right-0 translate-y-10 ${isOnline} ? "text-green-500 text-[10px]" : "text-gray-300 text-[10px]"`} /> }
+                    {isOnline[user.id] && <FontAwesomeIcon icon={faCircle} className={`relative right-0 translate-y-10 top-0 ${isOnline} ? "text-green-500 text-[3px]" : "text-gray-300 text-[3px]"`} /> }
                   </div>
                 </div>
                 <div>
