@@ -460,7 +460,7 @@ def users():
                 "first_name": row['first_name'],
                 "last_name": row['last_name'],
                 "email": row['email'],
-                "role": row['role']
+                "role": row['role'],
                 "token": row['users_token']
             })
     
