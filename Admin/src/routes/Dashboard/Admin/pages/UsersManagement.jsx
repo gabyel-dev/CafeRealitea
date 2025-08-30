@@ -280,7 +280,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                       className="text-amber-600 text-sm sm:text-base md:text-lg"
                     />
 
-                    {isOnline ? "online" : "offline"}
+                    {isOnline[user.id] ? "online" : "offline"}
                   </div>
                 </div>
                 <div>
