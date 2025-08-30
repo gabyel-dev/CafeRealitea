@@ -43,7 +43,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                 setFilteredUsers(res.data);
 
                 
-                if (res.data.user?.token !== null) {
+                if (res.data.token !== null) {
                   setIsOnline(true);
                 }
             })
