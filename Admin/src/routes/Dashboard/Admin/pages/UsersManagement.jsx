@@ -15,7 +15,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
     const [roleFilter, setRoleFilter] = useState("all");
     const [role, setRole] = useState("")
     const navigate = useNavigate();
-    const [isOnline, setIsOnline] = useState(false);
+    const [isOnline, setIsOnline] = useState({});
 
     
 
@@ -43,9 +43,11 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                 setFilteredUsers(res.data);
 
                 
-                if (res.data.token !== null) {
-                  setIsOnline(true);
-                }
+                const status = {};
+                res.data.forEach(user => {
+                  status[user.id] = user.token !== null;
+                })
+                setIsOnline(status)
             })
             .catch((err) => console.error(err));
     }, []);
