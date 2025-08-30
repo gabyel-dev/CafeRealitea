@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUsers, faUser, faArrowRight, faSearch, faCrown, faUserShield, faUserTag, faUserTie, faHamburger, faBars, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faUsers, faUser, faArrowRight, faSearch, faCrown, faCircle, faUserShield, faUserTag, faUserTie, faHamburger, faBars, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { motion, AnimatePresence } from "framer-motion";
 
 
@@ -280,7 +280,7 @@ export default function UsersManagement({ activeTab, setActiveTab }) {
                       className="text-amber-600 text-sm sm:text-base md:text-lg"
                     />
 
-                    {isOnline[user.id] ? "online" : "offline"}
+                    {isOnline[user.id] && <FontAwesomeIcon icon={faCircle} className={`absolute right-0 translate-y-10 ${isOnline} ? "text-green-500 text-[10px]" : "text-gray-300 text-[10px]"`} /> }
                   </div>
                 </div>
                 <div>
