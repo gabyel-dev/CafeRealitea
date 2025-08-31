@@ -5,11 +5,12 @@ from utils.hash_passwords import hash_password, check_password
 from datetime import datetime, timedelta
 import pytz
 import secrets
-from extensions import socketio, connected_users
+from extensions import socketio, connected_users  # ← ONLY import, don't define here
 
 ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
 
 auth_bp = Blueprint('auth', __name__)
+
 
 #login
 @auth_bp.route('/login', methods=['POST'])
