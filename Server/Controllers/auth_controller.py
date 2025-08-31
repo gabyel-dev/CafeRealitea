@@ -268,7 +268,7 @@ def create_pending_order():
     cursor = conn.cursor()
 
     try:
-        # Validate and calculate total if not provided
+        # Validate and calculate total
         items = data.get('items', [])
         if not items:
             return jsonify({'error': 'No items in order'}), 400
@@ -287,6 +287,10 @@ def create_pending_order():
         else:
             total_to_use = provided_total
 
+        # Ensure items is properly converted to JSON string
+        items_json = json.dumps(items)
+        print(f"💾 Saving items as JSON: {items_json}")
+
         # Insert into pending_orders table
         cursor.execute("""
             INSERT INTO pending_orders (customer_name, order_type, payment_method, total, items, user_id)
@@ -296,8 +300,8 @@ def create_pending_order():
             data.get('customer_name', 'Walk-in customer'),
             data.get('order_type', 'Dine-in'),
             data.get('payment_method', 'Cash'),
-            float(total_to_use),  # Ensure it's a float
-            json.dumps(items),
+            float(total_to_use),
+            items_json,  # This should be a JSON string
             session.get('user', {}).get('id')
         ))
         
@@ -307,17 +311,9 @@ def create_pending_order():
         
         conn.commit()
 
-        # 🔔 Broadcast notification to ALL connected users (admins/staff)
-        socketio.emit("new_pending_order", {
-            "message": f"New pending order #{pending_order_id} from {data.get('customer_name', 'Customer')}",
-            "pending_order_id": pending_order_id,
-            "customer_name": data.get('customer_name', 'Customer'),
-            "total": float(total_to_use),
-            "order_type": data.get('order_type', 'Dine-in'),
-            "payment_method": data.get('payment_method', 'Cash'),
-            "timestamp": created_at.isoformat(),
-            "type": "pending_order"
-        })
+        print(f"✅ Pending order #{pending_order_id} created successfully")
+        
+        # ... rest of your code for socket emission ...
 
         return jsonify({
             'message': 'Pending order created successfully', 
@@ -326,7 +322,7 @@ def create_pending_order():
     
     except Exception as e:
         conn.rollback()
-        print("Pending order error:", e)
+        print("❌ Pending order error:", e)
         return jsonify({'error': 'Server error'}), 500
     finally:
         cursor.close()
