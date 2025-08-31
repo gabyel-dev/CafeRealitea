@@ -348,83 +348,56 @@ def get_pending_orders():
     cursor = conn.cursor()
 
     try:
-        print("🔍 Fetching pending orders...")
-        
         cursor.execute("""
-           SELECT 
-    po.*, 
-    creator.username AS created_by,
-    creator.first_name AS creator_first_name,
-    creator.last_name AS creator_last_name,
-    approver.username AS approved_by_username,
-    approver.first_name AS approved_first_name,
-    approver.last_name AS approved_last_name
-FROM pending_orders po
-LEFT JOIN users_account creator ON po.user_id = creator.id
-LEFT JOIN users_account approver ON po.approved_by = approver.id
-ORDER BY po.created_at DESC;
-
+            SELECT 
+                po.*, 
+                creator.username AS created_by,
+                creator.first_name AS creator_first_name,
+                creator.last_name AS creator_last_name,
+                approver.username AS approved_by_username,
+                approver.first_name AS approved_first_name,
+                approver.last_name AS approved_last_name
+            FROM pending_orders po
+            LEFT JOIN users_account creator ON po.user_id = creator.id
+            LEFT JOIN users_account approver ON po.approved_by = approver.id
+            ORDER BY po.created_at DESC
         """)
         pending_orders = cursor.fetchall()
-        print(f"📋 Found {len(pending_orders)} pending orders")
 
         result = []
         for order in pending_orders:
-            # Debug: Check what type the items field is
             items_data = order['items']
-            print(f"📦 Order {order['id']} items type: {type(items_data)}, value: {items_data}")
-            
-            # Handle different types of items data
-            if isinstance(items_data, str):
-                # It's a JSON string, parse it
-                try:
-                    items = json.loads(items_data)
-                except json.JSONDecodeError:
-                    print(f"❌ Invalid JSON in items: {items_data}")
-                    items = []
-            elif isinstance(items_data, (dict, list)):
-                # It's already parsed (dict or list), use as is
-                items = items_data
-            else:
-                # Unknown type, default to empty list
-                print(f"❓ Unknown items type: {type(items_data)}")
+            # Parse JSON items
+            try:
+                items = json.loads(items_data) if isinstance(items_data, str) else items_data
+            except:
                 items = []
-            
-            # Handle NULL total - calculate from items if total is None
-            order_total = order['total']
-            if order_total is None:
-                print(f"⚠️ Order {order['id']} has NULL total, calculating from items...")
-                calculated_total = 0
-                for item in items:
-                    quantity = item.get('quantity', 1)
-                    price = item.get('price', 0)
-                    calculated_total += quantity * price
-                order_total = calculated_total
-            
+
+            # Calculate total if missing
+            order_total = order['total'] or sum(item.get('quantity', 1) * item.get('price', 0) for item in items)
+
             result.append({
                 "id": order['id'],
                 "customer_name": order['customer_name'],
                 "order_type": order['order_type'],
                 "payment_method": order['payment_method'],
-                "total": float(order_total),  # Now this will never be None
+                "total": float(order_total),
                 "items": items,
                 "created_at": order['created_at'].isoformat() if order['created_at'] else None,
                 "created_by": order['created_by'],
-                "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
+                "staff_name": f"{order['approved_first_name']} {order['approved_last_name']}" if order['approved_first_name'] else None
             })
-
-           
 
         return jsonify(result)
     
     except Exception as e:
-        print("❌ Error fetching pending orders:", str(e))
         import traceback
         traceback.print_exc()
         return jsonify({"error": str(e), "pending_orders": []}), 500
     finally:
         cursor.close()
         conn.close()
+
 
 @auth_bp.route('/pending-orders/<int:pending_id>', methods=['GET'])
 def get_pending_order_details(pending_id):
@@ -501,42 +474,23 @@ def get_pending_order_details(pending_id):
         conn.close()
 
 # Confirm pending order (move to main orders)
+
 @auth_bp.route('/pending-orders/<int:pending_id>/confirm', methods=['POST'])
 def confirm_pending_order(pending_id):
     conn = get_db_conn()
     cursor = conn.cursor()
 
     try:
-        # Get the pending order
         cursor.execute("SELECT * FROM pending_orders WHERE id = %s", (pending_id,))
         pending_order = cursor.fetchone()
-        
         if not pending_order:
             return jsonify({"error": "Pending order not found"}), 404
 
-        # Handle items data
         items_data = pending_order['items']
-        if isinstance(items_data, str):
-            try:
-                items = json.loads(items_data)
-            except json.JSONDecodeError:
-                items = []
-        elif isinstance(items_data, (dict, list)):
-            items = items_data
-        else:
-            items = []
-        
-        # Handle NULL total
-        order_total = pending_order['total']
-        if order_total is None:
-            calculated_total = 0
-            for item in items:
-                quantity = item.get('quantity', 1)
-                price = item.get('price', 0)
-                calculated_total += quantity * price
-            order_total = calculated_total
+        items = json.loads(items_data) if isinstance(items_data, str) else items_data
+        order_total = pending_order['total'] or sum(item.get('quantity', 1) * item.get('price', 0) for item in items)
 
-        # Insert into main orders table
+        # Insert into main orders
         cursor.execute("""
             INSERT INTO orders (customer_name, order_type, payment_method, total, status)
             VALUES (%s, %s, %s, %s, 'CONFIRMED')
@@ -547,14 +501,8 @@ def confirm_pending_order(pending_id):
             pending_order['payment_method'],
             float(order_total)
         ))
-
-        socketio.emit('order_confirmed',  {
-                "message": f"New pending order #{pending_id} from {pending_order['customer_name']} has been confirmed",
-                "type": "order confirmed"
-        })
-        
         order_id = cursor.fetchone()['id']
-        
+
         # Insert order items
         for item in items:
             cursor.execute("""
@@ -567,22 +515,35 @@ def confirm_pending_order(pending_id):
                 item.get('price', 0)
             ))
 
-        # Delete from pending orders
-        cursor.execute("DELETE FROM pending_orders WHERE id = %s", (pending_id,))
+        # Update approved_by before deleting
+        user_id = session.get('user', {}).get('id')
+        cursor.execute("""
+            UPDATE pending_orders
+            SET approved_by = %s
+            WHERE id = %s
+        """, (user_id, pending_id))
 
+        # Delete pending order
+        cursor.execute("DELETE FROM pending_orders WHERE id = %s", (pending_id,))
         conn.commit()
+
+        socketio.emit('order_confirmed',  {
+            "message": f"Pending order #{pending_id} confirmed by staff.",
+            "type": "order confirmed"
+        })
 
         return jsonify({
             "message": f"Order {order_id} confirmed successfully",
             "order_id": order_id
         }), 200
-    
+
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
         conn.close()
+
 
 @auth_bp.route('/pending-orders/<int:pending_id>/cancel', methods=['POST'])
 def cancel_pending_order(pending_id):
