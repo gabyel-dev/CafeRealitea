@@ -25,20 +25,27 @@ app.config["SESSION_COOKIE_SECURE"] = True
 CORS(app, supports_credentials=True)
 bcrypt.init_app(app)
 Session(app)
-socketio.init_app(app, cors_allowed_origins="*", async_mode='eventlet')
+
+# Configure Socket.IO with proper async mode
+socketio.init_app(app, 
+                 cors_allowed_origins="*", 
+                 async_mode='eventlet',
+                 logger=True,
+                 engineio_logger=True)
 
 # ---- Socket.IO events ----
 @socketio.on("connect")
 def handle_connect():
     print("Client connected:", request.sid)
+    return True  # Important: return True to accept connection
 
 @socketio.on("disconnect")
 def handle_disconnect():
+    print("Client disconnected:", request.sid)
     for uid, sid in list(connected_users.items()):
         if sid == request.sid:
             del connected_users[uid]
             break
-    print("Client disconnected:", request.sid)
 
 @socketio.on("register_user")
 def handle_register_user(data):
@@ -51,5 +58,16 @@ def handle_register_user(data):
 from Controllers.auth_controller import auth_bp
 app.register_blueprint(auth_bp)
 
+# Add health check endpoint
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
+
 if __name__ == '__main__':
-    socketio.run(app, host="0.0.0.0", port=5000, debug=True)
+    print("Starting Socket.IO server...")
+    socketio.run(app, 
+                 host="0.0.0.0", 
+                 port=5000, 
+                 debug=True,  # Set to False in production
+                 use_reloader=False,
+                 allow_unsafe_werkzeug=True)

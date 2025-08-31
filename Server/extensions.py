@@ -1,8 +1,8 @@
 from flask_socketio import SocketIO
 from flask_bcrypt import Bcrypt
 
-# Initialize extensions - use async_mode='eventlet' for production
-socketio = SocketIO(cors_allowed_origins="*", async_mode='eventlet')
+# Initialize extensions
+socketio = SocketIO()  # Remove cors_allowed_origins from here
 bcrypt = Bcrypt()
 
 # Track connected users
