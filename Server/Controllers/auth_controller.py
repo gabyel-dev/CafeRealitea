@@ -5,7 +5,7 @@ from utils.hash_passwords import hash_password, check_password
 from datetime import datetime, timedelta
 import pytz
 import secrets
-from extensions import socketio, connected_users
+from extentions import socketio, connected_users
 
 
 ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
