@@ -351,14 +351,19 @@ def get_pending_orders():
         print("🔍 Fetching pending orders...")
         
         cursor.execute("""
-            SELECT 
-                po.*, 
-                u.username as created_by,
-                u.first_name,
-                u.last_name
-            FROM pending_orders po 
-            LEFT JOIN users_account u ON po.user_id = u.id 
-            ORDER BY po.created_at DESC
+           SELECT 
+    po.*, 
+    creator.username AS created_by,
+    creator.first_name AS creator_first_name,
+    creator.last_name AS creator_last_name,
+    approver.username AS approved_by_username,
+    approver.first_name AS approved_first_name,
+    approver.last_name AS approved_last_name
+FROM pending_orders po
+LEFT JOIN users_account creator ON po.user_id = creator.id
+LEFT JOIN users_account approver ON po.approved_by = approver.id
+ORDER BY po.created_at DESC;
+
         """)
         pending_orders = cursor.fetchall()
         print(f"📋 Found {len(pending_orders)} pending orders")
@@ -408,10 +413,7 @@ def get_pending_orders():
                 "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
             })
 
-            socketio.emit('order_placed', {
-                "message": result,
-                "type": "place order"
-            })
+           
 
         return jsonify(result)
     
@@ -612,8 +614,6 @@ def cancel_pending_order(pending_id):
     finally:
         cursor.close()
         conn.close()
-
-
 
 
 #all months
