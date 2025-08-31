@@ -540,6 +540,11 @@ def confirm_pending_order(pending_id):
             pending_order['payment_method'],
             float(order_total)
         ))
+
+        socketio.emit('order_confirmed',  {
+                "message": f"New pending order #{pending_id} from {pending_order['customer_name']} has been confirmed",
+                "type": "order confirmed"
+        })
         
         order_id = cursor.fetchone()['id']
         

@@ -68,7 +68,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 socket.on("order_confirmed", (data) => {
                     console.log("✅ Order confirmed:", data);
                     toast.success(`✅ ${data.message}`, {
-                        position: "top-right",
+                        position: "top-right", 
                         autoClose: 3000,
                     });
                 });
