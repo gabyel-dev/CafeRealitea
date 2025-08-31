@@ -6,7 +6,7 @@ from flask_session import Session
 from Controllers.auth_controller import auth_bp
 from Models.database import get_db_conn
 from utils.hash_passwords import bcrypt
-from extensions import socketio, connected_users  # <-- import here
+from extentions import socketio, connected_users  # <-- import here
 
 # load env vars
 load_dotenv()
