@@ -13,6 +13,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [currentMonthData, setCurrentMonthData] = useState([]);
     const [PopularItems, setPopularItems] = useState([]);
     const [fetchSales, setFetchSales] = useState([]);
+    const [totalSale, setTotalSale] = useState()
 
     const format = (data) => {
         return parseInt(data).toLocaleString();
@@ -27,6 +28,18 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
         axios.get('https://caferealitea.onrender.com/orders/current-month')
             .then((res) => setCurrentMonthData(res.data));
     }, []);
+
+    useEffect(() => {
+        axios.get('https://caferealitea.onrender.com/orders/year')
+            .then((res) => {
+            const sum = res.data
+                .map((item) => parseFloat(item.total_sales)) // convert each string to number
+                .reduce((curr, add) => curr + add, 0);       // sum them up
+            console.log(sum);
+            setTotalSale(sum);
+            });
+        }, []);
+
 
     useEffect(() => {
         axios.get('https://caferealitea.onrender.com/top_items')
@@ -116,9 +129,12 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                             {currentMonthData.map((res) => (
                                 <div key={res.month} className="flex flex-col">
                                     <div>
-                                        <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-500">
+                                        <div className="flex justify-between">
+                                            <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-500">
                                             Monthly Sales
-                                        </p>
+                                            </p>
+                                            {totalSale}
+                                        </div>
                                         <div className="__monthly_sales flex items-center justify-between pb-4">
                                             <p className="text-xl sm:text-2xl lg:text-3xl font-bold">
                                                 ₱ {format(res.total_sales)}
