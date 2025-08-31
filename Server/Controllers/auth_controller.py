@@ -408,6 +408,11 @@ def get_pending_orders():
                 "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
             })
 
+            socketio.emit('order_placed', {
+                "message": result,
+                "type": "place order"
+            })
+
         return jsonify(result)
     
     except Exception as e:
