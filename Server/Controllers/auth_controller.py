@@ -332,7 +332,6 @@ def create_pending_order():
         cursor.close()
         conn.close()
 
-# Get all pending orders for notification list
 @auth_bp.route('/pending-orders', methods=['GET'])
 def get_pending_orders():
     conn = get_db_conn()
@@ -365,9 +364,10 @@ def get_pending_orders():
                 "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
             })
 
-        return jsonify(result)
+        return jsonify(result)  # ✅ This returns an array
     
     except Exception as e:
+        print("Error fetching pending orders:", e)
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()

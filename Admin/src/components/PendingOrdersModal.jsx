@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faCheck, faXmark, faRefresh } from "@fortawesome/free-solid-svg-icons";
 
 export default function PendingOrdersModal({ onClose, notifications }) {
   const [pendingOrders, setPendingOrders] = useState([]);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetchPendingOrders();
@@ -12,13 +14,31 @@ export default function PendingOrdersModal({ onClose, notifications }) {
 
   const fetchPendingOrders = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const response = await fetch('https://caferealitea.onrender.com/pending-orders', {
         credentials: 'include'
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
-      setPendingOrders(data);
+      
+      // ✅ Check if data is an array, if not, set empty array
+      if (Array.isArray(data)) {
+        setPendingOrders(data);
+      } else {
+        console.error('Expected array but got:', data);
+        setPendingOrders([]);
+      }
     } catch (error) {
       console.error('Error fetching pending orders:', error);
+      setError(error.message);
+      setPendingOrders([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -27,10 +47,16 @@ export default function PendingOrdersModal({ onClose, notifications }) {
       const response = await fetch(`https://caferealitea.onrender.com/pending-orders/${orderId}`, {
         credentials: 'include'
       });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       setSelectedOrder(data);
     } catch (error) {
       console.error('Error fetching order details:', error);
+      alert('Error loading order details');
     }
   };
 
@@ -45,9 +71,12 @@ export default function PendingOrdersModal({ onClose, notifications }) {
         alert('Order confirmed successfully!');
         setSelectedOrder(null);
         fetchPendingOrders(); // Refresh the list
+      } else {
+        throw new Error('Failed to confirm order');
       }
     } catch (error) {
       console.error('Error confirming order:', error);
+      alert('Error confirming order');
     }
   };
 
@@ -62,9 +91,12 @@ export default function PendingOrdersModal({ onClose, notifications }) {
         alert('Order cancelled successfully!');
         setSelectedOrder(null);
         fetchPendingOrders(); // Refresh the list
+      } else {
+        throw new Error('Failed to cancel order');
       }
     } catch (error) {
       console.error('Error cancelling order:', error);
+      alert('Error cancelling order');
     }
   };
 
@@ -74,12 +106,35 @@ export default function PendingOrdersModal({ onClose, notifications }) {
         {/* Header */}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-bold">Pending Orders</h2>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            <FontAwesomeIcon icon={faTimes} size="lg" />
-          </button>
+          <div className="flex gap-2">
+            <button 
+              onClick={fetchPendingOrders}
+              className="p-2 bg-gray-200 rounded hover:bg-gray-300"
+              title="Refresh"
+            >
+              <FontAwesomeIcon icon={faRefresh} />
+            </button>
+            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+              <FontAwesomeIcon icon={faTimes} size="lg" />
+            </button>
+          </div>
         </div>
 
-        {selectedOrder ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <p>Loading pending orders...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-600">
+            <p>Error loading orders: {error}</p>
+            <button 
+              onClick={fetchPendingOrders}
+              className="mt-4 bg-amber-600 text-white px-4 py-2 rounded hover:bg-amber-700"
+            >
+              Try Again
+            </button>
+          </div>
+        ) : selectedOrder ? (
           // Order Details View
           <div>
             <h3 className="text-lg font-semibold mb-4">Order #{selectedOrder.id}</h3>
@@ -98,8 +153,8 @@ export default function PendingOrdersModal({ onClose, notifications }) {
             <div className="mb-4">
               {selectedOrder.items?.map((item, index) => (
                 <div key={index} className="flex justify-between py-1">
-                  <span>{item.name} (x{item.quantity})</span>
-                  <span>₱{item.price * item.quantity}</span>
+                  <span>{item.name} (x{item.quantity || 1})</span>
+                  <span>₱{(item.price || 0) * (item.quantity || 1)}</span>
                 </div>
               ))}
             </div>
@@ -131,7 +186,7 @@ export default function PendingOrdersModal({ onClose, notifications }) {
           // Orders List View
           <div>
             {pendingOrders.length === 0 ? (
-              <p className="text-gray-500">No pending orders</p>
+              <p className="text-gray-500 text-center py-8">No pending orders</p>
             ) : (
               <div className="space-y-3">
                 {pendingOrders.map((order) => (
