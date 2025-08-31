@@ -743,7 +743,8 @@ def daily():
                 "order_type": row['order_type'],
                 "payment_method": row['payment_method'],
                 "total": row['total'],
-                "order_time": pht
+                "order_time": pht,
+                "date": row['order_time']
             })
 
         return jsonify(result)

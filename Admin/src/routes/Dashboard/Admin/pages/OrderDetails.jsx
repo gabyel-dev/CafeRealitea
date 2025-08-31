@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation, useNavigate } from "react-router-dom";
 import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { 
@@ -12,13 +12,9 @@ import {
   faTag,
   faShoppingBasket
 } from "@fortawesome/free-solid-svg-icons";
-import { useLocation } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 
 export default function OrderDetails() {
-    const [orderDetails, setOrderDetails] = useState({
-        items: []
-    });
+    const [orderDetails, setOrderDetails] = useState({ items: [] });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [userData, setUserData] = useState({});
@@ -55,47 +51,38 @@ export default function OrderDetails() {
     }, []);
 
     if (loading) {
-    return (
-        <div className="flex flex-col justify-center items-center h-screen bg-amber-50">
-            {/* Coffee Icon */}
-            <div className="relative">
-                {/* Cup */}
-                <div className="w-16 h-12 border-4 border-amber-900 rounded-b-xl rounded-t-sm overflow-hidden">
-                    {/* Liquid Fill - Now fills from bottom up */}
-                    <div 
-                        className="absolute bottom-0 left-0 w-full bg-amber-700 transition-all duration-2000"
-                        style={{ 
-                            height: '0%',
-                            animation: 'coffeeFill 1.5s ease-in-out forwards',
-                            animationDelay: '0.3s'
-                        }}
-                    ></div>
+        return (
+            <div className="flex flex-col justify-center items-center h-screen bg-amber-50">
+                {/* Coffee Icon */}
+                <div className="relative">
+                    <div className="w-16 h-12 border-4 border-amber-900 rounded-b-xl rounded-t-sm overflow-hidden">
+                        <div 
+                            className="absolute bottom-0 left-0 w-full bg-amber-700 transition-all duration-2000"
+                            style={{ 
+                                height: '0%',
+                                animation: 'coffeeFill 1.5s ease-in-out forwards',
+                                animationDelay: '0.3s'
+                            }}
+                        ></div>
+                    </div>
+                    <div className="absolute -top-0.5 -inset-x-0.5 h-1 bg-amber-900 rounded-t-sm"></div>
+                    <div className="absolute -bottom-2 -inset-x-4 h-2 bg-amber-200 rounded-full"></div>
                 </div>
-                
-                {/* Cup rim (to cover the top of the liquid) */}
-                <div className="absolute -top-0.5 -inset-x-0.5 h-1 bg-amber-900 rounded-t-sm"></div>
-                
-                {/* Plate */}
-                <div className="absolute -bottom-2 -inset-x-4 h-2 bg-amber-200 rounded-full"></div>
+                <p className="mt-6 text-amber-900 font-medium">Brewing your experience...</p>
+                <style>
+                    {`
+                    @keyframes coffeeFill {
+                        0% { height: 0%; }
+                        20% { height: 20%; }
+                        50% { height: 50%; }
+                        80% { height: 80%; }
+                        100% { height: 85%; }
+                    }
+                    `}
+                </style>
             </div>
-            
-            {/* Text */}
-            <p className="mt-6 text-amber-900 font-medium">Brewing your experience...</p>
-            
-            <style>
-                {`
-                @keyframes coffeeFill {
-                    0% { height: 0%; }
-                    20% { height: 20%; }
-                    50% { height: 50%; }
-                    80% { height: 80%; }
-                    100% { height: 85%; }
-                }
-                `}
-            </style>
-        </div>
-    );
-}
+        );
+    }
 
     if (error) {
         return (
@@ -106,9 +93,8 @@ export default function OrderDetails() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex pt-15 lg:pt-0 ">
+        <div className="min-h-screen bg-gray-50 flex pt-15 lg:pt-0">
             <AdminSidePanel />
-            
             <div className="flex-1 p-4 sm:p-6 md:p-8 lg:pt-6 lg:ml-65">
                 {/* Header */}
                 <div className="flex items-center mb-4 sm:mb-6 justify-between flex-row-reverse md:flex-row md:justify-start">
@@ -133,7 +119,6 @@ export default function OrderDetails() {
                                 <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Order #{orderDetails.order_id}</h2>
                             </div>
                         </div>
-                        
                         <div className="mt-4 md:mt-0">
                             <span className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-xs sm:text-sm font-medium ${
                                 orderDetails.order_type === "Dine-in" 
@@ -173,6 +158,21 @@ export default function OrderDetails() {
                             <div>
                                 <p className="text-xs sm:text-sm text-amber-600">Total Amount</p>
                                 <p className="font-medium text-amber-900 text-sm sm:text-base">₱{orderDetails.total?.toFixed(2)}</p>
+                            </div>
+                        </div>
+
+                        {/* Created / Confirmed By */}
+                        <div className="flex items-center col-span-1 md:col-span-3 mt-2">
+                            <div className="bg-amber-100 p-2 rounded-full mr-3">
+                                <FontAwesomeIcon icon={faUser} className="text-amber-600 text-sm" />
+                            </div>
+                            <div>
+                                <p className="text-xs sm:text-sm text-amber-600">
+                                    {orderDetails.confirmed_by ? "Confirmed By" : "Created By"}
+                                </p>
+                                <p className="font-medium text-amber-900 text-sm sm:text-base">
+                                    {orderDetails.confirmed_by || orderDetails.created_by}
+                                </p>
                             </div>
                         </div>
                     </div>
