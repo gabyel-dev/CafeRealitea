@@ -216,16 +216,20 @@ def create_order():
             total_to_use = provided_total
 
         # Insert main order
+        user_id = session.get("user", {}).get("id")  # get the logged-in user
+
         cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by)
+            VALUES (%s, %s, %s, %s, 'CONFIRMED', %s)
             RETURNING id
         """, (
             data.get('customer_name', 'Walk-in customer'),
             data.get('order_type', 'Dine-in'),
             data.get('payment_method', 'Cash'),
-            float(total_to_use)  # Ensure it's a float
+            float(total_to_use),
+            user_id
         ))
+
         
         order_id = cursor.fetchone()['id']
         
