@@ -493,7 +493,7 @@ def confirm_pending_order(pending_id):
         # Insert into main orders
 # Insert into main orders with created_by and approved_by
         cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by, approved_by)
+            INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by, confirmed_by)
             VALUES (%s, %s, %s, %s, 'CONFIRMED', %s, %s)
             RETURNING id
         """, (
@@ -522,7 +522,7 @@ def confirm_pending_order(pending_id):
         user_id = session.get('user', {}).get('id')
         cursor.execute("""
             UPDATE pending_orders
-            SET approved_by = %s
+            SET confirmed_by = %s
             WHERE id = %s
         """, (user_id, pending_id))
 
@@ -925,7 +925,7 @@ def order_details(id):
             JOIN order_items oi ON o.id = oi.order_id
             JOIN itemss i ON oi.item_id = i.id
             LEFT JOIN users_account creator ON o.created_by = creator.id
-            LEFT JOIN users_account approver ON o.approved_by = approver.id
+            LEFT JOIN users_account approver ON o.confirmed_by = approver.id
             WHERE o.id = %s;
         """, (id,))
         
