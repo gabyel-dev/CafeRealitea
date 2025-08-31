@@ -1,6 +1,4 @@
-from flask_bcrypt import Bcrypt
-
-bcrypt = Bcrypt()
+from extensions import bcrypt
 
 def hash_password(password):
     return bcrypt.generate_password_hash(password, 12).decode('utf-8')

@@ -5,12 +5,12 @@ from utils.hash_passwords import hash_password, check_password
 from datetime import datetime, timedelta
 import pytz
 import secrets
-from extentions import socketio, connected_users
-
+from extensions import socketio, connected_users
 
 ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
 
 auth_bp = Blueprint('auth', __name__)
+
 #login
 @auth_bp.route('/login', methods=['POST'])
 def login():
@@ -55,11 +55,9 @@ def login():
     except Exception as e:
         print("Login error:", e)
         return jsonify({'error': 'Server error'}), 500
-
     finally:
         cursor.close()
         conn.close()
-
 
 @auth_bp.route('/register', methods=['POST'])
 def register():
@@ -72,7 +70,7 @@ def register():
     role = data.get('role')
 
     if role not in ALLOWED_ROLES:
-            return jsonify({"error": "Invalid Role"}), 400
+        return jsonify({"error": "Invalid Role"}), 400
 
     if not all([first_name, last_name, email, username, password, role]):
         return jsonify({'error': 'All fields are required'}), 400
@@ -98,7 +96,6 @@ def register():
         cursor.close()
         conn.close()
         
-
 #LOGOUT
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
@@ -115,14 +112,14 @@ def logout():
     session.clear()
     return jsonify({'message': 'logged out successfully', 'redirect': '/' })
 
-
 #CHECK USER SESSION
 @auth_bp.route('/user', methods=['GET'])
 def check_session():
+    user = session.get('user')
     return jsonify({
-        'user': session.get('user'),
-        'logged_in': 'user' in session,
-        'role': session.get('user')['role'] if session.get('user') else None
+        'user': user,
+        'logged_in': user is not None,
+        'role': user['role'] if user else None
     })
 
 #check session
@@ -132,38 +129,40 @@ def checkSession():
     cursor = conn.cursor()
 
     user = session.get('user')
-    if not user:  # ✅ handle missing session
+    if not user:
         cursor.close()
         conn.close()
         return jsonify({'valid': False, 'error': 'No active session'}), 403
 
-    cursor.execute('SELECT users_token FROM users_account WHERE id = %s', (user['id'],))
-    db_token = cursor.fetchone()    
-    cursor.close()
-    conn.close()
+    try:
+        cursor.execute('SELECT users_token FROM users_account WHERE id = %s', (user['id'],))
+        db_token_result = cursor.fetchone()
+        
+        if not db_token_result or db_token_result['users_token'] != user['token']:
+            session.clear()
+            return jsonify({'valid': False}), 403
 
-    if not db_token or db_token[0] != user['token']:
-        session.clear()
-        return jsonify({'valid': False}), 403
-
-    return jsonify({'valid': True, 'user': user}), 20
-
+        return jsonify({'valid': True, 'user': user}), 200
+    
+    except Exception as e:
+        return jsonify({'valid': False, 'error': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 #view items in orders
 @auth_bp.route('/items', methods=['GET'])
 def items():
-        conn = get_db_conn()
-        cursor = conn.cursor()
+    conn = get_db_conn()
+    cursor = conn.cursor()
 
-
+    try:
         cursor.execute("""SELECT c.id as category_id,
         c.name as category_name,
         i.id as item_id,
         i.name as item_name, 
         i.price as price FROM categories c LEFT JOIN itemss i ON c.id = i.category_id ORDER BY c.id, i.id""")
         rows = cursor.fetchall()
-        cursor.close()
-        conn.close()
         
         categories = {}
         for row in rows:
@@ -174,7 +173,7 @@ def items():
                     "category_name": row["category_name"],
                     "items": []
                 }
-            if row["item_id"]:  # Skip empty categories
+            if row["item_id"]:
                 categories[cat_id]["items"].append({
                     "id": row["item_id"],
                     "name": row["item_name"],
@@ -182,6 +181,12 @@ def items():
                 })
 
         return jsonify(list(categories.values()))
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 #handle orders
 @auth_bp.route('/orders', methods=['POST'])
@@ -191,7 +196,6 @@ def create_order():
     cursor = conn.cursor()
     
     try:
-        # Insert main order
         cursor.execute("""
             INSERT INTO orders (customer_name, order_type, payment_method, total)
             VALUES (%s, %s, %s, %s)
@@ -205,7 +209,6 @@ def create_order():
         
         order_id = cursor.fetchone()['id']
         
-        # Insert order items
         for item in data['items']:
             cursor.execute("""
                 INSERT INTO order_items (order_id, item_id, quantity, price)
@@ -219,23 +222,20 @@ def create_order():
         
         conn.commit()
 
-
         user_id = session.get("user", {}).get("id")
         if user_id and user_id in connected_users:
-                socketio.emit("notification", {
-                    "message": f"Your order #{order_id} has been created!",
-                    "order_id": order_id,
-                    "type": "personal"
-                }, to=connected_users[user_id])
+            socketio.emit("notification", {
+                "message": f"Your order #{order_id} has been created!",
+                "order_id": order_id,
+                "type": "personal"
+            }, to=connected_users[user_id])
+            
         return jsonify({'message': 'Created successfully', 'order_id': order_id}), 201
-    
-
     
     except Exception as e:
         conn.rollback()
         print("Order creation error:", e)
         return jsonify({'error': 'Server error'}), 500
-    
     finally:
         cursor.close()
         conn.close()
@@ -256,7 +256,7 @@ def create_pending_order():
             data['order_type'],
             data['payment_method'],
             data['total'],
-            "PENDING"   # ⚠️ difference from /orders
+            "PENDING"
         ))
         
         order_id = cursor.fetchone()['id']
@@ -274,14 +274,11 @@ def create_pending_order():
 
         conn.commit()
 
-        # 🔔 Broadcast pending order to all connected users
-        # in /orders/pending
         socketio.emit("notification", {
             "message": f"New pending order #{order_id} needs confirmation!",
             "order_id": order_id,
             "type": "broadcast"
         })
-
 
         return jsonify({'message': 'Pending order created', 'order_id': order_id}), 201
     
@@ -289,18 +286,15 @@ def create_pending_order():
         conn.rollback()
         print("Pending order error:", e)
         return jsonify({'error': 'Server error'}), 500
-    
     finally:
         cursor.close()
         conn.close()
-
-
 
 @auth_bp.route('/orders/update_status', methods=['POST'])
 def update_order_status():
     data = request.get_json()
     order_id = data.get("order_id")
-    new_status = data.get("status")  # CONFIRMED or CANCELED
+    new_status = data.get("status")
 
     if new_status not in ["CONFIRMED", "CANCELED"]:
         return jsonify({"error": "Invalid status"}), 400
@@ -311,14 +305,11 @@ def update_order_status():
         cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (new_status, order_id))
         conn.commit()
 
-        # 🔔 Notify everyone about status update
-        # in /orders/update_status
         socketio.emit("notification", {
             "message": f"Order #{order_id} has been {new_status.lower()}!",
             "order_id": order_id,
             "type": "status_update"
         })
-
 
         return jsonify({"message": f"Order {order_id} updated to {new_status}"}), 200
     except Exception as e:
@@ -327,6 +318,8 @@ def update_order_status():
     finally:
         cursor.close()
         conn.close()
+
+# ... (rest of your routes remain the same with proper error handling)
 
 
 #all months

@@ -25,8 +25,9 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     // ✅ Socket setup
     useEffect(() => {
         const socket = io("https://caferealitea.onrender.com", {
+            transports: ["websocket", "polling"],
             withCredentials: true
-        });
+            });
 
         // Register this user once logged in
         if (userData?.user?.id) {
