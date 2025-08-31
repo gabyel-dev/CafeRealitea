@@ -7,7 +7,8 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {
     const [orderType, setOrderType] = useState("Dine-in");
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const total = itemsAdded.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // Fix your total calculation in OrderSummary
+    const total = itemsAdded.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
     const change = customerMoney - total;
 
     const handleSavePending = async () => {

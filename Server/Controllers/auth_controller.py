@@ -189,7 +189,6 @@ def items():
         cursor.close()
         conn.close()
 
-#handle orders
 @auth_bp.route('/orders', methods=['POST'])
 def create_order(): 
     data = request.get_json()
@@ -197,28 +196,49 @@ def create_order():
     cursor = conn.cursor()
     
     try:
+        # Validate and calculate total
+        items = data.get('items', [])
+        if not items:
+            return jsonify({'error': 'No items in order'}), 400
+        
+        # Calculate total from items if not provided or invalid
+        calculated_total = 0
+        for item in items:
+            quantity = item.get('quantity', 1)
+            price = item.get('price', 0)
+            calculated_total += quantity * price
+        
+        # Use provided total if valid, otherwise use calculated total
+        provided_total = data.get('total')
+        if provided_total is None or not isinstance(provided_total, (int, float)):
+            total_to_use = calculated_total
+        else:
+            total_to_use = provided_total
+
+        # Insert main order
         cursor.execute("""
             INSERT INTO orders (customer_name, order_type, payment_method, total)
             VALUES (%s, %s, %s, %s)
             RETURNING id
         """, (
             data.get('customer_name', 'Walk-in customer'),
-            data['order_type'],
-            data['payment_method'],
-            data['total']
+            data.get('order_type', 'Dine-in'),
+            data.get('payment_method', 'Cash'),
+            float(total_to_use)  # Ensure it's a float
         ))
         
         order_id = cursor.fetchone()['id']
         
-        for item in data['items']:
+        # Insert order items
+        for item in items:
             cursor.execute("""
                 INSERT INTO order_items (order_id, item_id, quantity, price)
                 VALUES (%s, %s, %s, %s)
             """, (
                 order_id,
-                item['id'],
+                item.get('id'),
                 item.get('quantity', 1),
-                item['price']
+                item.get('price', 0)
             ))
         
         conn.commit()
@@ -241,7 +261,6 @@ def create_order():
         cursor.close()
         conn.close()
 
-# Create pending order (NOT saved to main orders)
 @auth_bp.route('/orders/pending', methods=['POST'])
 def create_pending_order():
     data = request.get_json()
@@ -249,6 +268,25 @@ def create_pending_order():
     cursor = conn.cursor()
 
     try:
+        # Validate and calculate total if not provided
+        items = data.get('items', [])
+        if not items:
+            return jsonify({'error': 'No items in order'}), 400
+        
+        # Calculate total from items if not provided or invalid
+        calculated_total = 0
+        for item in items:
+            quantity = item.get('quantity', 1)
+            price = item.get('price', 0)
+            calculated_total += quantity * price
+        
+        # Use provided total if valid, otherwise use calculated total
+        provided_total = data.get('total')
+        if provided_total is None or not isinstance(provided_total, (int, float)):
+            total_to_use = calculated_total
+        else:
+            total_to_use = provided_total
+
         # Insert into pending_orders table
         cursor.execute("""
             INSERT INTO pending_orders (customer_name, order_type, payment_method, total, items, user_id)
@@ -256,10 +294,10 @@ def create_pending_order():
             RETURNING id, created_at
         """, (
             data.get('customer_name', 'Walk-in customer'),
-            data['order_type'],
-            data['payment_method'],
-            data['total'],
-            json.dumps(data['items']),
+            data.get('order_type', 'Dine-in'),
+            data.get('payment_method', 'Cash'),
+            float(total_to_use),  # Ensure it's a float
+            json.dumps(items),
             session.get('user', {}).get('id')
         ))
         
@@ -274,9 +312,9 @@ def create_pending_order():
             "message": f"New pending order #{pending_order_id} from {data.get('customer_name', 'Customer')}",
             "pending_order_id": pending_order_id,
             "customer_name": data.get('customer_name', 'Customer'),
-            "total": float(data['total']),
-            "order_type": data['order_type'],
-            "payment_method": data['payment_method'],
+            "total": float(total_to_use),
+            "order_type": data.get('order_type', 'Dine-in'),
+            "payment_method": data.get('payment_method', 'Cash'),
             "timestamp": created_at.isoformat(),
             "type": "pending_order"
         })
