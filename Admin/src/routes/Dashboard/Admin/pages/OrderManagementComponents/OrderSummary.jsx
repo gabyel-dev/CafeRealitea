@@ -10,6 +10,39 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {
     const total = itemsAdded.reduce((sum, item) => sum + item.price, 0);
     const change = customerMoney - total;
 
+    const handleSavePending = async () => {
+  const orderData = {
+    customer_name: customerName,
+    order_type: orderType,
+    payment_method: paymentMethod,
+    total: total,
+    items: itemsAdded.map(item => ({
+      id: item.id,
+      quantity: item.quantity,
+      price: item.price
+    }))
+  };
+
+  try {
+    setIsSubmitting(true);
+    const response = await fetch('https://caferealitea.onrender.com/orders/pending', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(orderData)
+    });
+
+    if (!response.ok) throw new Error('Failed to save pending order');
+
+    const data = await response.json();
+    alert(`Order #${data.order_id} - ${data.message}`);
+  } catch (error) {
+    alert(`Error: ${error.message}`);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
+
     const handleCompleteOrder = async () => {
         const orderData = {
             customer_name: customerName,
@@ -126,19 +159,35 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {
                     </div>
                 </div>
 
-                <div className="w-full flex justify-center items-center pt-4">
-                    <button 
-                        onClick={handleCompleteOrder}
-                        disabled={isSubmitting || itemsAdded.length === 0}
-                        className={`bg-amber-600 w-full py-2 md:py-3 rounded-md text-white text-sm md:text-base ${
-                            isSubmitting || customerMoney <= 0 || customerMoney < total
-                                ? 'opacity-50 cursor-not-allowed'
-                                : 'hover:bg-amber-700 transition-all cursor-pointer'
-                        }`}
-                    >
-                        {isSubmitting ? "Processing..." : "Complete Order"}
-                    </button>
-                </div>
+                
+                <div className="w-full flex flex-col gap-2 pt-4">
+  {/* ✅ Complete Order button (shop) */}
+  <button 
+    onClick={handleCompleteOrder}
+    disabled={isSubmitting || itemsAdded.length === 0}
+    className={`bg-amber-600 w-full py-2 md:py-3 rounded-md text-white text-sm md:text-base ${
+      isSubmitting || customerMoney <= 0 || customerMoney < total
+        ? 'opacity-50 cursor-not-allowed'
+        : 'hover:bg-amber-700 transition-all cursor-pointer'
+    }`}
+  >
+    {isSubmitting ? "Processing..." : "Complete Order"}
+  </button>
+
+  {/* ✅ Save as Pending button (not in shop) */}
+  <button
+    onClick={handleSavePending}
+    disabled={isSubmitting || itemsAdded.length === 0}
+    className={`bg-gray-500 w-full py-2 md:py-3 rounded-md text-white text-sm md:text-base ${
+      isSubmitting
+        ? 'opacity-50 cursor-not-allowed'
+        : 'hover:bg-gray-600 transition-all cursor-pointer'
+    }`}
+  >
+    {isSubmitting ? "Processing..." : "Save as Pending"}
+  </button>
+</div>
+
             </div>
         </div>
     );

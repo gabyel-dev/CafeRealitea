@@ -5,6 +5,8 @@ from utils.hash_passwords import hash_password, check_password
 from datetime import datetime, timedelta
 import pytz
 import secrets
+from main import socketio, connected_users
+
 
 ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
 
@@ -216,7 +218,18 @@ def create_order():
             ))
         
         conn.commit()
+
+
+        user_id = session.get("user", {}).get("id")
+        if user_id and user_id in connected_users:
+                socketio.emit("notification", {
+                    "message": f"Your order #{order_id} has been created!",
+                    "order_id": order_id,
+                    "type": "personal"
+                }, to=connected_users[user_id])
         return jsonify({'message': 'Created successfully', 'order_id': order_id}), 201
+    
+
     
     except Exception as e:
         conn.rollback()
@@ -226,6 +239,91 @@ def create_order():
     finally:
         cursor.close()
         conn.close()
+
+@auth_bp.route('/orders/pending', methods=['POST'])
+def create_pending_order():
+    data = request.get_json()
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            INSERT INTO orders (customer_name, order_type, payment_method, total, status)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (
+            data.get('customer_name', 'Walk-in customer'),
+            data['order_type'],
+            data['payment_method'],
+            data['total'],
+            "PENDING"   # ⚠️ difference from /orders
+        ))
+        
+        order_id = cursor.fetchone()['id']
+
+        for item in data['items']:
+            cursor.execute("""
+                INSERT INTO order_items (order_id, item_id, quantity, price)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                order_id,
+                item['id'],
+                item.get('quantity', 1),
+                item['price']
+            ))
+
+        conn.commit()
+
+        # 🔔 Broadcast pending order to all connected users
+        socketio.emit("notification", {
+            "message": f"New pending order #{order_id} needs confirmation!",
+            "order_id": order_id,
+            "type": "broadcast"
+        }, broadcast=True)
+
+        return jsonify({'message': 'Pending order created', 'order_id': order_id}), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print("Pending order error:", e)
+        return jsonify({'error': 'Server error'}), 500
+    
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+@auth_bp.route('/orders/update_status', methods=['POST'])
+def update_order_status():
+    data = request.get_json()
+    order_id = data.get("order_id")
+    new_status = data.get("status")  # CONFIRMED or CANCELED
+
+    if new_status not in ["CONFIRMED", "CANCELED"]:
+        return jsonify({"error": "Invalid status"}), 400
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (new_status, order_id))
+        conn.commit()
+
+        # 🔔 Notify everyone about status update
+        socketio.emit("notification", {
+            "message": f"Order #{order_id} has been {new_status.lower()}!",
+            "order_id": order_id,
+            "type": "status_update"
+        }, broadcast=True)
+
+        return jsonify({"message": f"Order {order_id} updated to {new_status}"}), 200
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
 
 #all months
 @auth_bp.route('/orders/months', methods=['GET'])
@@ -479,21 +577,59 @@ def top_items():
 
     try:
         cursor.execute("""
-                        SELECT 
-                            oi.item_id,
-                            i.name AS product_name,
-                            EXTRACT(YEAR FROM o.order_time) AS year,
-                            EXTRACT(MONTH FROM o.order_time) AS month,
-                            SUM(oi.quantity) AS total_quantity,
-                            SUM(oi.quantity * oi.price) AS total_sales
-                        FROM order_items oi
-                        JOIN orders o ON oi.order_id = o.id
-                        JOIN itemss i ON oi.item_id = i.id
-                        WHERE EXTRACT(YEAR FROM o.order_time) = EXTRACT(YEAR FROM CURRENT_DATE)
-                        AND EXTRACT(MONTH FROM o.order_time) = EXTRACT(MONTH FROM CURRENT_DATE)
-                        GROUP BY oi.item_id, i.name, year, month
-                        ORDER BY total_sales DESC
-                        LIMIT 3;
+                                            SELECT 
+                        oi.item_id,
+                        i.name AS product_name,
+                        SUM(oi.quantity) AS total_quantity,
+                        SUM(oi.quantity * oi.price) AS total_sales
+                    FROM order_items oi
+                    JOIN orders o ON oi.order_id = o.id
+                    JOIN itemss i ON oi.item_id = i.id
+                    GROUP BY oi.item_id, i.name
+                    ORDER BY total_sales DESC
+                    LIMIT 3;
+
+                        """)
+        items = cursor.fetchall()
+
+        result = []
+
+        for item in items:
+            result.append({
+                "item_id": item['item_id'],
+                "product_name": item['product_name'],
+                "total_quantity": item['total_quantity'],
+                "total_sales": item['total_sales'],
+            })
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"message": str(e)})
+    
+    finally:
+        cursor.close()
+        conn.close()
+
+
+#top items
+@auth_bp.route('/top_items', methods=['GET'])
+def top_items():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+                                            SELECT 
+                        oi.item_id,
+                        i.name AS product_name,
+                        SUM(oi.quantity) AS total_quantity,
+                        SUM(oi.quantity * oi.price) AS total_sales
+                    FROM order_items oi
+                    JOIN orders o ON oi.order_id = o.id
+                    JOIN itemss i ON oi.item_id = i.id
+                    GROUP BY oi.item_id, i.name
+                    ORDER BY total_quantity DESC;
+
                         """)
         items = cursor.fetchall()
 
