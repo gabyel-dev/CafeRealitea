@@ -418,6 +418,7 @@ def get_pending_orders():
     finally:
         cursor.close()
         conn.close()
+
 @auth_bp.route('/pending-orders/<int:pending_id>', methods=['GET'])
 def get_pending_order_details(pending_id):
     conn = get_db_conn()
@@ -597,40 +598,7 @@ def cancel_pending_order(pending_id):
         cursor.close()
         conn.close()
 
-# Cancel/delete pending order
-@auth_bp.route('/pending-orders/<int:pending_id>/cancel', methods=['POST'])
-def cancel_pending_order(pending_id):
-    conn = get_db_conn()
-    cursor = conn.cursor()
 
-    try:
-        # Check if pending order exists
-        cursor.execute("SELECT * FROM pending_orders WHERE id = %s", (pending_id,))
-        pending_order = cursor.fetchone()
-        
-        if not pending_order:
-            return jsonify({"error": "Pending order not found"}), 404
-
-        # Delete from pending orders
-        cursor.execute("DELETE FROM pending_orders WHERE id = %s", (pending_id,))
-        conn.commit()
-
-        # 🔔 Broadcast cancellation notification
-        socketio.emit("order_cancelled", {
-            "message": f"Pending order #{pending_id} has been cancelled",
-            "pending_order_id": pending_id,
-            "customer_name": pending_order['customer_name'],
-            "type": "order_cancelled"
-        })
-
-        return jsonify({"message": f"Pending order {pending_id} cancelled successfully"}), 200
-    
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"error": str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
 
 
 #all months
