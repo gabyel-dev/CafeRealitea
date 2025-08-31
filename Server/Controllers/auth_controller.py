@@ -594,6 +594,11 @@ def cancel_pending_order(pending_id):
         cursor.execute("DELETE FROM pending_orders WHERE id = %s", (pending_id,))
         conn.commit()
 
+        socketio.emit('order_cancelled',  {
+                "message": f"New pending order #{pending_id} from {pending_order['customer_name']} has been Rejected",
+                "type": "order confirmed"
+        })
+
         return jsonify({"message": f"Pending order {pending_id} cancelled successfully"}), 200
     
     except Exception as e:
