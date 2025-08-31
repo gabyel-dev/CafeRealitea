@@ -418,13 +418,14 @@ def get_pending_orders():
     finally:
         cursor.close()
         conn.close()
-# Get single pending order details for modal
 @auth_bp.route('/pending-orders/<int:pending_id>', methods=['GET'])
 def get_pending_order_details(pending_id):
     conn = get_db_conn()
     cursor = conn.cursor()
 
     try:
+        print(f"🔍 Fetching pending order #{pending_id} details...")
+        
         cursor.execute("""
             SELECT 
                 po.*, 
@@ -439,23 +440,53 @@ def get_pending_order_details(pending_id):
         order = cursor.fetchone()
         
         if not order:
+            print(f"❌ Pending order #{pending_id} not found")
             return jsonify({"error": "Pending order not found"}), 404
+
+        # Handle items data
+        items_data = order['items']
+        if isinstance(items_data, str):
+            try:
+                items = json.loads(items_data)
+            except json.JSONDecodeError:
+                print(f"❌ Invalid JSON in items: {items_data}")
+                items = []
+        elif isinstance(items_data, (dict, list)):
+            items = items_data
+        else:
+            print(f"❓ Unknown items type: {type(items_data)}")
+            items = []
+        
+        # Handle NULL total
+        order_total = order['total']
+        if order_total is None:
+            print(f"⚠️ Order {order['id']} has NULL total, calculating from items...")
+            calculated_total = 0
+            for item in items:
+                quantity = item.get('quantity', 1)
+                price = item.get('price', 0)
+                calculated_total += quantity * price
+            order_total = calculated_total
 
         order_details = {
             "id": order['id'],
             "customer_name": order['customer_name'],
             "order_type": order['order_type'],
             "payment_method": order['payment_method'],
-            "total": float(order['total']),
-            "items": json.loads(order['items']),
+            "total": float(order_total),
+            "items": items,
             "created_at": order['created_at'].isoformat() if order['created_at'] else None,
             "created_by": order['created_by'],
             "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
         }
 
+        print(f"✅ Found pending order #{pending_id}")
         return jsonify(order_details)
     
     except Exception as e:
+        print(f"❌ Error fetching pending order #{pending_id}:", str(e))
+        import traceback
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
     finally:
         cursor.close()
@@ -475,6 +506,28 @@ def confirm_pending_order(pending_id):
         if not pending_order:
             return jsonify({"error": "Pending order not found"}), 404
 
+        # Handle items data
+        items_data = pending_order['items']
+        if isinstance(items_data, str):
+            try:
+                items = json.loads(items_data)
+            except json.JSONDecodeError:
+                items = []
+        elif isinstance(items_data, (dict, list)):
+            items = items_data
+        else:
+            items = []
+        
+        # Handle NULL total
+        order_total = pending_order['total']
+        if order_total is None:
+            calculated_total = 0
+            for item in items:
+                quantity = item.get('quantity', 1)
+                price = item.get('price', 0)
+                calculated_total += quantity * price
+            order_total = calculated_total
+
         # Insert into main orders table
         cursor.execute("""
             INSERT INTO orders (customer_name, order_type, payment_method, total, status)
@@ -484,22 +537,21 @@ def confirm_pending_order(pending_id):
             pending_order['customer_name'],
             pending_order['order_type'],
             pending_order['payment_method'],
-            pending_order['total']
+            float(order_total)
         ))
         
         order_id = cursor.fetchone()['id']
         
-        # Insert order items (parse from JSON)
-        items = json.loads(pending_order['items'])
+        # Insert order items
         for item in items:
             cursor.execute("""
                 INSERT INTO order_items (order_id, item_id, quantity, price)
                 VALUES (%s, %s, %s, %s)
             """, (
                 order_id,
-                item['id'],
+                item.get('id'),
                 item.get('quantity', 1),
-                item['price']
+                item.get('price', 0)
             ))
 
         # Delete from pending orders
@@ -507,18 +559,36 @@ def confirm_pending_order(pending_id):
 
         conn.commit()
 
-        # 🔔 Broadcast confirmation notification
-        socketio.emit("order_confirmed", {
-            "message": f"Order #{order_id} has been confirmed!",
-            "order_id": order_id,
-            "customer_name": pending_order['customer_name'],
-            "type": "order_confirmed"
-        })
-
         return jsonify({
             "message": f"Order {order_id} confirmed successfully",
             "order_id": order_id
         }), 200
+    
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@auth_bp.route('/pending-orders/<int:pending_id>/cancel', methods=['POST'])
+def cancel_pending_order(pending_id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        # Check if pending order exists
+        cursor.execute("SELECT * FROM pending_orders WHERE id = %s", (pending_id,))
+        pending_order = cursor.fetchone()
+        
+        if not pending_order:
+            return jsonify({"error": "Pending order not found"}), 404
+
+        # Delete from pending orders
+        cursor.execute("DELETE FROM pending_orders WHERE id = %s", (pending_id,))
+        conn.commit()
+
+        return jsonify({"message": f"Pending order {pending_id} cancelled successfully"}), 200
     
     except Exception as e:
         conn.rollback()

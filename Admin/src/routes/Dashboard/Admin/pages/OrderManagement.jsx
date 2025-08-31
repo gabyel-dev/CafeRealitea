@@ -6,13 +6,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CreateOrder from "./OrderManagementComponents/CreateOrder";
 import OrderSummary from "./OrderManagementComponents/OrderSummary";
 import { faListCheck, faBell } from "@fortawesome/free-solid-svg-icons";
-import { io } from "socket.io-client";
+/* import { io } from "socket.io-client"; */
 import PendingOrdersModal from "../../../../components/PendingOrdersModal";
 
-const socket = io("https://caferealitea.onrender.com", {
+/* const socket = io("https://caferealitea.onrender.com", {
   withCredentials: true,
   transports: ["websocket"],
-});
+}); */
 
 export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
   }, [navigate]);
 
   // 🔥 Socket.io notifications for pending orders
-  useEffect(() => {
+ /*  useEffect(() => {
     socket.on("new_pending_order", (data) => {
       console.log("📢 New Pending Order:", data);
       
@@ -84,7 +84,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
       socket.off("order_confirmed");
       socket.off("order_cancelled");
     };
-  }, [userData]);
+  }, [userData]); */
 
   // Function to view pending orders (you'll create this modal next)
   const viewPendingOrders = () => {
@@ -120,7 +120,7 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
           </div>
           
           {/* Notification Bell */}
-          {(userData?.role === 'Admin' || userData?.role === 'System Administrator') && (
+          {/* {(userData?.role === 'Admin' || userData?.role === 'System Administrator') && (
             <div className="relative">
               <button 
                 onClick={viewPendingOrders}
@@ -134,7 +134,16 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
                 )}
               </button>
             </div>
-          )}
+          )} */}
+
+          {(userData?.role === 'Admin' || userData?.role === 'System Administrator') && (
+          <button 
+            onClick={viewPendingOrders}
+            className="p-3 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+          >
+            View Pending Orders
+          </button>
+        )}
         </div>
 
         {/* Main content */}
