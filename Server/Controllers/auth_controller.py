@@ -491,15 +491,18 @@ def confirm_pending_order(pending_id):
         order_total = pending_order['total'] or sum(item.get('quantity', 1) * item.get('price', 0) for item in items)
 
         # Insert into main orders
+# Insert into main orders with created_by and approved_by
         cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total, status)
-            VALUES (%s, %s, %s, %s, 'CONFIRMED')
+            INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by, approved_by)
+            VALUES (%s, %s, %s, %s, 'CONFIRMED', %s, %s)
             RETURNING id
         """, (
             pending_order['customer_name'],
             pending_order['order_type'],
             pending_order['payment_method'],
-            float(order_total)
+            float(order_total),
+            pending_order['user_id'],          # creator of pending order
+            session.get('user', {}).get('id') # staff confirming it
         ))
         order_id = cursor.fetchone()['id']
 
@@ -902,6 +905,7 @@ def order_details(id):
     cursor = conn.cursor()
 
     try:
+        # Fetch order + items + creator + approver
         cursor.execute("""
             SELECT 
                 o.id AS order_id,
@@ -912,40 +916,49 @@ def order_details(id):
                 i.name AS item_name,
                 oi.quantity,
                 oi.price,
-                (oi.quantity * oi.price) AS subtotal
+                (oi.quantity * oi.price) AS subtotal,
+                creator.first_name AS creator_first_name,
+                creator.last_name AS creator_last_name,
+                approver.first_name AS approver_first_name,
+                approver.last_name AS approver_last_name
             FROM orders o
             JOIN order_items oi ON o.id = oi.order_id
             JOIN itemss i ON oi.item_id = i.id
+            LEFT JOIN users_account creator ON o.created_by = creator.id
+            LEFT JOIN users_account approver ON o.approved_by = approver.id
             WHERE o.id = %s;
         """, (id,))
         
         rows = cursor.fetchall()
 
-        if rows:
-            order_details = {
-                "order_id": rows[0]["order_id"],
-                "customer_name": rows[0]["customer_name"],
-                "order_type": rows[0]["order_type"],
-                "payment_method": rows[0]["payment_method"],
-                "total": float(rows[0]["total"]),
-                "items": []
-            }
-
-            for r in rows:
-                order_details['items'].append({
-                    "name": r["item_name"],
-                    "quantity": r["quantity"],
-                    "price": float(r["price"]),
-                    "subtotal": float(r["subtotal"])
-                })
-
-            return jsonify(order_details)
-        else:
+        if not rows:
             return jsonify({"error": "Order not found"}), 404
-    
+
+        order_details = {
+            "order_id": rows[0]["order_id"],
+            "customer_name": rows[0]["customer_name"],
+            "order_type": rows[0]["order_type"],
+            "payment_method": rows[0]["payment_method"],
+            "total": float(rows[0]["total"]),
+            "created_by": f"{rows[0]['creator_first_name']} {rows[0]['creator_last_name']}" 
+                          if rows[0]['creator_first_name'] else None,
+            "approved_by": f"{rows[0]['approver_first_name']} {rows[0]['approver_last_name']}" 
+                           if rows[0]['approver_first_name'] else None,
+            "items": []
+        }
+
+        for r in rows:
+            order_details['items'].append({
+                "name": r["item_name"],
+                "quantity": r["quantity"],
+                "price": float(r["price"]),
+                "subtotal": float(r["subtotal"])
+            })
+
+        return jsonify(order_details)
+
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
     finally:
         cursor.close()
         conn.close()
