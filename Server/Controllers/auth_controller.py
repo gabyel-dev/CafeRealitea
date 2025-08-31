@@ -587,48 +587,6 @@ def top_items():
                     JOIN orders o ON oi.order_id = o.id
                     JOIN itemss i ON oi.item_id = i.id
                     GROUP BY oi.item_id, i.name
-                    ORDER BY total_sales DESC
-                    LIMIT 3;
-
-                        """)
-        items = cursor.fetchall()
-
-        result = []
-
-        for item in items:
-            result.append({
-                "item_id": item['item_id'],
-                "product_name": item['product_name'],
-                "total_quantity": item['total_quantity'],
-                "total_sales": item['total_sales'],
-            })
-        return jsonify(result)
-
-    except Exception as e:
-        return jsonify({"message": str(e)})
-    
-    finally:
-        cursor.close()
-        conn.close()
-
-
-#top items
-@auth_bp.route('/top_items', methods=['GET'])
-def top_items():
-    conn = get_db_conn()
-    cursor = conn.cursor()
-
-    try:
-        cursor.execute("""
-                                            SELECT 
-                        oi.item_id,
-                        i.name AS product_name,
-                        SUM(oi.quantity) AS total_quantity,
-                        SUM(oi.quantity * oi.price) AS total_sales
-                    FROM order_items oi
-                    JOIN orders o ON oi.order_id = o.id
-                    JOIN itemss i ON oi.item_id = i.id
-                    GROUP BY oi.item_id, i.name
                     ORDER BY total_quantity DESC;
 
                         """)
