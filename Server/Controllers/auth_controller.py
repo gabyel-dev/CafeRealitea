@@ -744,7 +744,8 @@ def daily():
                 "payment_method": row['payment_method'],
                 "total": row['total'],
                 "order_time": pht,
-                "date": row['order_time']
+                "order_time_raw": date.isoformat(),  # Raw datetime for filtering
+                "date": date
             })
 
         return jsonify(result)
