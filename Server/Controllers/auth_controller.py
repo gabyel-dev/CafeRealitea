@@ -275,11 +275,13 @@ def create_pending_order():
         conn.commit()
 
         # 🔔 Broadcast pending order to all connected users
+        # in /orders/pending
         socketio.emit("notification", {
             "message": f"New pending order #{order_id} needs confirmation!",
             "order_id": order_id,
             "type": "broadcast"
-        }, broadcast=True)
+        })
+
 
         return jsonify({'message': 'Pending order created', 'order_id': order_id}), 201
     
@@ -310,11 +312,13 @@ def update_order_status():
         conn.commit()
 
         # 🔔 Notify everyone about status update
+        # in /orders/update_status
         socketio.emit("notification", {
             "message": f"Order #{order_id} has been {new_status.lower()}!",
             "order_id": order_id,
             "type": "status_update"
-        }, broadcast=True)
+        })
+
 
         return jsonify({"message": f"Order {order_id} updated to {new_status}"}), 200
     except Exception as e:
