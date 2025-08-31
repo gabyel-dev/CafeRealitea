@@ -6,6 +6,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MonthlyGraph from "../../../../components/DashboardGraphs/Admin/MonthlySales";
 import { faCoffee, faPesoSign } from "@fortawesome/free-solid-svg-icons";
 
+// ✅ New imports
+import { io } from "socket.io-client";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 export default function AdminDashboard({ activeTab, setActiveTab }) {
     const navigate = useNavigate();
     const [userData, setUserData] = useState(null);
@@ -13,36 +18,65 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [currentMonthData, setCurrentMonthData] = useState([]);
     const [PopularItems, setPopularItems] = useState([]);
     const [fetchSales, setFetchSales] = useState([]);
-    const [totalSale, setTotalSale] = useState()
+    const [totalSale, setTotalSale] = useState();
 
-    const format = (data) => {
-        return parseInt(data).toLocaleString();
-    };
+    const format = (data) => parseInt(data).toLocaleString();
 
+    // ✅ Socket setup
     useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/recent-sales')
+        const socket = io("https://caferealitea.onrender.com", {
+            withCredentials: true
+        });
+
+        // Register this user once logged in
+        if (userData?.user?.id) {
+            socket.emit("register_user", { user_id: userData.user.id });
+        }
+
+        // Listen for notifications
+        socket.on("notification", (data) => {
+            console.log("📢 Notification received:", data);
+
+            // Show toast popup
+            toast.info(data.message, {
+                position: "top-right",
+                autoClose: 5000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                theme: "colored",
+            });
+        });
+
+        return () => {
+            socket.disconnect();
+        };
+    }, [userData]); // reconnect when userData is ready
+
+    // ---- Fetch data (same as before) ----
+    useEffect(() => {
+        axios.get("https://caferealitea.onrender.com/recent-sales")
             .then((res) => setFetchSales(res.data));
     }, []);
 
     useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/orders/current-month')
+        axios.get("https://caferealitea.onrender.com/orders/current-month")
             .then((res) => setCurrentMonthData(res.data));
     }, []);
 
     useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/orders/year')
+        axios.get("https://caferealitea.onrender.com/orders/year")
             .then((res) => {
-            const sum = res.data
-                .map((item) => parseFloat(item.total_sales)) // convert each string to number
-                .reduce((curr, add) => curr + add, 0);       // sum them up
-            console.log(sum);
-            setTotalSale(sum);
+                const sum = res.data
+                    .map((item) => parseFloat(item.total_sales))
+                    .reduce((curr, add) => curr + add, 0);
+                setTotalSale(sum);
             });
-        }, []);
-
+    }, []);
 
     useEffect(() => {
-        axios.get('https://caferealitea.onrender.com/top_items')
+        axios.get("https://caferealitea.onrender.com/top_items")
             .then((res) => setPopularItems(res.data));
     }, []);
 
@@ -50,19 +84,19 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
         document.title = "Café Realitea - Dashboard";
         setLoading(true);
 
-        axios.get('https://caferealitea.onrender.com/user', { withCredentials: true })
+        axios.get("https://caferealitea.onrender.com/user", { withCredentials: true })
             .then((res) => {
                 if (!res.data.logged_in || res.data.role === "") {
-                    navigate('/');
+                    navigate("/");
                     return;
                 } else {
-                    navigate('/dashboard');
+                    navigate("/dashboard");
                 }
                 setUserData(res.data);
             })
             .catch((err) => {
                 console.error("Authentication check failed:", err);
-                navigate('/');
+                navigate("/");
             })
             .finally(() => setLoading(false));
     }, [navigate]);
@@ -76,9 +110,9 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         <div
                             className="absolute bottom-0 left-0 w-full bg-amber-700 transition-all duration-2000"
                             style={{
-                                height: '0%',
-                                animation: 'coffeeFill 1.5s ease-in-out forwards',
-                                animationDelay: '0.3s'
+                                height: "0%",
+                                animation: "coffeeFill 1.5s ease-in-out forwards",
+                                animationDelay: "0.3s",
                             }}
                         ></div>
                     </div>
@@ -105,10 +139,12 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
 
     return (
         <div className="h-screen flex bg-gray-50 lg:pt-0 pt-15">
+            
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
             <div className="w-full h-screen text-gray-800">
                 <main className="max-w-7xl mx-auto py-4 px-4 md:px-8 ml-0 lg:ml-65">
                     <div className="w-full">
+                        <ToastContainer />
                         <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold">
                             Dashboard Overview
                         </h1>
