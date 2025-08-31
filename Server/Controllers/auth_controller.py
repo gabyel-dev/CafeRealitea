@@ -241,6 +241,7 @@ def create_order():
         cursor.close()
         conn.close()
 
+# Create pending order (NOT saved to main orders)
 @auth_bp.route('/orders/pending', methods=['POST'])
 def create_pending_order():
     data = request.get_json()
@@ -248,21 +249,166 @@ def create_pending_order():
     cursor = conn.cursor()
 
     try:
+        # Insert into pending_orders table
         cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total, status)
-            VALUES (%s, %s, %s, %s, %s)
-            RETURNING id
+            INSERT INTO pending_orders (customer_name, order_type, payment_method, total, items, user_id)
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id, created_at
         """, (
             data.get('customer_name', 'Walk-in customer'),
             data['order_type'],
             data['payment_method'],
             data['total'],
-            "PENDING"
+            json.dumps(data['items']),
+            session.get('user', {}).get('id')
+        ))
+        
+        result = cursor.fetchone()
+        pending_order_id = result['id']
+        created_at = result['created_at']
+        
+        conn.commit()
+
+        # 🔔 Broadcast notification to ALL connected users (admins/staff)
+        socketio.emit("new_pending_order", {
+            "message": f"New pending order #{pending_order_id} from {data.get('customer_name', 'Customer')}",
+            "pending_order_id": pending_order_id,
+            "customer_name": data.get('customer_name', 'Customer'),
+            "total": float(data['total']),
+            "order_type": data['order_type'],
+            "payment_method": data['payment_method'],
+            "timestamp": created_at.isoformat(),
+            "type": "pending_order"
+        })
+
+        return jsonify({
+            'message': 'Pending order created successfully', 
+            'pending_order_id': pending_order_id
+        }), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print("Pending order error:", e)
+        return jsonify({'error': 'Server error'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Get all pending orders for notification list
+@auth_bp.route('/pending-orders', methods=['GET'])
+def get_pending_orders():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT 
+                po.*, 
+                u.username as created_by,
+                u.first_name,
+                u.last_name
+            FROM pending_orders po 
+            LEFT JOIN users_account u ON po.user_id = u.id 
+            ORDER BY po.created_at DESC
+        """)
+        pending_orders = cursor.fetchall()
+
+        result = []
+        for order in pending_orders:
+            result.append({
+                "id": order['id'],
+                "customer_name": order['customer_name'],
+                "order_type": order['order_type'],
+                "payment_method": order['payment_method'],
+                "total": float(order['total']),
+                "items": json.loads(order['items']),
+                "created_at": order['created_at'].isoformat() if order['created_at'] else None,
+                "created_by": order['created_by'],
+                "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
+            })
+
+        return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Get single pending order details for modal
+@auth_bp.route('/pending-orders/<int:pending_id>', methods=['GET'])
+def get_pending_order_details(pending_id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+            SELECT 
+                po.*, 
+                u.username as created_by,
+                u.first_name,
+                u.last_name
+            FROM pending_orders po 
+            LEFT JOIN users_account u ON po.user_id = u.id 
+            WHERE po.id = %s
+        """, (pending_id,))
+        
+        order = cursor.fetchone()
+        
+        if not order:
+            return jsonify({"error": "Pending order not found"}), 404
+
+        order_details = {
+            "id": order['id'],
+            "customer_name": order['customer_name'],
+            "order_type": order['order_type'],
+            "payment_method": order['payment_method'],
+            "total": float(order['total']),
+            "items": json.loads(order['items']),
+            "created_at": order['created_at'].isoformat() if order['created_at'] else None,
+            "created_by": order['created_by'],
+            "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
+        }
+
+        return jsonify(order_details)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+# Confirm pending order (move to main orders)
+@auth_bp.route('/pending-orders/<int:pending_id>/confirm', methods=['POST'])
+def confirm_pending_order(pending_id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        # Get the pending order
+        cursor.execute("SELECT * FROM pending_orders WHERE id = %s", (pending_id,))
+        pending_order = cursor.fetchone()
+        
+        if not pending_order:
+            return jsonify({"error": "Pending order not found"}), 404
+
+        # Insert into main orders table
+        cursor.execute("""
+            INSERT INTO orders (customer_name, order_type, payment_method, total, status)
+            VALUES (%s, %s, %s, %s, 'CONFIRMED')
+            RETURNING id
+        """, (
+            pending_order['customer_name'],
+            pending_order['order_type'],
+            pending_order['payment_method'],
+            pending_order['total']
         ))
         
         order_id = cursor.fetchone()['id']
-
-        for item in data['items']:
+        
+        # Insert order items (parse from JSON)
+        items = json.loads(pending_order['items'])
+        for item in items:
             cursor.execute("""
                 INSERT INTO order_items (order_id, item_id, quantity, price)
                 VALUES (%s, %s, %s, %s)
@@ -273,46 +419,24 @@ def create_pending_order():
                 item['price']
             ))
 
+        # Delete from pending orders
+        cursor.execute("DELETE FROM pending_orders WHERE id = %s", (pending_id,))
+
         conn.commit()
 
-        socketio.emit("notification", {
-            "message": f"New pending order #{order_id} needs confirmation!",
+        # 🔔 Broadcast confirmation notification
+        socketio.emit("order_confirmed", {
+            "message": f"Order #{order_id} has been confirmed!",
             "order_id": order_id,
-            "type": "broadcast"
+            "customer_name": pending_order['customer_name'],
+            "type": "order_confirmed"
         })
 
-        return jsonify({'message': 'Pending order created', 'order_id': order_id}), 201
+        return jsonify({
+            "message": f"Order {order_id} confirmed successfully",
+            "order_id": order_id
+        }), 200
     
-    except Exception as e:
-        conn.rollback()
-        print("Pending order error:", e)
-        return jsonify({'error': 'Server error'}), 500
-    finally:
-        cursor.close()
-        conn.close()
-
-@auth_bp.route('/orders/update_status', methods=['POST'])
-def update_order_status():
-    data = request.get_json()
-    order_id = data.get("order_id")
-    new_status = data.get("status")
-
-    if new_status not in ["CONFIRMED", "CANCELED"]:
-        return jsonify({"error": "Invalid status"}), 400
-
-    conn = get_db_conn()
-    cursor = conn.cursor()
-    try:
-        cursor.execute("UPDATE orders SET status = %s WHERE id = %s", (new_status, order_id))
-        conn.commit()
-
-        socketio.emit("notification", {
-            "message": f"Order #{order_id} has been {new_status.lower()}!",
-            "order_id": order_id,
-            "type": "status_update"
-        })
-
-        return jsonify({"message": f"Order {order_id} updated to {new_status}"}), 200
     except Exception as e:
         conn.rollback()
         return jsonify({"error": str(e)}), 500
@@ -320,7 +444,40 @@ def update_order_status():
         cursor.close()
         conn.close()
 
-# ... (rest of your routes remain the same with proper error handling)
+# Cancel/delete pending order
+@auth_bp.route('/pending-orders/<int:pending_id>/cancel', methods=['POST'])
+def cancel_pending_order(pending_id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        # Check if pending order exists
+        cursor.execute("SELECT * FROM pending_orders WHERE id = %s", (pending_id,))
+        pending_order = cursor.fetchone()
+        
+        if not pending_order:
+            return jsonify({"error": "Pending order not found"}), 404
+
+        # Delete from pending orders
+        cursor.execute("DELETE FROM pending_orders WHERE id = %s", (pending_id,))
+        conn.commit()
+
+        # 🔔 Broadcast cancellation notification
+        socketio.emit("order_cancelled", {
+            "message": f"Pending order #{pending_id} has been cancelled",
+            "pending_order_id": pending_id,
+            "customer_name": pending_order['customer_name'],
+            "type": "order_cancelled"
+        })
+
+        return jsonify({"message": f"Pending order {pending_id} cancelled successfully"}), 200
+    
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 
 #all months
@@ -396,7 +553,6 @@ def years():
         cursor.close()
         conn.close()
 
-#current month
 @auth_bp.route('/orders/current-month', methods=['GET'])
 def monthly():
     conn = get_db_conn()
@@ -404,16 +560,17 @@ def monthly():
 
     try:
         cursor.execute("""
-                            SELECT 
-                                EXTRACT(YEAR FROM order_time) AS year, 
-                                EXTRACT(MONTH FROM order_time) AS month,
-                                COUNT(*) AS total_orders, 
-                                SUM(total) AS total_sales 
-                            FROM orders
-                            WHERE EXTRACT(YEAR FROM order_time) = EXTRACT(YEAR FROM CURRENT_DATE)
-                            AND EXTRACT(MONTH FROM order_time) = EXTRACT(MONTH FROM CURRENT_DATE)
-                            GROUP BY year, month
-                        """)
+            SELECT 
+                EXTRACT(YEAR FROM order_time) AS year, 
+                EXTRACT(MONTH FROM order_time) AS month,
+                COUNT(*) AS total_orders, 
+                SUM(total) AS total_sales 
+            FROM orders
+            WHERE status = %s
+            AND EXTRACT(YEAR FROM order_time) = EXTRACT(YEAR FROM CURRENT_DATE)
+            AND EXTRACT(MONTH FROM order_time) = EXTRACT(MONTH FROM CURRENT_DATE)
+            GROUP BY year, month
+        """, ('CONFIRMED',))
 
         rows = cursor.fetchone()
 
@@ -452,14 +609,13 @@ def monthly():
         conn.close()
     
 
-#daily sales
 @auth_bp.route('/daily-sales', methods=['GET'])
 def daily():
     conn = get_db_conn()
     cursor = conn.cursor()
     
     try: 
-        cursor.execute('SELECT * FROM orders ORDER BY order_time DESC')
+        cursor.execute('SELECT * FROM orders WHERE status = %s ORDER BY order_time DESC;', ('CONFIRMED',))
         rows = cursor.fetchall()
 
         
@@ -495,14 +651,14 @@ def daily():
         cursor.close()
         conn.close()
 
-#recent
 @auth_bp.route('/recent-sales', methods=['GET'])
 def recentSale():
     conn = get_db_conn()
     cursor = conn.cursor()
     
     try: 
-        cursor.execute('SELECT * FROM orders ORDER BY order_time DESC LIMIT 4;')
+        # Only show CONFIRMED orders, not pending ones
+        cursor.execute('SELECT * FROM orders WHERE status = %s ORDER BY order_time DESC LIMIT 4;', ('CONFIRMED',))
         rows = cursor.fetchall()
 
         

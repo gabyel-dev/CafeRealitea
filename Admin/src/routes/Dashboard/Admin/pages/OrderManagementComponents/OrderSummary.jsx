@@ -7,41 +7,51 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {
     const [orderType, setOrderType] = useState("Dine-in");
     const [isSubmitting, setIsSubmitting] = useState(false);
     
-    const total = itemsAdded.reduce((sum, item) => sum + item.price, 0);
+    const total = itemsAdded.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const change = customerMoney - total;
 
     const handleSavePending = async () => {
-  const orderData = {
-    customer_name: customerName,
-    order_type: orderType,
-    payment_method: paymentMethod,
-    total: total,
-    items: itemsAdded.map(item => ({
-      id: item.id,
-      quantity: item.quantity,
-      price: item.price
-    }))
-  };
+        const orderData = {
+            customer_name: customerName,
+            order_type: orderType,
+            payment_method: paymentMethod,
+            total: total,
+            items: itemsAdded.map(item => ({
+                id: item.id,
+                quantity: item.quantity || 1, // Make sure quantity is included
+                price: item.price
+            }))
+        };
 
-  try {
-    setIsSubmitting(true);
-    const response = await fetch('https://caferealitea.onrender.com/orders/pending', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderData)
-    });
+        try {
+            setIsSubmitting(true);
+            const response = await fetch('https://caferealitea.onrender.com/orders/pending', {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include', // Important for sessions
+                body: JSON.stringify(orderData)
+            });
 
-    if (!response.ok) throw new Error('Failed to save pending order');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to save pending order');
+            }
 
-    const data = await response.json();
-    alert(`Order #${data.order_id} - ${data.message}`);
-  } catch (error) {
-    alert(`Error: ${error.message}`);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
-
+            const data = await response.json();
+            alert(`✅ Pending Order #${data.pending_order_id} created successfully!`);
+            
+            // Clear the cart after successful submission
+            setItemsAdded([]);
+            setCustomerMoney(0);
+            
+        } catch (error) {
+            alert(`❌ Error: ${error.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const handleCompleteOrder = async () => {
         const orderData = {
@@ -51,7 +61,7 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {
             total: total,
             items: itemsAdded.map(item => ({
                 id: item.id,
-                quantity: item.quantity,
+                quantity: item.quantity || 1,
                 price: item.price
             }))
         };
@@ -60,16 +70,27 @@ export default function OrderSummary({ itemsAdded, setItemsAdded }) {
             setIsSubmitting(true);
             const response = await fetch('https://caferealitea.onrender.com/orders', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include',
                 body: JSON.stringify(orderData)
-            })
+            });
             
-            if (!response.ok) throw new Error('Failed to save order');
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to save order');
+            }
             
             const data = await response.json();
-            alert(`Order #${data.order_id} - ${data.message}`)
+            alert(`✅ Order #${data.order_id} completed successfully!`);
+            
+            // Clear the cart after successful submission
+            setItemsAdded([]);
+            setCustomerMoney(0);
+            
         } catch (error) {
-            alert(`Error: ${error.message}`);
+            alert(`❌ Error: ${error.message}`);
         } finally {
             setIsSubmitting(false);
         }

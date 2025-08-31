@@ -5,8 +5,9 @@ import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import CreateOrder from "./OrderManagementComponents/CreateOrder";
 import OrderSummary from "./OrderManagementComponents/OrderSummary";
-import { faListCheck } from "@fortawesome/free-solid-svg-icons";
+import { faListCheck, faBell } from "@fortawesome/free-solid-svg-icons";
 import { io } from "socket.io-client";
+import PendingOrdersModal from "../../../../components/PendingOrdersModal";
 
 const socket = io("https://caferealitea.onrender.com", {
   withCredentials: true,
@@ -19,6 +20,8 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
   const [itemsAdded, setItemsAdded] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
   useEffect(() => {
     axios.get("https://caferealitea.onrender.com/items")
@@ -46,59 +49,53 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
       });
   }, [navigate]);
 
-  // 🔥 Socket.io notifications
+  // 🔥 Socket.io notifications for pending orders
   useEffect(() => {
-    socket.on("notification", (data) => {
-      console.log("📢 New Notification:", data);
-
-      if (data.type === "personal") {
-        // For the logged-in user (like cashier, staff)
-        alert(data.message);
-      } else if (data.type === "broadcast") {
-        // For admins/staff watching pending orders
-        alert(data.message);
-        // Later: can trigger a refresh of pending orders list
+    socket.on("new_pending_order", (data) => {
+      console.log("📢 New Pending Order:", data);
+      
+      // Add to notifications list
+      setNotifications(prev => [data, ...prev]);
+      
+      // Show alert for new pending orders
+      if (userData?.role === 'Admin' || userData?.role === 'System Administrator') {
+        alert(`🆕 New Pending Order!\nCustomer: ${data.customer_name}\nTotal: ₱${data.total}`);
       }
     });
 
+    socket.on("order_confirmed", (data) => {
+      console.log("✅ Order Confirmed:", data);
+      setNotifications(prev => [data, ...prev]);
+    });
+
+    socket.on("order_cancelled", (data) => {
+      console.log("❌ Order Cancelled:", data);
+      setNotifications(prev => [data, ...prev]);
+    });
+
+    // Register user with socket
+    if (userData?.id) {
+      socket.emit("register_user", { user_id: userData.id });
+    }
+
     // cleanup on unmount
     return () => {
-      socket.off("notification");
+      socket.off("new_pending_order");
+      socket.off("order_confirmed");
+      socket.off("order_cancelled");
     };
-  }, []);
+  }, [userData]);
+
+  // Function to view pending orders (you'll create this modal next)
+  const viewPendingOrders = () => {
+    // This will open a modal with pending orders list
+    setShowNotifications(true);
+  };
 
   if (loading) {
     return (
       <div className="flex flex-col justify-center items-center h-screen bg-amber-50">
-        {/* Coffee Icon */}
-        <div className="relative">
-          <div className="w-16 h-12 border-4 border-amber-900 rounded-b-xl rounded-t-sm overflow-hidden">
-            <div
-              className="absolute bottom-0 left-0 w-full bg-amber-700 transition-all duration-2000"
-              style={{
-                height: "0%",
-                animation: "coffeeFill 1.5s ease-in-out forwards",
-                animationDelay: "0.3s",
-              }}
-            ></div>
-          </div>
-          <div className="absolute -top-0.5 -inset-x-0.5 h-1 bg-amber-900 rounded-t-sm"></div>
-          <div className="absolute -bottom-2 -inset-x-4 h-2 bg-amber-200 rounded-full"></div>
-        </div>
-
-        <p className="mt-6 text-amber-900 font-medium">Brewing your experience...</p>
-
-        <style>
-          {`
-          @keyframes coffeeFill {
-              0% { height: 0%; }
-              20% { height: 20%; }
-              50% { height: 50%; }
-              80% { height: 80%; }
-              100% { height: 85%; }
-          }
-          `}
-        </style>
+        {/* Loading animation... */}
       </div>
     );
   }
@@ -108,13 +105,12 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
       <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
 
       <div className="w-full h-screen text-gray-800 pt-20 lg:pt-6">
-        {/* Header */}
+        {/* Header with Notification Bell */}
         <div className="flex flex-col sm:flex-row sm:items-center mb-6 sm:mb-8 px-4 sm:px-6 lg:px-8 ml-0 lg:ml-65">
           <div className="bg-amber-100 hidden lg:block p-2 sm:p-3 rounded-lg mr-0 sm:mr-4 mb-3 sm:mb-0">
             <FontAwesomeIcon icon={faListCheck} className="text-amber-600 text-lg lg:text-2xl" />
           </div>
-          <div>
-            {/* text size scales up */}
+          <div className="flex-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800">
               Order Management
             </h1>
@@ -122,6 +118,23 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
               Create and manage customer orders
             </p>
           </div>
+          
+          {/* Notification Bell */}
+          {(userData?.role === 'Admin' || userData?.role === 'System Administrator') && (
+            <div className="relative">
+              <button 
+                onClick={viewPendingOrders}
+                className="p-3 bg-amber-100 rounded-lg hover:bg-amber-200 transition-colors"
+              >
+                <FontAwesomeIcon icon={faBell} className="text-amber-600 text-lg" />
+                {notifications.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {notifications.length}
+                  </span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Main content */}
@@ -131,8 +144,19 @@ export default function OrderManagementAdmin({ activeTab, setActiveTab }) {
             setItemsAdded={setItemsAdded}
             itemsAdded={itemsAdded}
           />
-          <OrderSummary itemsAdded={itemsAdded} />
+          <OrderSummary 
+            itemsAdded={itemsAdded} 
+            setItemsAdded={setItemsAdded}
+          />
         </div>
+
+        {/* Pending Orders Modal (you'll create this next) */}
+        {showNotifications && (
+          <PendingOrdersModal
+            onClose={() => setShowNotifications(false)}
+            notifications={notifications}
+          />
+        )}
       </div>
     </div>
   );
