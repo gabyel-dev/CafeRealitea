@@ -4,9 +4,9 @@ import { useNavigate, Link } from "react-router-dom";
 import AdminSidePanel from "../../../../components/AdminSidePanel";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import MonthlyGraph from "../../../../components/DashboardGraphs/Admin/MonthlySales";
-import { faCoffee, faPesoSign } from "@fortawesome/free-solid-svg-icons";
+import { faCoffee, faPesoSign, faBell } from "@fortawesome/free-solid-svg-icons";
 
-// ✅ New imports
+// ✅ Socket.IO and Toast imports
 import { io } from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -18,68 +18,174 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
     const [currentMonthData, setCurrentMonthData] = useState([]);
     const [PopularItems, setPopularItems] = useState([]);
     const [fetchSales, setFetchSales] = useState([]);
-    const [totalSale, setTotalSale] = useState();
+    const [totalSale, setTotalSale] = useState(0);
+    const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
+    const [socketConnected, setSocketConnected] = useState(false);
 
-    const format = (data) => parseInt(data).toLocaleString();
+    const format = (data) => parseInt(data || 0).toLocaleString();
 
-    // ✅ Socket setup
+    // ✅ Socket setup with better error handling
     useEffect(() => {
-        const socket = io("https://caferealitea.onrender.com", {
-            transports: ["websocket", "polling"],
-            withCredentials: true
-            });
+        let socket;
+        let pollingInterval;
 
-        // Register this user once logged in
-        if (userData?.user?.id) {
-            socket.emit("register_user", { user_id: userData.user.id });
-        }
+        const initializeSocket = () => {
+            try {
+                socket = io("https://caferealitea.onrender.com", {
+                    transports: ["polling", "websocket"],
+                    withCredentials: true,
+                    reconnection: true,
+                    reconnectionAttempts: 3,
+                    reconnectionDelay: 2000,
+                });
 
-        // Listen for notifications
-        socket.on("notification", (data) => {
-            console.log("📢 Notification received:", data);
+                socket.on("connect", () => {
+                    console.log("✅ Socket.IO connected successfully");
+                    setSocketConnected(true);
+                    
+                    // Register user with socket
+                    if (userData?.id) {
+                        socket.emit("register_user", { user_id: userData.id });
+                    }
+                });
 
-            // Show toast popup
-            toast.info(data.message, {
-                position: "top-right",
-                autoClose: 5000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                theme: "colored",
-            });
-        });
+                socket.on("new_pending_order", (data) => {
+                    console.log("📢 New pending order:", data);
+                    toast.info(`🆕 ${data.message}`, {
+                        position: "top-right",
+                        autoClose: 5000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        theme: "colored",
+                    });
+                    
+                    // Update pending orders count
+                    setPendingOrdersCount(prev => prev + 1);
+                });
+
+                socket.on("order_confirmed", (data) => {
+                    console.log("✅ Order confirmed:", data);
+                    toast.success(`✅ ${data.message}`, {
+                        position: "top-right",
+                        autoClose: 3000,
+                    });
+                });
+
+                socket.on("order_cancelled", (data) => {
+                    console.log("❌ Order cancelled:", data);
+                    toast.error(`❌ ${data.message}`, {
+                        position: "top-right",
+                        autoClose: 3000,
+                    });
+                });
+
+                socket.on("notification", (data) => {
+                    console.log("📢 Generic notification:", data);
+                    toast.info(data.message, {
+                        position: "top-right",
+                        autoClose: 5000,
+                    });
+                });
+
+                socket.on("connect_error", (error) => {
+                    console.log("❌ Socket connection error:", error);
+                    setSocketConnected(false);
+                    
+                    // Fallback to polling if socket fails
+                    startPolling();
+                });
+
+                socket.on("disconnect", (reason) => {
+                    console.log("🔌 Socket disconnected:", reason);
+                    setSocketConnected(false);
+                });
+
+            } catch (error) {
+                console.error("❌ Socket initialization error:", error);
+                setSocketConnected(false);
+                startPolling();
+            }
+        };
+
+        const startPolling = () => {
+            console.log("🔄 Starting polling fallback...");
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await axios.get(
+                        "https://caferealitea.onrender.com/pending-orders", 
+                        { withCredentials: true }
+                    );
+                    
+                    if (response.data && response.data.length > 0) {
+                        setPendingOrdersCount(response.data.length);
+                        
+                        // Only show notification if there are new pending orders
+                        if (response.data.length > 0) {
+                            toast.info(`📋 You have ${response.data.length} pending orders waiting for review`, {
+                                position: "top-right",
+                                autoClose: 5000,
+                            });
+                        }
+                    }
+                } catch (error) {
+                    console.log("Polling error:", error);
+                }
+            }, 30000); // Check every 30 seconds
+        };
+
+        // Initialize socket connection
+        initializeSocket();
 
         return () => {
-            socket.disconnect();
+            if (socket) {
+                socket.disconnect();
+            }
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+            }
         };
-    }, [userData]); // reconnect when userData is ready
+    }, [userData]);
 
-    // ---- Fetch data (same as before) ----
+    // ---- Fetch data ----
     useEffect(() => {
         axios.get("https://caferealitea.onrender.com/recent-sales")
-            .then((res) => setFetchSales(res.data));
+            .then((res) => setFetchSales(res.data))
+            .catch((err) => console.error("Error fetching recent sales:", err));
     }, []);
 
     useEffect(() => {
         axios.get("https://caferealitea.onrender.com/orders/current-month")
-            .then((res) => setCurrentMonthData(res.data));
+            .then((res) => setCurrentMonthData(res.data))
+            .catch((err) => console.error("Error fetching monthly data:", err));
     }, []);
 
     useEffect(() => {
         axios.get("https://caferealitea.onrender.com/orders/year")
             .then((res) => {
                 const sum = res.data
-                    .map((item) => parseFloat(item.total_sales))
+                    .map((item) => parseFloat(item.total_sales || 0))
                     .reduce((curr, add) => curr + add, 0);
                 setTotalSale(sum);
-            });
+            })
+            .catch((err) => console.error("Error fetching yearly data:", err));
     }, []);
 
     useEffect(() => {
         axios.get("https://caferealitea.onrender.com/top_items")
-            .then((res) => setPopularItems(res.data));
+            .then((res) => setPopularItems(res.data))
+            .catch((err) => console.error("Error fetching popular items:", err));
     }, []);
+
+    // Fetch initial pending orders count
+    useEffect(() => {
+        if (userData?.role === 'Admin' || userData?.role === 'System Administrator') {
+            axios.get("https://caferealitea.onrender.com/pending-orders", { withCredentials: true })
+                .then((res) => setPendingOrdersCount(res.data.length))
+                .catch((err) => console.error("Error fetching pending orders:", err));
+        }
+    }, [userData]);
 
     useEffect(() => {
         document.title = "Café Realitea - Dashboard";
@@ -90,10 +196,8 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                 if (!res.data.logged_in || res.data.role === "") {
                     navigate("/");
                     return;
-                } else {
-                    navigate("/dashboard");
                 }
-                setUserData(res.data);
+                setUserData(res.data.user || res.data);
             })
             .catch((err) => {
                 console.error("Authentication check failed:", err);
@@ -140,20 +244,54 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
 
     return (
         <div className="h-screen flex bg-gray-50 lg:pt-0 pt-15">
-            
             <AdminSidePanel activeTab={activeTab} setActiveTab={setActiveTab} />
+            
             <div className="w-full h-screen text-gray-800">
                 <main className="max-w-7xl mx-auto py-4 px-4 md:px-8 ml-0 lg:ml-65">
-                    <div className="w-full">
-                        <ToastContainer />
-                        <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold">
-                            Dashboard Overview
-                        </h1>
-                        <p className="text-sm sm:text-base lg:text-md text-gray-500 mt-1">
-                            Welcome back, <b>{userData?.user?.first_name}</b>! Here's what's happening with Café Realitea today.
-                        </p>
+                    <div className="w-full flex justify-between items-center">
+                        <div>
+                            <h1 className="text-2xl sm:text-3xl lg:text-3xl font-bold">
+                                Dashboard Overview
+                            </h1>
+                            <p className="text-sm sm:text-base lg:text-md text-gray-500 mt-1">
+                                Welcome back, <b>{userData?.first_name}</b>! Here's what's happening with Café Realitea today.
+                            </p>
+                        </div>
+                        
+                        {/* Connection Status Indicator */}
+                        <div className="flex items-center gap-2">
+                            <div className={`w-3 h-3 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                            <span className="text-sm text-gray-500">
+                                {socketConnected ? 'Live updates' : 'Polling mode'}
+                            </span>
+                        </div>
                     </div>
                 </main>
+
+                {/* Notification Bell for Admins */}
+                {(userData?.role === 'Admin' || userData?.role === 'System Administrator') && pendingOrdersCount > 0 && (
+                    <div className="lg:ml-65 px-4 md:px-8 mb-4">
+                        <div className="bg-amber-100 border border-amber-300 rounded-lg p-4 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <FontAwesomeIcon icon={faBell} className="text-amber-600 text-xl" />
+                                <div>
+                                    <p className="font-semibold text-amber-800">Pending Orders Alert</p>
+                                    <p className="text-amber-700 text-sm">
+                                        You have {pendingOrdersCount} order{pendingOrdersCount !== 1 ? 's' : ''} waiting for approval
+                                    </p>
+                                </div>
+                            </div>
+                            <Link 
+                                to="/orders" 
+                                className="bg-amber-600 text-white px-4 py-2 rounded-lg hover:bg-amber-700 transition-colors text-sm"
+                            >
+                                Review Orders
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                <ToastContainer />
 
                 <div className="lg:ml-65 lg:flex gap-6 px-4 md:px-8 mb-5">
                     <div className="__profit__ w-full shadow-md bg-white rounded-lg mb-6">
@@ -168,9 +306,8 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                                     <div>
                                         <div className="flex justify-between">
                                             <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-500">
-                                            Monthly Sales
+                                                Monthly Sales
                                             </p>
-                                            {totalSale}
                                         </div>
                                         <div className="__monthly_sales flex items-center justify-between pb-4">
                                             <p className="text-xl sm:text-2xl lg:text-3xl font-bold">
@@ -188,7 +325,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                                         <div className="__avg_order__">
                                             <p className="text-xs sm:text-sm text-gray-400">Avg Order</p>
                                             <p className="font-semibold text-sm sm:text-base">
-                                                ₱{(res.total_sales / res.total_orders).toFixed(2)}
+                                                ₱{(res.total_sales / (res.total_orders || 1)).toFixed(2)}
                                             </p>
                                         </div>
                                     </div>
@@ -197,13 +334,13 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         </div>
 
                         {/* Popular Items */}
-                        <div className="__monthlysales__ shadow-md w-full px-6 bg-white rounded-md h-fit pb-6  lg:pb-6">
+                        <div className="__monthlysales__ shadow-md w-full px-6 bg-white rounded-md h-fit pb-6 lg:pb-6">
                             <div className="__popular_items__ flex items-center justify-between py-6">
                                 <p className="text-sm sm:text-base lg:text-lg font-semibold text-gray-500">
                                     Popular Items
                                 </p>
                             </div>
-                            {PopularItems.map((res) => (
+                            {PopularItems.slice(0, 3).map((res) => (
                                 <div key={res.item_id} className="flex justify-between items-center pb-3">
                                     <div className="flex gap-4 items-center">
                                         <FontAwesomeIcon icon={faCoffee} className="bg-amber-100 text-amber-600 px-3 py-2 rounded-sm" />
@@ -224,7 +361,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                         </div>
 
                         <div>
-                            {fetchSales.map((res) => (
+                            {fetchSales.slice(0, 5).map((res) => (
                                 <div key={res.id} className="border-b-1 border-gray-200 flex items-center justify-between px-6 py-3">
                                     <p className="text-sm sm:text-base lg:text-lg font-semibold">
                                         Order #{res.id}
