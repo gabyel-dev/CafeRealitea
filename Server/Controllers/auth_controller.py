@@ -273,7 +273,7 @@ def create_pending_order():
         if not items:
             return jsonify({'error': 'No items in order'}), 400
         
-        # Calculate total from items if not provided or invalid
+        # Calculate total from items
         calculated_total = 0
         for item in items:
             quantity = item.get('quantity', 1)
@@ -286,6 +286,10 @@ def create_pending_order():
             total_to_use = calculated_total
         else:
             total_to_use = provided_total
+
+        # Ensure total is never None
+        if total_to_use is None:
+            total_to_use = 0.0
 
         # Ensure items is properly converted to JSON string
         items_json = json.dumps(items)
@@ -300,8 +304,8 @@ def create_pending_order():
             data.get('customer_name', 'Walk-in customer'),
             data.get('order_type', 'Dine-in'),
             data.get('payment_method', 'Cash'),
-            float(total_to_use),
-            items_json,  # This should be a JSON string
+            float(total_to_use),  # This will never be None now
+            items_json,
             session.get('user', {}).get('id')
         ))
         
@@ -313,7 +317,17 @@ def create_pending_order():
 
         print(f"✅ Pending order #{pending_order_id} created successfully")
         
-        # ... rest of your code for socket emission ...
+        # 🔔 Broadcast notification to ALL connected users (admins/staff)
+        socketio.emit("new_pending_order", {
+            "message": f"New pending order #{pending_order_id} from {data.get('customer_name', 'Customer')}",
+            "pending_order_id": pending_order_id,
+            "customer_name": data.get('customer_name', 'Customer'),
+            "total": float(total_to_use),
+            "order_type": data.get('order_type', 'Dine-in'),
+            "payment_method": data.get('payment_method', 'Cash'),
+            "timestamp": created_at.isoformat(),
+            "type": "pending_order"
+        })
 
         return jsonify({
             'message': 'Pending order created successfully', 
@@ -358,7 +372,11 @@ def get_pending_orders():
             # Handle different types of items data
             if isinstance(items_data, str):
                 # It's a JSON string, parse it
-                items = json.loads(items_data)
+                try:
+                    items = json.loads(items_data)
+                except json.JSONDecodeError:
+                    print(f"❌ Invalid JSON in items: {items_data}")
+                    items = []
             elif isinstance(items_data, (dict, list)):
                 # It's already parsed (dict or list), use as is
                 items = items_data
@@ -367,13 +385,24 @@ def get_pending_orders():
                 print(f"❓ Unknown items type: {type(items_data)}")
                 items = []
             
+            # Handle NULL total - calculate from items if total is None
+            order_total = order['total']
+            if order_total is None:
+                print(f"⚠️ Order {order['id']} has NULL total, calculating from items...")
+                calculated_total = 0
+                for item in items:
+                    quantity = item.get('quantity', 1)
+                    price = item.get('price', 0)
+                    calculated_total += quantity * price
+                order_total = calculated_total
+            
             result.append({
                 "id": order['id'],
                 "customer_name": order['customer_name'],
                 "order_type": order['order_type'],
                 "payment_method": order['payment_method'],
-                "total": float(order['total']),
-                "items": items,  # Use the properly parsed items
+                "total": float(order_total),  # Now this will never be None
+                "items": items,
                 "created_at": order['created_at'].isoformat() if order['created_at'] else None,
                 "created_by": order['created_by'],
                 "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
@@ -389,7 +418,6 @@ def get_pending_orders():
     finally:
         cursor.close()
         conn.close()
-
 # Get single pending order details for modal
 @auth_bp.route('/pending-orders/<int:pending_id>', methods=['GET'])
 def get_pending_order_details(pending_id):
