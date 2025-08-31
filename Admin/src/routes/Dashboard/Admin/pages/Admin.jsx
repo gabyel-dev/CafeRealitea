@@ -53,7 +53,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                     console.log("📢 New pending order:", data);
                     toast.info(`🆕 ${data.message}`, {
                         position: "top-right",
-                        autoClose: 5000,
+                        autoClose: 10000,
                         hideProgressBar: false,
                         closeOnClick: true,
                         pauseOnHover: true,
@@ -69,7 +69,7 @@ export default function AdminDashboard({ activeTab, setActiveTab }) {
                     console.log("✅ Order confirmed:", data);
                     toast.success(`✅ ${data.message}`, {
                         position: "top-right", 
-                        autoClose: 3000,
+                        autoClose: 5000,
                     });
                 });
 

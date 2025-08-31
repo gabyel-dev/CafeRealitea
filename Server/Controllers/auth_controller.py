@@ -619,6 +619,7 @@ def months():
                             COUNT (*) AS total_orders, 
                             SUM(total) AS total_sales 
                         FROM orders
+                       WHERE status = 'CONFIRMED'
                         GROUP BY year, month
                         ORDER BY year, month """)
         rows = cursor.fetchall()
