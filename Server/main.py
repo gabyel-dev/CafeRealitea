@@ -25,7 +25,7 @@ app.config["SESSION_COOKIE_SECURE"] = True
 CORS(app, supports_credentials=True)
 bcrypt.init_app(app)
 Session(app)
-socketio.init_app(app)
+socketio.init_app(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # ---- Socket.IO events ----
 @socketio.on("connect")
