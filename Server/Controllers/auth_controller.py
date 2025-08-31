@@ -338,6 +338,8 @@ def get_pending_orders():
     cursor = conn.cursor()
 
     try:
+        print("🔍 Fetching pending orders...")
+        
         cursor.execute("""
             SELECT 
                 po.*, 
@@ -349,26 +351,45 @@ def get_pending_orders():
             ORDER BY po.created_at DESC
         """)
         pending_orders = cursor.fetchall()
+        print(f"📋 Found {len(pending_orders)} pending orders")
 
         result = []
         for order in pending_orders:
+            # Debug: Check what type the items field is
+            items_data = order['items']
+            print(f"📦 Order {order['id']} items type: {type(items_data)}, value: {items_data}")
+            
+            # Handle different types of items data
+            if isinstance(items_data, str):
+                # It's a JSON string, parse it
+                items = json.loads(items_data)
+            elif isinstance(items_data, (dict, list)):
+                # It's already parsed (dict or list), use as is
+                items = items_data
+            else:
+                # Unknown type, default to empty list
+                print(f"❓ Unknown items type: {type(items_data)}")
+                items = []
+            
             result.append({
                 "id": order['id'],
                 "customer_name": order['customer_name'],
                 "order_type": order['order_type'],
                 "payment_method": order['payment_method'],
                 "total": float(order['total']),
-                "items": json.loads(order['items']),
+                "items": items,  # Use the properly parsed items
                 "created_at": order['created_at'].isoformat() if order['created_at'] else None,
                 "created_by": order['created_by'],
                 "staff_name": f"{order['first_name']} {order['last_name']}" if order['first_name'] else None
             })
 
-        return jsonify(result)  # ✅ This returns an array
+        return jsonify(result)
     
     except Exception as e:
-        print("Error fetching pending orders:", e)
-        return jsonify({"error": str(e)}), 500
+        print("❌ Error fetching pending orders:", str(e))
+        import traceback
+        traceback.print_exc()
+        return jsonify({"error": str(e), "pending_orders": []}), 500
     finally:
         cursor.close()
         conn.close()
