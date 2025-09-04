@@ -52,7 +52,7 @@ def handle_register_user(data):
     user_id = data.get("user_id")
     if user_id:
         connected_users[user_id] = request.sid
-        print(f"User {user_id} registered to socket {request.sid}")
+        print(f"User {user_id}   {request.sid}")
 
 # ---- Import and register blueprints AFTER initializing extensions ----
 from Controllers.auth_controller import auth_bp

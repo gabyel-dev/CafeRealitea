@@ -806,6 +806,11 @@ def recentSale():
 def users():
     conn = get_db_conn()
     cursor = conn.cursor()
+    id = session.get('user', {}).get('id')
+
+    if not id:
+        return jsonify({"error": "Unauthorized"}), 401
+
 
     try:
         cursor.execute('SELECT * FROM users_account')
@@ -820,7 +825,6 @@ def users():
                 "last_name": row['last_name'],
                 "email": row['email'],
                 "role": row['role'],
-                "token": row['users_token']
             })
     
         return jsonify(result)

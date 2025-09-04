@@ -33,18 +33,18 @@ export default function UserDetails() {
             })
     }, []);
 
-    useEffect(() => {
-        document.title = "Café Realitea - User Details";
-        setLoading(true)
-        axios.get(`https://caferealitea.onrender.com/api/users/${id}`)
-        .then((res) => {
-            setUserDetails(res.data)
-            setLoading(false)
-        })
-        .catch(() => {
-            setLoading(false)
-        })
-    }, [id])
+        useEffect(() => {
+            document.title = "Café Realitea - User Details";
+            setLoading(true)
+            axios.get(`https://caferealitea.onrender.com/api/users/${id}`)
+            .then((res) => {
+                setUserDetails(res.data)
+                setLoading(false)
+            })
+            .catch(() => {
+                setLoading(false)
+            })
+        }, [id])
 
     return (
         <div className="min-h-screen bg-gray-50 flex">

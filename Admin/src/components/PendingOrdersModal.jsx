@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes, faCheck, faXmark, faRefresh } from "@fortawesome/free-solid-svg-icons";
+import { faTimes, faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 
 export default function PendingOrdersModal({ onClose, notifications }) {
   const [pendingOrders, setPendingOrders] = useState([]);
@@ -112,7 +112,7 @@ export default function PendingOrdersModal({ onClose, notifications }) {
               className="p-2 bg-gray-200 rounded hover:bg-gray-300"
               title="Refresh"
             >
-              <FontAwesomeIcon icon={faRefresh} />
+              
             </button>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
               <FontAwesomeIcon icon={faTimes} size="lg" />
