@@ -190,8 +190,8 @@ def daily_summary():
     """)
     rows = cur.fetchall()
     equipment, gross_profit, packaging = get_total_costs()
-    # add net profit
-    summary = [{"day": r[0], "revenue": float(r[1]), "net_profit": float(r[1]) - (equipment + gross_profit + packaging)} for r in rows]
+    # Use column names instead of numeric indices
+    summary = [{"day": r['day'], "revenue": float(r['revenue']), "net_profit": float(r['revenue']) - (equipment + gross_profit + packaging)} for r in rows]
     cur.close()
     conn.close()
     return jsonify(summary)
@@ -211,7 +211,8 @@ def monthly_summary():
     """)
     rows = cur.fetchall()
     equipment, gross_profit, packaging = get_total_costs()
-    summary = [{"year": r[0], "month": r[1], "revenue": float(r[2]), "net_profit": float(r[2]) - (equipment + gross_profit + packaging)} for r in rows]
+    # Use column names instead of numeric indices
+    summary = [{"year": r['year'], "month": r['month'], "revenue": float(r['revenue']), "net_profit": float(r['revenue']) - (equipment + gross_profit + packaging)} for r in rows]
     cur.close()
     conn.close()
     return jsonify(summary)
@@ -230,7 +231,8 @@ def yearly_summary():
     """)
     rows = cur.fetchall()
     equipment, gross_profit, packaging = get_total_costs()
-    summary = [{"year": r[0], "revenue": float(r[1]), "net_profit": float(r[1]) - (equipment + gross_profit + packaging)} for r in rows]
+    # Use column names instead of numeric indices
+    summary = [{"year": r['year'], "revenue": float(r['revenue']), "net_profit": float(r['revenue']) - (equipment + gross_profit + packaging)} for r in rows]
     cur.close()
     conn.close()
     return jsonify(summary)
