@@ -65,7 +65,7 @@ def handle_user_online(data):
         return
 
     # Convert to string for consistency
-    user_id = str(user_id)
+
     connected_users[user_id] = request.sid
     update_last_activity(user_id)  # Update lastactivity in DB
 
