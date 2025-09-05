@@ -57,6 +57,32 @@ def handle_register_user(data):
         connected_users[user_id] = request.sid
         print(f"User {user_id}   {request.sid}")
 
+@socketio.on("user_online")
+def handle_user_online(data):
+    user_id = data.get("user_id")
+    if user_id:
+        connected_users[user_id] = request.sid
+        print(f"User {user_id} is online with SID: {request.sid}")
+        
+        # Broadcast to all clients that this user is now online
+        socketio.emit("user_status_change", {
+            "user_id": user_id,
+            "is_online": True
+        }, broadcast=True)
+
+@socketio.on("user_offline")
+def handle_user_offline(data):
+    user_id = data.get("user_id")
+    if user_id and user_id in connected_users:
+        del connected_users[user_id]
+        print(f"User {user_id} went offline")
+        
+        # Broadcast to all clients that this user is now offline
+        socketio.emit("user_status_change", {
+            "user_id": user_id,
+            "is_online": False
+        }, broadcast=True)
+
 # ---- Import and register blueprints AFTER initializing extensions ----
 from Controllers.auth_controller import auth_bp
 app.register_blueprint(auth_bp)
