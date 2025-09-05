@@ -61,16 +61,20 @@ def handle_register_user(data):
 @socketio.on("user_online")
 def handle_user_online(data):
     user_id = data.get("user_id")
-    if user_id:
-        connected_users[user_id] = request.sid
-        update_last_activity(user_id)
-        print(f"User {user_id} is online with SID: {request.sid}")
-        
-        # Broadcast to all clients that this user is now online
-        socketio.emit("user_status_change", {
-            "user_id": user_id,
-            "is_online": True
-        }, broadcast=True)
+    if not user_id:
+        return
+
+    connected_users[user_id] = request.sid
+    update_last_activity(user_id)  # Update lastactivity in DB
+
+    print(f"User {user_id} is online with SID: {request.sid}")
+
+    # Notify all clients about the online status change
+    socketio.emit("user_status_change", {
+        "user_id": user_id,
+        "is_online": True
+    }, broadcast=True)
+
 
 @socketio.on("user_offline")
 def handle_user_offline(data):
@@ -78,8 +82,8 @@ def handle_user_offline(data):
     if user_id and user_id in connected_users:
         del connected_users[user_id]
         print(f"User {user_id} went offline")
-        
-        # Broadcast to all clients that this user is now offline
+
+        # Notify all clients about the offline status change
         socketio.emit("user_status_change", {
             "user_id": user_id,
             "is_online": False
