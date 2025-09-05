@@ -76,7 +76,7 @@ def handle_user_online(data):
     }, broadcast=True)
 
 
-@socketio.on("user_offline")
+@socketio.on("user_offline")    
 def handle_user_offline(data):
     user_id = data.get("user_id")
     if user_id and user_id in connected_users:
