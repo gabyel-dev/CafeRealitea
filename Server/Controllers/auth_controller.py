@@ -1055,22 +1055,22 @@ def update_last_activity(user_id):
 
 
 
-
 @auth_bp.route('/online_users', methods=['GET'])
 def get_online_users():
     conn = get_db_conn()
     cursor = conn.cursor()
 
     try:
-        # Online if active in the last 2 minutes
+        # Increase the interval to a reasonable time (e.g., 2 minutes)
         cursor.execute("""
             SELECT id
             FROM users_account
-            WHERE lastactivity >= NOW() - INTERVAL '0 minutes'
+            WHERE lastactivity >= NOW() - INTERVAL '2 minutes'
         """)
         online_users = cursor.fetchall()
 
-        online_user_ids = [row['id'] for row in online_users]
+        # Ensure user IDs are strings for comparison with socket data
+        online_user_ids = [str(row['id']) for row in online_users]
 
         return jsonify({
             "online_users": online_user_ids,

@@ -64,6 +64,8 @@ def handle_user_online(data):
     if not user_id:
         return
 
+    # Convert to string for consistency
+    user_id = str(user_id)
     connected_users[user_id] = request.sid
     update_last_activity(user_id)  # Update lastactivity in DB
 
@@ -74,7 +76,6 @@ def handle_user_online(data):
         "user_id": user_id,
         "is_online": True
     }, broadcast=True)
-
 
 @socketio.on("user_offline")    
 def handle_user_offline(data):
