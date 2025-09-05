@@ -1037,18 +1037,23 @@ def order_details(id):
         conn.close()
 
 def update_last_activity(user_id):
-    conn = get_db_conn()
-    cursor = conn.cursor()
     try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
         cursor.execute("""
             UPDATE users_account
             SET lastactivity = NOW()
             WHERE id = %s
-        """, (user_id,))
+        """, (int(user_id),))  # cast to integer
         conn.commit()
+        print(f"Updated lastactivity for user {user_id}")
+    except Exception as e:
+        print("Error updating lastactivity:", e)
     finally:
         cursor.close()
         conn.close()
+
+
 
 
 @auth_bp.route('/online_users', methods=['GET'])
