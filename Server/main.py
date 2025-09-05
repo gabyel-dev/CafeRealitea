@@ -4,6 +4,9 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_session import Session
 from extensions import socketio, bcrypt, connected_users
+from finance_bp import finance_bp
+
+
 
 # load env vars
 load_dotenv()
@@ -57,6 +60,7 @@ def handle_register_user(data):
 # ---- Import and register blueprints AFTER initializing extensions ----
 from Controllers.auth_controller import auth_bp
 app.register_blueprint(auth_bp)
+app.register_blueprint(finance_bp, url_prefix="/api/finance")
 
 # Add health check endpoint
 @app.route('/health')
