@@ -347,3 +347,61 @@ def yearly_summary():
     cur.close()
     conn.close()
     return jsonify(summary)
+
+@finance_bp.route("/packaging-costs/update", methods=["POST"])
+def update_packaging_costs():
+    data = request.get_json()
+    category = data.get("category")
+    item_costs = data.get("costs")
+    
+    if not category or not item_costs:
+        return jsonify({"error": "Category and costs are required"}), 400
+    
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    try:
+        # Get category ID
+        cur.execute("SELECT id FROM packaging_categories WHERE name = %s", (category,))
+        category_row = cur.fetchone()
+        if not category_row:
+            return jsonify({"error": "Category not found"}), 404
+        
+        category_id = category_row['id']
+        
+        # Update each item cost
+        for item_name, cost in item_costs.items():
+            # Get item ID
+            cur.execute("SELECT id FROM packaging_items WHERE name = %s", (item_name,))
+            item_row = cur.fetchone()
+            if not item_row:
+                continue  # Skip if item not found
+            
+            item_id = item_row['id']
+            
+            # Update cost
+            cur.execute("""
+                UPDATE packaging_costs 
+                SET cost = %s, updated_at = NOW()
+                WHERE category_id = %s AND item_id = %s
+                RETURNING *
+            """, (cost, category_id, item_id))
+            
+            # If no rows were updated, insert new cost
+            if cur.rowcount == 0:
+                cur.execute("""
+                    INSERT INTO packaging_costs (category_id, item_id, cost)
+                    VALUES (%s, %s, %s)
+                    RETURNING *
+                """, (category_id, item_id, cost))
+        
+        conn.commit()
+        return jsonify({"message": "Packaging costs updated successfully"}), 200
+        
+    except Exception as e:
+        conn.rollback()
+        print("Error updating packaging costs:", e)
+        return jsonify({"error": "Server error"}), 500
+    finally:
+        cur.close()
+        conn.close()
