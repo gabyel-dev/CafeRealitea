@@ -62,10 +62,6 @@ def handle_register_user(data):
 def handle_user_online(data):
     user_id = data.get("user_id")
 
-    if not user_id or str(user_id).lower() in ["undefined", "null", "none"]:
-        print("Invalid user_id received:", user_id)
-        return
-
     connected_users[str(user_id)] = request.sid
     update_last_activity(user_id)
 
