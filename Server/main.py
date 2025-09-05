@@ -61,21 +61,21 @@ def handle_register_user(data):
 @socketio.on("user_online")
 def handle_user_online(data):
     user_id = data.get("user_id")
-    if not user_id:
+
+    if not user_id or str(user_id).lower() in ["undefined", "null", "none"]:
+        print("Invalid user_id received:", user_id)
         return
 
-    # Convert to string for consistency
-
-    connected_users[user_id] = request.sid
-    update_last_activity(user_id)  # Update lastactivity in DB
+    connected_users[str(user_id)] = request.sid
+    update_last_activity(user_id)
 
     print(f"User {user_id} is online with SID: {request.sid}")
 
-    # Notify all clients about the online status change
     socketio.emit("user_status_change", {
         "user_id": user_id,
         "is_online": True
-    }, broadcast=True)
+    })
+
 
 @socketio.on("user_offline")    
 def handle_user_offline(data):
@@ -88,7 +88,7 @@ def handle_user_offline(data):
         socketio.emit("user_status_change", {
             "user_id": user_id,
             "is_online": False
-        }, broadcast=True)
+        })
 
 # ---- Import and register blueprints AFTER initializing extensions ----
 from Controllers.auth_controller import auth_bp
