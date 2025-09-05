@@ -230,3 +230,25 @@ def yearly_summary():
     cur.close()
     conn.close()
     return jsonify(summary)
+
+# Add to your finance_bp
+
+@finance_bp.route("/packaging-categories", methods=["GET"])
+def get_packaging_categories():
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM packaging_categories ORDER BY id")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify(rows)
+
+@finance_bp.route("/packaging-items", methods=["GET"])
+def get_packaging_items():
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM packaging_items ORDER BY id")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify(rows)
