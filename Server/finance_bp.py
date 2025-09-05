@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify, session
 from Models.database import get_db_conn
-import json
 from datetime import datetime
 
 finance_bp = Blueprint("finance", __name__)
@@ -161,6 +160,19 @@ def update_packaging_cost(id):
     return jsonify(row)
 
 # ---------------- FINANCIAL SUMMARIES ---------------- #
+def get_total_costs():
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT COALESCE(SUM(price),0) FROM equipment_costs;")
+    equipment = cur.fetchone()[0]
+    cur.execute("SELECT COALESCE(SUM(amount),0) FROM gross_profit_items;")
+    gross_profit = cur.fetchone()[0]
+    cur.execute("SELECT COALESCE(SUM(cost),0) FROM packaging_costs;")
+    packaging = cur.fetchone()[0]
+    cur.close()
+    conn.close()
+    return float(equipment), float(gross_profit), float(packaging)
+
 @finance_bp.route("/summaries/daily", methods=["GET"])
 def daily_summary():
     conn = get_db_conn()
@@ -173,9 +185,12 @@ def daily_summary():
         ORDER BY day DESC;
     """)
     rows = cur.fetchall()
+    equipment, gross_profit, packaging = get_total_costs()
+    # add net profit
+    summary = [{"day": r[0], "revenue": float(r[1]), "net_profit": float(r[1]) - (equipment + gross_profit + packaging)} for r in rows]
     cur.close()
     conn.close()
-    return jsonify(rows)
+    return jsonify(summary)
 
 @finance_bp.route("/summaries/monthly", methods=["GET"])
 def monthly_summary():
@@ -191,9 +206,11 @@ def monthly_summary():
         ORDER BY year DESC, month DESC;
     """)
     rows = cur.fetchall()
+    equipment, gross_profit, packaging = get_total_costs()
+    summary = [{"year": r[0], "month": r[1], "revenue": float(r[2]), "net_profit": float(r[2]) - (equipment + gross_profit + packaging)} for r in rows]
     cur.close()
     conn.close()
-    return jsonify(rows)
+    return jsonify(summary)
 
 @finance_bp.route("/summaries/yearly", methods=["GET"])
 def yearly_summary():
@@ -208,6 +225,8 @@ def yearly_summary():
         ORDER BY year DESC;
     """)
     rows = cur.fetchall()
+    equipment, gross_profit, packaging = get_total_costs()
+    summary = [{"year": r[0], "revenue": float(r[1]), "net_profit": float(r[1]) - (equipment + gross_profit + packaging)} for r in rows]
     cur.close()
     conn.close()
-    return jsonify(rows)
+    return jsonify(summary)

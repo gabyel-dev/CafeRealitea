@@ -60,7 +60,7 @@ def handle_register_user(data):
 # ---- Import and register blueprints AFTER initializing extensions ----
 from Controllers.auth_controller import auth_bp
 app.register_blueprint(auth_bp)
-app.register_blueprint(finance_bp, url_prefix="/api/finance")
+app.register_blueprint(finance_bp)
 
 # Add health check endpoint
 @app.route('/health')
