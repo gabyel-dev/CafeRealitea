@@ -1043,8 +1043,9 @@ def update_last_activity(user_id):
         cursor.execute("""
             UPDATE users_account
             SET lastactivity = NOW()
-            WHERE id = %s
-        """, (user_id),)  # cast to integer
+            WHERE id = %s;
+        """, (int(user_id),))  # <-- tama na ito (tuple with 1 element)
+  # cast to integer
         conn.commit()
         print(f"Updated lastactivity for user {user_id}")
     except Exception as e:
