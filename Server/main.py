@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_session import Session
 from extensions import socketio, bcrypt, connected_users
 from finance_bp import finance_bp
+from Controllers.auth_controller import update_last_activity
 
 
 
@@ -62,6 +63,7 @@ def handle_user_online(data):
     user_id = data.get("user_id")
     if user_id:
         connected_users[user_id] = request.sid
+        update_last_activity(user_id)
         print(f"User {user_id} is online with SID: {request.sid}")
         
         # Broadcast to all clients that this user is now online
