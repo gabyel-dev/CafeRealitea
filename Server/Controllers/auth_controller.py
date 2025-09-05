@@ -215,22 +215,25 @@ def create_order():
         else:
             total_to_use = provided_total
 
+        # Calculate packaging cost
+        packaging_cost = get_packaging_cost_for_items(items)
+
         # Insert main order
         user_id = session.get("user", {}).get("id")  # get the logged-in user
 
         cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by)
-            VALUES (%s, %s, %s, %s, 'CONFIRMED', %s)
+            INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by)
+            VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s)
             RETURNING id
         """, (
             data.get('customer_name', 'Walk-in customer'),
             data.get('order_type', 'Dine-in'),
             data.get('payment_method', 'Cash'),
             float(total_to_use),
+            float(packaging_cost),
             user_id
         ))
 
-        
         order_id = cursor.fetchone()['id']
         
         # Insert order items
@@ -255,7 +258,11 @@ def create_order():
                 "type": "personal"
             }, to=connected_users[user_id])
             
-        return jsonify({'message': 'Created successfully', 'order_id': order_id}), 201
+        return jsonify({
+            'message': 'Created successfully', 
+            'order_id': order_id,
+            'packaging_cost': packaging_cost
+        }), 201
     
     except Exception as e:
         conn.rollback()
@@ -494,17 +501,20 @@ def confirm_pending_order(pending_id):
         items = json.loads(items_data) if isinstance(items_data, str) else items_data
         order_total = pending_order['total'] or sum(item.get('quantity', 1) * item.get('price', 0) for item in items)
 
-        # Insert into main orders
-# Insert into main orders with created_by and approved_by
+        # Calculate packaging cost
+        packaging_cost = get_packaging_cost_for_items(items)
+
+        # Insert into main orders with created_by and approved_by
         cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by, confirmed_by)
-            VALUES (%s, %s, %s, %s, 'CONFIRMED', %s, %s)
+            INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by, confirmed_by)
+            VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s, %s)
             RETURNING id
         """, (
             pending_order['customer_name'],
             pending_order['order_type'],
             pending_order['payment_method'],
             float(order_total),
+            float(packaging_cost),
             pending_order['user_id'],          # creator of pending order
             session.get('user', {}).get('id') # staff confirming it
         ))
@@ -541,7 +551,8 @@ def confirm_pending_order(pending_id):
 
         return jsonify({
             "message": f"Order {order_id} confirmed successfully",
-            "order_id": order_id
+            "order_id": order_id,
+            "packaging_cost": packaging_cost
         }), 200
 
     except Exception as e:
