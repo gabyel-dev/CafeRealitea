@@ -1036,28 +1036,42 @@ def order_details(id):
         cursor.close()
         conn.close()
 
+def update_last_activity(user_id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("""
+            UPDATE users_account
+            SET last_activity = NOW()
+            WHERE id = %s
+        """, (user_id,))
+        conn.commit()
+    finally:
+        cursor.close()
+        conn.close()
+
 @auth_bp.route('/online_users', methods=['GET'])
 def get_online_users():
     conn = get_db_conn()
     cursor = conn.cursor()
-    
+
     try:
-        # Get users with valid tokens (considered online)
+        # Define what counts as "online" (last 5 minutes)
         cursor.execute("""
-            SELECT id, first_name, last_name, email, role 
-            FROM users_account 
-            WHERE users_token IS NOT NULL
+            SELECT id, first_name, last_name, email, role
+            FROM users_account
+            WHERE last_activity >= NOW() - INTERVAL '5 minutes'
         """)
         online_users = cursor.fetchall()
-        
-        # Convert to list of IDs for easy checking
+
+        # List of user IDs
         online_user_ids = [user['id'] for user in online_users]
-        
+
         return jsonify({
             "online_users": online_user_ids,
             "count": len(online_user_ids)
         })
-    
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
