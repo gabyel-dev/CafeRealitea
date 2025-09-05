@@ -62,7 +62,7 @@ def handle_register_user(data):
 def handle_user_online(data):
     user_id = data.get("user_id")
 
-    connected_users[str(user_id)] = request.sid
+    connected_users[user_id] = request.sid
     update_last_activity(user_id)
 
     print(f"User {user_id} is online with SID: {request.sid}")
