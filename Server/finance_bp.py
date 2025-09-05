@@ -163,15 +163,19 @@ def update_packaging_cost(id):
 def get_total_costs():
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute("SELECT COALESCE(SUM(price),0) FROM equipment_costs;")
-    equipment = cur.fetchone()[0]
-    cur.execute("SELECT COALESCE(SUM(amount),0) FROM gross_profit_items;")
-    gross_profit = cur.fetchone()[0]
-    cur.execute("SELECT COALESCE(SUM(cost),0) FROM packaging_costs;")
-    packaging = cur.fetchone()[0]
+    cur.execute("SELECT COALESCE(SUM(price),0) AS total FROM equipment_costs;")
+    equipment = cur.fetchone()['total']
+    
+    cur.execute("SELECT COALESCE(SUM(amount),0) AS total FROM gross_profit_items;")
+    gross_profit = cur.fetchone()['total']
+    
+    cur.execute("SELECT COALESCE(SUM(cost),0) AS total FROM packaging_costs;")
+    packaging = cur.fetchone()['total']
+    
     cur.close()
     conn.close()
     return float(equipment), float(gross_profit), float(packaging)
+
 
 @finance_bp.route("/summaries/daily", methods=["GET"])
 def daily_summary():
