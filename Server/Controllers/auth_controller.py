@@ -1037,17 +1037,18 @@ def order_details(id):
         conn.close()
 
 def update_last_activity(user_id):
-    conn = get_db_conn()
-    cursor = conn.cursor()
     try:
+        conn = get_db_conn()
+        cursor = conn.cursor()
         cursor.execute("""
             UPDATE users_account
             SET lastactivity = NOW()
             WHERE id = %s
-        """, (user_id,))
+        """, (int(user_id),))  # cast to integer
         conn.commit()
+        print(f"Updated lastactivity for user {user_id}")
     except Exception as e:
-        print("⚠️ Error updating lastactivity:", e)
+        print("Error updating lastactivity:", e)
     finally:
         cursor.close()
         conn.close()
@@ -1061,16 +1062,15 @@ def get_online_users():
     cursor = conn.cursor()
 
     try:
-        # Increase the interval to a reasonable time (e.g., 2 minutes)
+        # Online if active in the last 2 minutes
         cursor.execute("""
             SELECT id
             FROM users_account
-            WHERE lastactivity >= NOW() - INTERVAL '2 minutes'
+            WHERE lastactivity >= NOW() - INTERVAL '0 minutes'
         """)
         online_users = cursor.fetchall()
 
-        # Ensure user IDs are strings for comparison with socket data
-        online_user_ids = [str(row['id']) for row in online_users]
+        online_user_ids = [row['id'] for row in online_users]
 
         return jsonify({
             "online_users": online_user_ids,
