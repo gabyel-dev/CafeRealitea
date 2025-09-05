@@ -1042,7 +1042,7 @@ def update_last_activity(user_id):
     try:
         cursor.execute("""
             UPDATE users_account
-            SET last_activity = NOW()
+            SET lastactivity = NOW()
             WHERE id = %s
         """, (user_id,))
         conn.commit()
