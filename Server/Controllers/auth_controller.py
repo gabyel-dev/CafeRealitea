@@ -1044,7 +1044,7 @@ def update_last_activity(user_id):
             UPDATE users_account
             SET lastactivity = NOW()
             WHERE id = %s
-        """, (int(user_id),))  # cast to integer
+        """, (user_id),)  # cast to integer
         conn.commit()
         print(f"Updated lastactivity for user {user_id}")
     except Exception as e:
