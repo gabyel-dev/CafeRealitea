@@ -1036,7 +1036,33 @@ def order_details(id):
         cursor.close()
         conn.close()
 
-
+@auth_bp.route('/online_users', methods=['GET'])
+def get_online_users():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    
+    try:
+        # Get users with valid tokens (considered online)
+        cursor.execute("""
+            SELECT id, first_name, last_name, email, role 
+            FROM users_account 
+            WHERE users_token IS NOT NULL
+        """)
+        online_users = cursor.fetchall()
+        
+        # Convert to list of IDs for easy checking
+        online_user_ids = [user['id'] for user in online_users]
+        
+        return jsonify({
+            "online_users": online_user_ids,
+            "count": len(online_user_ids)
+        })
+    
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
 
 #change role 
 @auth_bp.route('/update_role', methods=['POST'])
@@ -1154,30 +1180,3 @@ def get_packaging_cost_for_items(items):
     return total_packaging
 
 
-@auth_bp.route('/online-users', methods=['GET'])
-def get_online_users():
-    conn = get_db_conn()
-    cursor = conn.cursor()
-    
-    try:
-        # Get users with valid tokens (considered online)
-        cursor.execute("""
-            SELECT id, first_name, last_name, email, role 
-            FROM users_account 
-            WHERE users_token IS NOT NULL
-        """)
-        online_users = cursor.fetchall()
-        
-        # Convert to list of IDs for easy checking
-        online_user_ids = [user['id'] for user in online_users]
-        
-        return jsonify({
-            "online_users": online_user_ids,
-            "count": len(online_user_ids)
-        })
-    
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        cursor.close()
-        conn.close()
