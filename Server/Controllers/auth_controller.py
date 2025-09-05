@@ -1060,7 +1060,7 @@ def get_online_users():
         cursor.execute("""
             SELECT id, first_name, last_name, email, role
             FROM users_account
-            WHERE last_activity >= NOW() - INTERVAL '5 minutes'
+            WHERE lastactivity >= NOW() - INTERVAL '0 minutes'
         """)
         online_users = cursor.fetchall()
 
