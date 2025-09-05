@@ -189,88 +189,6 @@ def items():
         cursor.close()
         conn.close()
 
-@auth_bp.route('/orders', methods=['POST'])
-def create_order(): 
-    data = request.get_json()
-    conn = get_db_conn()
-    cursor = conn.cursor()
-    
-    try:
-        # Validate and calculate total
-        items = data.get('items', [])
-        if not items:
-            return jsonify({'error': 'No items in order'}), 400
-        
-        # Calculate total from items if not provided or invalid
-        calculated_total = 0
-        for item in items:
-            quantity = item.get('quantity', 1)
-            price = item.get('price', 0)
-            calculated_total += quantity * price
-        
-        # Use provided total if valid, otherwise use calculated total
-        provided_total = data.get('total')
-        if provided_total is None or not isinstance(provided_total, (int, float)):
-            total_to_use = calculated_total
-        else:
-            total_to_use = provided_total
-
-        # Calculate packaging cost
-        packaging_cost = get_packaging_cost_for_items(items)
-
-        # Insert main order
-        user_id = session.get("user", {}).get("id")  # get the logged-in user
-
-        cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by)
-            VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s)
-            RETURNING id
-        """, (
-            data.get('customer_name', 'Walk-in customer'),
-            data.get('order_type', 'Dine-in'),
-            data.get('payment_method', 'Cash'),
-            float(total_to_use),
-            float(packaging_cost),
-            user_id
-        ))
-
-        order_id = cursor.fetchone()['id']
-        
-        # Insert order items
-        for item in items:
-            cursor.execute("""
-                INSERT INTO order_items (order_id, item_id, quantity, price)
-                VALUES (%s, %s, %s, %s)
-            """, (
-                order_id,
-                item.get('id'),
-                item.get('quantity', 1),
-                item.get('price', 0)
-            ))
-        
-        conn.commit()
-
-        user_id = session.get("user", {}).get("id")
-        if user_id and user_id in connected_users:
-            socketio.emit("notification", {
-                "message": f"Your order #{order_id} has been created!",
-                "order_id": order_id,
-                "type": "personal"
-            }, to=connected_users[user_id])
-            
-        return jsonify({
-            'message': 'Created successfully', 
-            'order_id': order_id,
-            'packaging_cost': packaging_cost
-        }), 201
-    
-    except Exception as e:
-        conn.rollback()
-        print("Order creation error:", e)
-        return jsonify({'error': 'Server error'}), 500
-    finally:
-        cursor.close()
-        conn.close()
 
 @auth_bp.route('/orders/pending', methods=['POST'])
 def create_pending_order():
@@ -486,12 +404,131 @@ def get_pending_order_details(pending_id):
 
 # Confirm pending order (move to main orders)
 
+@auth_bp.route('/orders', methods=['POST'])
+def create_order(): 
+    data = request.get_json()
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    
+    try:
+        # Check if packaging_cost column exists
+        packaging_column_exists = check_packaging_cost_column_exists()
+        
+        # Validate and calculate total
+        items = data.get('items', [])
+        if not items:
+            return jsonify({'error': 'No items in order'}), 400
+        
+        # Calculate total from items if not provided or invalid
+        calculated_total = 0
+        for item in items:
+            quantity = item.get('quantity', 1)
+            price = item.get('price', 0)
+            calculated_total += quantity * price
+        
+        # Use provided total if valid, otherwise use calculated total
+        provided_total = data.get('total')
+        if provided_total is None or not isinstance(provided_total, (int, float)):
+            total_to_use = calculated_total
+        else:
+            total_to_use = provided_total
+
+        # Calculate packaging cost
+        packaging_cost = get_packaging_cost_for_items(items)
+
+        # Insert main order
+        user_id = session.get("user", {}).get("id")
+
+        if packaging_column_exists:
+            cursor.execute("""
+                INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by)
+                VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s)
+                RETURNING id
+            """, (
+                data.get('customer_name', 'Walk-in customer'),
+                data.get('order_type', 'Dine-in'),
+                data.get('payment_method', 'Cash'),
+                float(total_to_use),
+                float(packaging_cost),
+                user_id
+            ))
+        else:
+            cursor.execute("""
+                INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by)
+                VALUES (%s, %s, %s, %s, 'CONFIRMED', %s)
+                RETURNING id
+            """, (
+                data.get('customer_name', 'Walk-in customer'),
+                data.get('order_type', 'Dine-in'),
+                data.get('payment_method', 'Cash'),
+                float(total_to_use),
+                user_id
+            ))
+
+        order_id = cursor.fetchone()['id']
+        
+        # Insert order items
+        for item in items:
+            cursor.execute("""
+                INSERT INTO order_items (order_id, item_id, quantity, price)
+                VALUES (%s, %s, %s, %s)
+            """, (
+                order_id,
+                item.get('id'),
+                item.get('quantity', 1),
+                item.get('price', 0)
+            ))
+        
+        conn.commit()
+
+        user_id = session.get("user", {}).get("id")
+        if user_id and user_id in connected_users:
+            socketio.emit("notification", {
+                "message": f"Your order #{order_id} has been created!",
+                "order_id": order_id,
+                "type": "personal"
+            }, to=connected_users[user_id])
+            
+        return jsonify({
+            'message': 'Created successfully', 
+            'order_id': order_id,
+            'packaging_cost': packaging_cost
+        }), 201
+    
+    except Exception as e:
+        conn.rollback()
+        print("Order creation error:", e)
+        return jsonify({'error': 'Server error'}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+def check_packaging_cost_column_exists():
+    conn = get_db_conn()
+    cur = conn.cursor()
+    try:
+        cur.execute("""
+            SELECT column_name 
+            FROM information_schema.columns 
+            WHERE table_name='orders' AND column_name='packaging_cost'
+        """)
+        return cur.fetchone() is not None
+    except Exception as e:
+        print("Error checking column existence:", e)
+        return False
+    finally:
+        cur.close()
+        conn.close()
+
 @auth_bp.route('/pending-orders/<int:pending_id>/confirm', methods=['POST'])
 def confirm_pending_order(pending_id):
     conn = get_db_conn()
     cursor = conn.cursor()
 
     try:
+        # Check if packaging_cost column exists
+        packaging_column_exists = check_packaging_cost_column_exists()
+        
         cursor.execute("SELECT * FROM pending_orders WHERE id = %s", (pending_id,))
         pending_order = cursor.fetchone()
         if not pending_order:
@@ -505,19 +542,34 @@ def confirm_pending_order(pending_id):
         packaging_cost = get_packaging_cost_for_items(items)
 
         # Insert into main orders with created_by and approved_by
-        cursor.execute("""
-            INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by, confirmed_by)
-            VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s, %s)
-            RETURNING id
-        """, (
-            pending_order['customer_name'],
-            pending_order['order_type'],
-            pending_order['payment_method'],
-            float(order_total),
-            float(packaging_cost),
-            pending_order['user_id'],          # creator of pending order
-            session.get('user', {}).get('id') # staff confirming it
-        ))
+        if packaging_column_exists:
+            cursor.execute("""
+                INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by, confirmed_by)
+                VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s, %s)
+                RETURNING id
+            """, (
+                pending_order['customer_name'],
+                pending_order['order_type'],
+                pending_order['payment_method'],
+                float(order_total),
+                float(packaging_cost),
+                pending_order['user_id'],          # creator of pending order
+                session.get('user', {}).get('id') # staff confirming it
+            ))
+        else:
+            cursor.execute("""
+                INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by, confirmed_by)
+                VALUES (%s, %s, %s, %s, 'CONFIRMED', %s, %s)
+                RETURNING id
+            """, (
+                pending_order['customer_name'],
+                pending_order['order_type'],
+                pending_order['payment_method'],
+                float(order_total),
+                pending_order['user_id'],          # creator of pending order
+                session.get('user', {}).get('id') # staff confirming it
+            ))
+            
         order_id = cursor.fetchone()['id']
 
         # Insert order items
