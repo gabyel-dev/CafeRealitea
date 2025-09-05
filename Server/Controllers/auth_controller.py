@@ -1050,21 +1050,21 @@ def update_last_activity(user_id):
         cursor.close()
         conn.close()
 
+
 @auth_bp.route('/online_users', methods=['GET'])
 def get_online_users():
     conn = get_db_conn()
     cursor = conn.cursor()
 
     try:
-        # Define what counts as "online" (last 5 minutes)
+        # Users active in the last 5 minutes are considered online
         cursor.execute("""
-            SELECT id, first_name, last_name, email, role
+            SELECT id
             FROM users_account
-            WHERE lastactivity >= NOW() - INTERVAL '0 minutes'
+            WHERE lastactivity >= NOW() - INTERVAL '2 minutes'
         """)
         online_users = cursor.fetchall()
 
-        # List of user IDs
         online_user_ids = [user['id'] for user in online_users]
 
         return jsonify({
@@ -1077,6 +1077,7 @@ def get_online_users():
     finally:
         cursor.close()
         conn.close()
+
 
 #change role 
 @auth_bp.route('/update_role', methods=['POST'])
