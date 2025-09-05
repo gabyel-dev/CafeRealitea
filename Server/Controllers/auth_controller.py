@@ -1042,5 +1042,36 @@ def delete_user(id):
         cursor.close()
         conn.close()
 
+def get_packaging_cost_for_items(items):
+    """
+    items: list of dicts, each with 'id' and 'quantity'
+    Returns: total packaging cost for this order
+    """
+    if not items:
+        return 0.0
 
-        
+    conn = get_db_conn()
+    cur = conn.cursor()
+
+    # Collect item IDs
+    item_ids = [item['id'] for item in items]
+    
+    # Get packaging costs for all items at once
+    cur.execute("""
+        SELECT pc.item_id, pc.cost, pi.name as item_name
+        FROM packaging_costs pc
+        JOIN packaging_items pi ON pc.item_id = pi.id
+        WHERE pc.item_id = ANY(%s)
+    """, (item_ids,))
+    
+    rows = cur.fetchall()
+    packaging_cost_map = {row['item_id']: float(row['cost']) for row in rows}
+
+    total_packaging = 0
+    for item in items:
+        cost = packaging_cost_map.get(item['id'], 0)
+        total_packaging += cost * item.get('quantity', 1)
+
+    cur.close()
+    conn.close()
+    return total_packaging
