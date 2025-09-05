@@ -1108,21 +1108,46 @@ def get_packaging_cost_for_items(items):
     # Collect item IDs
     item_ids = [item['id'] for item in items]
     
-    # Get packaging costs for all items at once
+    # First, get the category for each menu item
     cur.execute("""
-        SELECT pc.item_id, pc.cost, pi.name as item_name
-        FROM packaging_costs pc
-        JOIN packaging_items pi ON pc.item_id = pi.id
-        WHERE pc.item_id = ANY(%s)
+        SELECT id, category_id 
+        FROM itemss 
+        WHERE id = ANY(%s)
     """, (item_ids,))
     
-    rows = cur.fetchall()
-    packaging_cost_map = {row['item_id']: float(row['cost']) for row in rows}
+    menu_items = cur.fetchall()
+    item_category_map = {item['id']: item['category_id'] for item in menu_items}
+    
+    # Get all packaging costs
+    cur.execute("""
+        SELECT pc.category_id, pi.name as item_name, pc.cost
+        FROM packaging_costs pc
+        JOIN packaging_items pi ON pc.item_id = pi.id
+    """)
+    
+    packaging_costs = cur.fetchall()
+    
+    # Create a mapping of category_id to packaging costs by item type
+    packaging_cost_map = {}
+    for cost in packaging_costs:
+        category_id = cost['category_id']
+        item_name = cost['item_name']
+        if category_id not in packaging_cost_map:
+            packaging_cost_map[category_id] = {}
+        packaging_cost_map[category_id][item_name] = float(cost['cost'])
 
     total_packaging = 0
+    
+    # Calculate packaging cost for each item
     for item in items:
-        cost = packaging_cost_map.get(item['id'], 0)
-        total_packaging += cost * item.get('quantity', 1)
+        item_id = item['id']
+        category_id = item_category_map.get(item_id)
+        
+        if category_id and category_id in packaging_cost_map:
+            category_costs = packaging_cost_map[category_id]
+            # Sum all packaging costs for this category
+            item_packaging_cost = sum(category_costs.values())
+            total_packaging += item_packaging_cost * item.get('quantity', 1)
 
     cur.close()
     conn.close()
