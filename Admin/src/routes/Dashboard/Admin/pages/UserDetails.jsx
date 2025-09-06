@@ -20,7 +20,7 @@ export default function UserDetails() {
     const query = new URLSearchParams(location.search);
     const id = query.get('id')
 
-    useEffect(() => {
+    useEffect(() => {   
         axios.get('https://caferealitea.onrender.com/user', {withCredentials: true})
             .then((res) => {
                 if (!res.data.logged_in || res.data.role === "Staff") {

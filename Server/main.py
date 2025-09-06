@@ -62,15 +62,23 @@ def handle_register_user(data):
 def handle_user_online(data):
     user_id = data.get("user_id")
 
-    connected_users[user_id] = request.sid
-    update_last_activity(user_id)
+    # --- validation ---
+    if not user_id or str(user_id).lower() in ["undefined", "null", "none"]:
+        print(f"⚠️ Skipping user_online, invalid user_id: {user_id}")
+        return
 
-    print(f"User {user_id} is online with SID: {request.sid}")
+    try:
+        connected_users[str(user_id)] = request.sid
+        update_last_activity(user_id)
+        print(f"✅ User {user_id} is online with SID: {request.sid}")
 
-    socketio.emit("user_status_change", {
-        "user_id": user_id,
-        "is_online": True
-    })
+        socketio.emit("user_status_change", {
+            "user_id": user_id,
+            "is_online": True
+        }, broadcast=True)
+    except Exception as e:
+        print(f"❌ Error handling user_online: {e}")
+
 
 
 @socketio.on("user_offline")    

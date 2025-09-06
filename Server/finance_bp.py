@@ -249,104 +249,6 @@ def get_total_costs():
     conn.close()
     return float(equipment), float(gross_profit), float(packaging)
 
-@finance_bp.route("/summaries/daily", methods=["GET"])
-def daily_summary():
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT DATE(order_time) as day, 
-               SUM(total) AS revenue,
-               SUM(packaging_cost) AS packaging_cost
-        FROM orders
-        WHERE status='CONFIRMED'
-        GROUP BY day
-        ORDER BY day DESC;
-    """)
-    rows = cur.fetchall()
-    equipment, gross_profit, packaging = get_total_costs()
-    
-    summary = []
-    for r in rows:
-        revenue = float(r['revenue'])
-        day_packaging = float(r['packaging_cost'])
-        net_profit = revenue - (equipment + gross_profit + day_packaging)
-        summary.append({
-            "day": r['day'], 
-            "revenue": revenue,
-            "packaging_cost": day_packaging,
-            "net_profit": net_profit
-        })
-    
-    cur.close()
-    conn.close()
-    return jsonify(summary)
-
-# Similarly update monthly and yearly summaries
-@finance_bp.route("/summaries/monthly", methods=["GET"])
-def monthly_summary():
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT EXTRACT(YEAR FROM order_time) AS year,
-               EXTRACT(MONTH FROM order_time) AS month,
-               SUM(total) AS revenue,
-               SUM(packaging_cost) AS packaging_cost
-        FROM orders
-        WHERE status='CONFIRMED'
-        GROUP BY year, month
-        ORDER BY year DESC, month DESC;
-    """)
-    rows = cur.fetchall()
-    equipment, gross_profit, packaging = get_total_costs()
-    
-    summary = []
-    for r in rows:
-        revenue = float(r['revenue'])
-        month_packaging = float(r['packaging_cost'])
-        net_profit = revenue - (equipment + gross_profit + month_packaging)
-        summary.append({
-            "year": r['year'], 
-            "month": r['month'], 
-            "revenue": revenue,
-            "packaging_cost": month_packaging,
-            "net_profit": net_profit
-        })
-    
-    cur.close()
-    conn.close()
-    return jsonify(summary)
-
-@finance_bp.route("/summaries/yearly", methods=["GET"])
-def yearly_summary():
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        SELECT EXTRACT(YEAR FROM order_time) AS year,
-               SUM(total) AS revenue,
-               SUM(packaging_cost) AS packaging_cost
-        FROM orders
-        WHERE status='CONFIRMED'
-        GROUP BY year
-        ORDER BY year DESC;
-    """)
-    rows = cur.fetchall()
-    equipment, gross_profit, packaging = get_total_costs()
-    
-    summary = []
-    for r in rows:
-        revenue = float(r['revenue'])
-        year_packaging = float(r['packaging_cost'])
-        net_profit = revenue - (equipment + gross_profit + year_packaging)
-        summary.append({
-            "year": r['year'], 
-            "revenue": revenue,
-            "packaging_cost": year_packaging,
-            "net_profit": net_profit
-        })
-    
-    cur.close()
-    conn.close()
-    return jsonify(summary)
 
 @finance_bp.route("/packaging-costs/update", methods=["POST"])
 def update_packaging_costs():
@@ -405,3 +307,170 @@ def update_packaging_costs():
     finally:
         cur.close()
         conn.close()
+
+
+# ---------------- FINANCIAL SUMMARIES ---------------- #
+def get_equipment_total():
+    """Equipment is a one-time static cost (global)."""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT COALESCE(SUM(price),0) AS total FROM equipment_costs;")
+    equipment = cur.fetchone()['total']
+    cur.close()
+    conn.close()
+    return float(equipment)
+
+
+@finance_bp.route("/summaries/daily", methods=["GET"])
+def daily_summary():
+    conn = get_db_conn()
+    cur = conn.cursor()
+
+    # Revenue + packaging cost from orders
+    cur.execute("""
+        SELECT DATE(order_time) as day, 
+               SUM(total) AS revenue,
+               SUM(packaging_cost) AS packaging_cost
+        FROM orders
+        WHERE status='CONFIRMED'
+        GROUP BY day
+        ORDER BY day DESC;
+    """)
+    orders = cur.fetchall()
+
+    # Gross profit grouped by day
+    cur.execute("""
+        SELECT DATE(created_at) as day,
+               SUM(amount) as gross_profit
+        FROM gross_profit_items
+        GROUP BY day;
+    """)
+    gross_profit_rows = cur.fetchall()
+    gross_profit_map = {r['day']: float(r['gross_profit']) for r in gross_profit_rows}
+
+    equipment = get_equipment_total()
+
+    summary = []
+    for r in orders:
+        day = r['day']
+        revenue = float(r['revenue'])
+        day_packaging = float(r['packaging_cost'])
+        day_gross = gross_profit_map.get(day, 0.0)
+
+        net_profit = revenue - (equipment + day_packaging + day_gross)
+
+        summary.append({
+            "day": str(day),
+            "revenue": revenue,
+            "packaging_cost": day_packaging,
+            "gross_profit": day_gross,
+            "equipment_total": equipment,
+            "net_profit": net_profit
+        })
+
+    cur.close()
+    conn.close()
+    return jsonify(summary)
+
+
+@finance_bp.route("/summaries/monthly", methods=["GET"])
+def monthly_summary():
+    conn = get_db_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT EXTRACT(YEAR FROM order_time) AS year,
+               EXTRACT(MONTH FROM order_time) AS month,
+               SUM(total) AS revenue,
+               SUM(packaging_cost) AS packaging_cost
+        FROM orders
+        WHERE status='CONFIRMED'
+        GROUP BY year, month
+        ORDER BY year DESC, month DESC;
+    """)
+    orders = cur.fetchall()
+
+    cur.execute("""
+        SELECT EXTRACT(YEAR FROM created_at) AS year,
+               EXTRACT(MONTH FROM created_at) AS month,
+               SUM(amount) as gross_profit
+        FROM gross_profit_items
+        GROUP BY year, month;
+    """)
+    gross_profit_rows = cur.fetchall()
+    gross_profit_map = {(int(r['year']), int(r['month'])): float(r['gross_profit']) for r in gross_profit_rows}
+
+    equipment = get_equipment_total()
+
+    summary = []
+    for r in orders:
+        year, month = int(r['year']), int(r['month'])
+        revenue = float(r['revenue'])
+        month_packaging = float(r['packaging_cost'])
+        month_gross = gross_profit_map.get((year, month), 0.0)
+
+        net_profit = revenue - (equipment + month_packaging + month_gross)
+
+        summary.append({
+            "year": year,
+            "month": month,
+            "revenue": revenue,
+            "packaging_cost": month_packaging,
+            "gross_profit": month_gross,
+            "equipment_total": equipment,
+            "net_profit": net_profit
+        })
+
+    cur.close()
+    conn.close()
+    return jsonify(summary)
+
+
+@finance_bp.route("/summaries/yearly", methods=["GET"])
+def yearly_summary():
+    conn = get_db_conn()
+    cur = conn.cursor()
+
+    cur.execute("""
+        SELECT EXTRACT(YEAR FROM order_time) AS year,
+               SUM(total) AS revenue,
+               SUM(packaging_cost) AS packaging_cost
+        FROM orders
+        WHERE status='CONFIRMED'
+        GROUP BY year
+        ORDER BY year DESC;
+    """)
+    orders = cur.fetchall()
+
+    cur.execute("""
+        SELECT EXTRACT(YEAR FROM created_at) AS year,
+               SUM(amount) as gross_profit
+        FROM gross_profit_items
+        GROUP BY year;
+    """)
+    gross_profit_rows = cur.fetchall()
+    gross_profit_map = {int(r['year']): float(r['gross_profit']) for r in gross_profit_rows}
+
+    equipment = get_equipment_total()
+
+    summary = []
+    for r in orders:
+        year = int(r['year'])
+        revenue = float(r['revenue'])
+        year_packaging = float(r['packaging_cost'])
+        year_gross = gross_profit_map.get(year, 0.0)
+
+        net_profit = revenue - (equipment + year_packaging + year_gross)
+
+        summary.append({
+            "year": year,
+            "revenue": revenue,
+            "packaging_cost": year_packaging,
+            "gross_profit": year_gross,
+            "equipment_total": equipment,
+            "net_profit": net_profit
+        })
+
+    cur.close()
+    conn.close()
+    return jsonify(summary)
