@@ -64,16 +64,6 @@ def delete_equipment(id):
     conn.close()
     return jsonify({"deleted": row})
 
-# ---------------- GROSS PROFIT ---------------- #
-@finance_bp.route("/gross-profit", methods=["GET"])
-def get_gross_profit():
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM gross_profit_items ORDER BY id DESC")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return jsonify(rows)
 
 # ---------------- GROSS PROFIT ---------------- #
 @finance_bp.route("/gross-profit", methods=["GET"])
