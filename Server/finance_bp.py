@@ -75,6 +75,80 @@ def get_gross_profit():
     conn.close()
     return jsonify(rows)
 
+# ---------------- GROSS PROFIT ---------------- #
+@finance_bp.route("/gross-profit", methods=["GET"])
+def get_gross_profit():
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM gross_profit_items ORDER BY id DESC")
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify(rows)
+
+# ADD THIS NEW ENDPOINT RIGHT HERE
+@finance_bp.route("/gross-profit/<string:time_range>", methods=["GET"])
+def get_gross_profit_by_range(time_range):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    try:
+        if time_range == "daily":
+            # Get gross profit for today only
+            cur.execute("""
+                SELECT * FROM gross_profit_items 
+                WHERE DATE(created_at) = CURRENT_DATE 
+                ORDER BY created_at DESC
+            """)
+        elif time_range == "monthly":
+            # Get gross profit for current month
+            cur.execute("""
+                SELECT * FROM gross_profit_items 
+                WHERE EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+                AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
+                ORDER BY created_at DESC
+            """)
+        elif time_range == "yearly":
+            # Get gross profit for current year
+            cur.execute("""
+                SELECT * FROM gross_profit_items 
+                WHERE EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+                ORDER BY created_at DESC
+            """)
+        else:
+            # Default: get all gross profit items
+            cur.execute("SELECT * FROM gross_profit_items ORDER BY created_at DESC")
+        
+        rows = cur.fetchall()
+        return jsonify(rows)
+        
+    except Exception as e:
+        print("Error fetching gross profit:", e)
+        return jsonify({"error": "Failed to fetch gross profit data"}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+# Also add a filtered equipment endpoint for consistency
+@finance_bp.route("/equipment/<string:time_range>", methods=["GET"])
+def get_equipment_by_range(time_range):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    try:
+        # For equipment, you might want different logic since it's usually one-time costs
+        # This example shows all equipment, but you could filter by purchase date if you have that field
+        cur.execute("SELECT * FROM equipment_costs ORDER BY created_at DESC")
+        rows = cur.fetchall()
+        return jsonify(rows)
+        
+    except Exception as e:
+        print("Error fetching equipment:", e)
+        return jsonify({"error": "Failed to fetch equipment data"}), 500
+    finally:
+        cur.close()
+        conn.close()
+
 @finance_bp.route("/gross-profit", methods=["POST"])
 def add_gross_profit():
     data = request.get_json()
