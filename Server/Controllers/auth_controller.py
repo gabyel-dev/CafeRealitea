@@ -46,8 +46,9 @@ def login():
             'email': user['email'],
             'username': user['username'],
             'role': user['role'],
+            'phone_number': user['phone_number'],
+            'joined': user['joined_on'],
             'token': token,
-            'phone_number': user['phone_number']
         }
 
         return jsonify({
