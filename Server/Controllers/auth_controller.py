@@ -96,6 +96,37 @@ def register():
     finally:
         cursor.close()
         conn.close()
+
+
+@auth_bp.route('/update/account', methods=['POST'])
+def update_account():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    users_id = session.get('user', {}).get('id')
+    data = request.get_json()
+
+    fname = data.get('first_name')
+    lname = data.get('last_name')
+    email = data.get('email')
+    username = data.get('username')
+    phone = data.get('phone_number')
+
+    try:
+        cursor.execute('UPDATE users_account SET first_name = %s, last_name = %s, email = %s, username = %s, phone_number = %s  WHERE id = %s', (fname, lname, email, username, phone, users_id),)
+        conn.commit()
+
+        if cursor.rowcount > 0:
+            return jsonify({'message': 'Updated Successfully', 'redirect': '/dashboard'}), 201
+        else:
+            return jsonify({'message': 'No changes made'}), 200
+
+    except Exception as e:
+        print('failed to updated user', e)
+        return jsonify({'error': 'Update users account failed', 'details': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
         
 #LOGOUT
 @auth_bp.route('/logout', methods=['POST'])
