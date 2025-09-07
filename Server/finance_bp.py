@@ -76,7 +76,7 @@ def get_gross_profit():
     conn.close()
     return jsonify(rows)
 
-# ADD THIS NEW ENDPOINT RIGHT HERE
+# ---------------- GROSS PROFIT ---------------- #
 @finance_bp.route("/gross-profit/<string:time_range>", methods=["GET"])
 def get_gross_profit_by_range(time_range):
     conn = get_db_conn()
@@ -84,25 +84,26 @@ def get_gross_profit_by_range(time_range):
     
     try:
         if time_range == "daily":
-            # Get gross profit for today only
+            # Get ALL daily gross profit data (not just today)
             cur.execute("""
-                SELECT * FROM gross_profit_items 
-                WHERE DATE(created_at) = CURRENT_DATE 
+                SELECT *, DATE(created_at) as date 
+                FROM gross_profit_items 
                 ORDER BY created_at DESC
             """)
         elif time_range == "monthly":
-            # Get gross profit for current month
+            # Get ALL monthly gross profit data
             cur.execute("""
-                SELECT * FROM gross_profit_items 
-                WHERE EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
-                AND EXTRACT(MONTH FROM created_at) = EXTRACT(MONTH FROM CURRENT_DATE)
+                SELECT *, 
+                       EXTRACT(YEAR FROM created_at) as year,
+                       EXTRACT(MONTH FROM created_at) as month
+                FROM gross_profit_items 
                 ORDER BY created_at DESC
             """)
         elif time_range == "yearly":
-            # Get gross profit for current year
+            # Get ALL yearly gross profit data
             cur.execute("""
-                SELECT * FROM gross_profit_items 
-                WHERE EXTRACT(YEAR FROM created_at) = EXTRACT(YEAR FROM CURRENT_DATE)
+                SELECT *, EXTRACT(YEAR FROM created_at) as year
+                FROM gross_profit_items 
                 ORDER BY created_at DESC
             """)
         else:
@@ -119,15 +120,15 @@ def get_gross_profit_by_range(time_range):
         cur.close()
         conn.close()
 
-# Also add a filtered equipment endpoint for consistency
+# Also fix the equipment endpoint to actually filter by time range if needed
 @finance_bp.route("/equipment/<string:time_range>", methods=["GET"])
 def get_equipment_by_range(time_range):
     conn = get_db_conn()
     cur = conn.cursor()
     
     try:
-        # For equipment, you might want different logic since it's usually one-time costs
-        # This example shows all equipment, but you could filter by purchase date if you have that field
+        # For equipment, you might want to filter by purchase date if you have that field
+        # For now, just return all equipment since it's usually one-time costs
         cur.execute("SELECT * FROM equipment_costs ORDER BY created_at DESC")
         rows = cur.fetchall()
         return jsonify(rows)
