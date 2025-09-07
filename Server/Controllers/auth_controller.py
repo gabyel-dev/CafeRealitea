@@ -152,7 +152,7 @@ def insert_picture():
         cursor.close()
         conn.close()
 
-@auth_bp.route('profile_image/<int:user_id>', methods=['POST'])
+@auth_bp.route('/profile_image/<int:user_id>', methods=['POST'])
 def view_profile(user_id):
     conn = get_db_conn()
     cursor = conn.cursor()
