@@ -152,12 +152,12 @@ def insert_picture():
         cursor.close()
         conn.close()
 
-@auth_bp.route('/profile_image/<int:user_id>', methods=['GET'])
+@auth_bp.route('/profile-image/<int:user_id>', methods=['GET'])
 def view_profile(user_id):
     conn = get_db_conn()
-    cursor = conn.cursor(dictionary=True)  # make sure it's a dict cursor
+    cursor = conn.cursor()  # make sure it's a dict cursor
     try:
-        cursor.execute("SELECT profile_picture FROM users_account WHERE id=%s", (user_id,))
+        cursor.execute("SELECT profile_picture FROM users_account WHERE id= %s", (user_id,))
         row = cursor.fetchone()
         if row and row['profile_picture']:   # use the column name
             return row['profile_picture'], 200, {'Content-Type': 'image/jpeg'}
