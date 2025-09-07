@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, session
+from flask import Blueprint, request, jsonify, session, Response
 from Models.database import get_db_conn
 import json
 from utils.hash_passwords import hash_password, check_password
@@ -155,17 +155,33 @@ def insert_picture():
 @auth_bp.route('/profile-image/<int:user_id>', methods=['GET'])
 def view_profile(user_id):
     conn = get_db_conn()
-    cursor = conn.cursor()  # make sure it's a dict cursor
+    cursor = conn.cursor()
+    
     try:
-        cursor.execute("SELECT profile_picture FROM users_account WHERE id= %s", (user_id,))
+        cursor.execute("SELECT profile_picture FROM users_account WHERE id = %s", (user_id,))
         row = cursor.fetchone()
-        if row and row['profile_picture']:   # use the column name
-            return row['profile_picture'], 200, {'Content-Type': 'image/jpeg'}
-        return '', 404
+        
+        if row and row['profile_picture']:  # Access by index since it's not a DictCursor
+            # Return the binary data directly with proper headers
+            return Response(
+                row['profile_picture'],  # Access the first column by index
+                mimetype='image/jpeg',
+                headers={
+                    'Content-Type': 'image/jpeg',
+                    'Content-Disposition': f'inline; filename=profile_{user_id}.jpg'
+                }
+            )
+        else:
+            # Return 404 if no image found
+            return jsonify({'error': 'Profile image not found'}), 404
+    
+    except Exception as e:
+        print(f"Error fetching profile image for user {user_id}: {e}")
+        return jsonify({'error': 'Failed to fetch profile image'}), 500
+    
     finally:
         cursor.close()
         conn.close()
-
 
 
 #LOGOUT
