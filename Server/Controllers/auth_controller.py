@@ -102,7 +102,7 @@ def register():
 def update_account():
     conn = get_db_conn()
     cursor = conn.cursor()
-    users_id = session.get('user', {}).get('id')
+    user = session.get('user')
     data = request.get_json()
 
     fname = data.get('first_name')
@@ -112,7 +112,7 @@ def update_account():
     phone = data.get('phone_number')
 
     try:
-        cursor.execute('UPDATE users_account SET first_name = %s, last_name = %s, email = %s, username = %s, phone_number = %s  WHERE id = %s', (fname, lname, email, username, phone, users_id),)
+        cursor.execute('UPDATE users_account SET first_name = %s, last_name = %s, email = %s, username = %s, phone_number = %s  WHERE id = %s', (fname, lname, email, username, phone, user['id']),)
         conn.commit()
 
         if cursor.rowcount > 0:
@@ -123,7 +123,7 @@ def update_account():
     except Exception as e:
         print('failed to updated user', e)
         return jsonify({'error': 'Update users account failed', 'details': str(e)}), 500
-    finally:
+    finally:    
         cursor.close()
         conn.close()
 
