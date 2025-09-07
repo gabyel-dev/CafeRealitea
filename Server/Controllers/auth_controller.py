@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 import pytz
 import secrets
 from extensions import socketio, connected_users  # ← ONLY import, don't define here
+import psycopg2
+
 
 ALLOWED_ROLES = ['Staff', 'Admin', 'System Administrator']
 
@@ -128,7 +130,43 @@ def update_account():
         cursor.close()
         conn.close()
 
-        
+@auth_bp.route('/update/profile_picture', methods=['POST'])
+def insert_picture():
+    if 'profile_image' not in request.files:
+        return jsonify({'error': 'No file uploaded'}), 400
+    
+    file = request.files['profile_image']
+    file_data = file.read()
+    user_id = session.get('user', {}).get('id')
+
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('UPDATE users_account SET profile_picture = %s WHERE id = %s', (psycopg2.Binary(file_data), user_id),)
+        conn.commit()
+        return jsonify({'message': 'Profile image updated'}), 200
+    except Exception as e:
+        return jsonify({'error': 'Failed to update profile image', 'details': str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+@auth_bp.route('profile_image/<int:user_id>', methods=['POST'])
+def view_profile(user_id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    try:
+        cursor.execute("SELECT profile_image FROM users_account WHERE id=%s", (user_id,))
+        row = cursor.fetchone()
+        if row and row[0]:
+            return row[0], 200, {'Content-Type': 'image/jpeg'}  # adjust type accordingly
+        return '', 404
+    finally:
+        cursor.close()
+        conn.close()
+
+
 #LOGOUT
 @auth_bp.route('/logout', methods=['POST'])
 def logout():
