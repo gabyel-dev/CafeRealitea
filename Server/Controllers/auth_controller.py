@@ -1074,6 +1074,7 @@ def order_details(id):
                 o.order_type,
                 o.payment_method,
                 o.total,
+                o.order_time,
                 i.name AS item_name,
                 oi.quantity,
                 oi.price,
