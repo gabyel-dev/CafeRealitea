@@ -1102,6 +1102,7 @@ def order_details(id):
             "order_type": rows[0]["order_type"],
             "payment_method": rows[0]["payment_method"],
             "total": float(rows[0]["total"]),
+            "order_time": rows[0]["order_time"],
             "created_by": f"{rows[0]['creator_first_name']} {rows[0]['creator_last_name']}" 
                           if rows[0]['creator_first_name'] else None,
             "approved_by": f"{rows[0]['approver_first_name']} {rows[0]['approver_last_name']}" 
