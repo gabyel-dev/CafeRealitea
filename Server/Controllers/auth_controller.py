@@ -1144,6 +1144,22 @@ def update_last_activity(user_id):
         cursor.close()
         conn.close()
 
+@auth_bp.route('/update/product/<int:id>', methods=['POST'])
+def update_product(id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    data = request.get_json()
+    price = data.get('price')
+
+    try:
+        cursor.execute('UPDATE itemss SET price = %s WHERE id = %s', (price, id))
+        conn.commit()
+
+        return jsonify({'message': 'product price updated successfully'})
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+
 
 
 
