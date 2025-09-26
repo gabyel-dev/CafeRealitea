@@ -77,50 +77,6 @@ def get_gross_profit():
     return jsonify(rows)
 
 # ---------------- GROSS PROFIT ---------------- #
-@finance_bp.route("/gross-profit/<string:time_range>", methods=["GET"])
-def get_gross_profit_by_range(time_range):
-    conn = get_db_conn()
-    cur = conn.cursor()
-    
-    try:
-        if time_range == "daily":
-            cur.execute("""
-                SELECT DATE(date_created) AS day,
-                       SUM(amount) AS total_amount
-                FROM gross_profit_items
-                GROUP BY day
-                ORDER BY day DESC
-            """)
-        elif time_range == "monthly":
-            cur.execute("""
-                SELECT EXTRACT(YEAR FROM date_created) AS year,
-                       EXTRACT(MONTH FROM date_created) AS month,
-                       SUM(amount) AS total_amount
-                FROM gross_profit_items
-                GROUP BY year, month
-                ORDER BY year DESC, month DESC
-            """)
-        elif time_range == "yearly":
-            cur.execute("""
-                SELECT EXTRACT(YEAR FROM date_created) AS year,
-                       SUM(amount) AS total_amount
-                FROM gross_profit_items
-                GROUP BY year
-                ORDER BY year DESC
-            """)
-        else:
-            cur.execute("SELECT * FROM gross_profit_items ORDER BY date_created DESC")
-        
-        rows = cur.fetchall()
-        return jsonify(rows)
-        
-    except Exception as e:
-        print("Error fetching gross profit:", e)
-        return jsonify({"error": "Failed to fetch gross profit data"}), 500
-    finally:
-        cur.close()
-        conn.close()
-
 # Also fix the equipment endpoint to actually filter by time range if needed
 @finance_bp.route("/equipment/<string:time_range>", methods=["GET"])
 def get_equipment_by_range(time_range):
