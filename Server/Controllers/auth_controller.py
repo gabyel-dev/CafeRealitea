@@ -1307,3 +1307,31 @@ def get_packaging_cost_for_items(items):
     return total_packaging
 
 
+@auth_bp.route('/orders/<int:id>', methods=['POST'])
+def delete_order(id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        # Delete related items first
+        cursor.execute('DELETE FROM order_items WHERE order_id = %s', (id,))
+        
+        # Now delete the order itself
+        cursor.execute('DELETE FROM orders WHERE id = %s', (id,))
+        
+        conn.commit()  # save changes
+
+        if cursor.rowcount > 0:
+            return jsonify({'message': 'Order deleted successfully'})
+        else:
+            return jsonify({'message': 'No order found with that ID'}), 404
+
+    except Exception as e:
+        conn.rollback()
+        return jsonify({'error': str(e)}), 500
+
+    finally:
+        cursor.close()
+        conn.close()
+
+    
