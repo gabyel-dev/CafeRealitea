@@ -70,7 +70,7 @@ def delete_equipment(id):
 def get_gross_profit():
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM gross_profit_items ORDER BY id DESC")
+    cur.execute("SELECT * FROM gross_profit_items ORDER BY date_created DESC")
     rows = cur.fetchall()
     cur.close()
     conn.close()
@@ -84,31 +84,32 @@ def get_gross_profit_by_range(time_range):
     
     try:
         if time_range == "daily":
-            # Get ALL daily gross profit data (not just today)
             cur.execute("""
-                SELECT *, DATE(date) as date 
-                FROM gross_profit_items 
-                ORDER BY date DESC
+                SELECT DATE(date_created) AS day,
+                       SUM(amount) AS total_amount
+                FROM gross_profit_items
+                GROUP BY day
+                ORDER BY day DESC
             """)
         elif time_range == "monthly":
-            # Get ALL monthly gross profit data
             cur.execute("""
-                SELECT *, 
-                       EXTRACT(YEAR FROM date) as year,
-                       EXTRACT(MONTH FROM date) as month
-                FROM gross_profit_items 
-                ORDER BY date DESC
+                SELECT EXTRACT(YEAR FROM date_created) AS year,
+                       EXTRACT(MONTH FROM date_created) AS month,
+                       SUM(amount) AS total_amount
+                FROM gross_profit_items
+                GROUP BY year, month
+                ORDER BY year DESC, month DESC
             """)
         elif time_range == "yearly":
-            # Get ALL yearly gross profit data
             cur.execute("""
-                SELECT *, EXTRACT(YEAR FROM date) as year
-                FROM gross_profit_items 
-                ORDER BY date DESC
+                SELECT EXTRACT(YEAR FROM date_created) AS year,
+                       SUM(amount) AS total_amount
+                FROM gross_profit_items
+                GROUP BY year
+                ORDER BY year DESC
             """)
         else:
-            # Default: get all gross profit items
-            cur.execute("SELECT * FROM gross_profit_items ORDER BY date DESC")
+            cur.execute("SELECT * FROM gross_profit_items ORDER BY date_created DESC")
         
         rows = cur.fetchall()
         return jsonify(rows)
@@ -145,15 +146,18 @@ def add_gross_profit():
     data = request.get_json()
     name = data.get("name")
     amount = data.get("amount")
-    date = data.get('date')
+    date = data.get('date')  # comes from React: YYYY-MM-DD
     user_id = session.get("user", {}).get("id")
+
+    # Convert string to datetime
+    date_obj = datetime.strptime(date, "%Y-%m-%d")
 
     conn = get_db_conn()
     cur = conn.cursor()
     cur.execute("""
         INSERT INTO gross_profit_items (name, amount, date_created, created_by)
         VALUES (%s, %s, %s, %s) RETURNING *;
-    """, (name, amount, date, user_id))
+    """, (name, amount, date_obj, user_id))
     row = cur.fetchone()
     conn.commit()
     cur.close()
