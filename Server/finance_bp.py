@@ -151,7 +151,7 @@ def add_gross_profit():
     conn = get_db_conn()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO gross_profit_items (name, amount, date, created_by)
+        INSERT INTO gross_profit_items (name, amount, date_created, created_by)
         VALUES (%s, %s, %s, %s) RETURNING *;
     """, (name, amount, date, user_id))
     row = cur.fetchone()
