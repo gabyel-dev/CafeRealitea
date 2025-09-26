@@ -239,6 +239,29 @@ def checkSession():
         cursor.close()
         conn.close()
 
+#check item length
+@auth_bp.route('/products', methods=['GET'])
+def product_length():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute('SELECT * FROM itemss')  # check if "items" is the right table
+        items = cursor.fetchall()
+
+        item_length = len(items)
+
+        return jsonify({"length": item_length})
+    except Exception as e:
+        return jsonify({"message": "failed to return item length", "error": str(e)}), 500
+    finally:
+        cursor.close()
+        conn.close()
+
+
+
+
+
 #view items in orders
 @auth_bp.route('/items', methods=['GET'])
 def items():
