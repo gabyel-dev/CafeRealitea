@@ -86,7 +86,7 @@ def register():
 
     try:
         cursor.execute(
-            'INSERT INTO users_account (first_name, last_name, email, username, password, role) '
+            'INSERT INTO users_account (first_name, last_name, username, password, role) '
             'VALUES (%s, %s, %s, %s, %s, %s)',
             (first_name, last_name, username, hash_pass, role)
         )
