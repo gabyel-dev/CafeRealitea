@@ -150,7 +150,7 @@ def add_gross_profit():
     user_id = session.get("user", {}).get("id")
 
     # Convert string to datetime
-    date_obj = datetime.strptime(date, "%Y-%m-%d")
+    date_obj = datetime.fromisoformat(date)
 
     conn = get_db_conn()
     cur = conn.cursor()
