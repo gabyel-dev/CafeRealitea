@@ -952,6 +952,35 @@ def recentSale():
         cursor.close()
         conn.close()
 
+@auth_bp.route('/recent-order', methods=['GET'])
+def recentOrder():
+    conn = get_db_conn()
+    cursor = conn.cursor()
+    
+    try: 
+        # Only show CONFIRMED orders, not pending ones
+        cursor.execute('SELECT * FROM orders WHERE status = %s ORDER BY order_time DESC LIMIT 4;', ('CONFIRMED',))
+        rows = cursor.fetchall()
+        
+        result = []
+
+        for row in rows:
+            result.append({
+                "id": row['id'],
+                "customer_name": row['customer_name'],
+                "total": row['total'],
+            })
+
+        return jsonify(result)
+    
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+    
+    finally:
+        cursor.close()
+        conn.close()
+
 #fetch users
 @auth_bp.route('/users_account', methods=['GET'])
 def users():
