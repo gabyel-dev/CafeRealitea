@@ -69,7 +69,6 @@ def register():
     data = request.get_json()
     first_name = data.get('first_name')
     last_name = data.get('last_name')
-    email = data.get('email')
     username = data.get('username')
     password = data.get('password')
     role = data.get('role')
@@ -77,7 +76,7 @@ def register():
     if role not in ALLOWED_ROLES:
         return jsonify({"error": "Invalid Role"}), 400
 
-    if not all([first_name, last_name, email, username, password, role]):
+    if not all([first_name, last_name, username, password, role]):
         return jsonify({'error': 'All fields are required'}), 400
 
     conn = get_db_conn()
@@ -89,7 +88,7 @@ def register():
         cursor.execute(
             'INSERT INTO users_account (first_name, last_name, email, username, password, role) '
             'VALUES (%s, %s, %s, %s, %s, %s)',
-            (first_name, last_name, email, username, hash_pass, role)
+            (first_name, last_name, username, hash_pass, role)
         )
         conn.commit()
         return jsonify({'message': 'Registered Successfully', 'redirect': '/members'}), 201
