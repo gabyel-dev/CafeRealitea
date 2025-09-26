@@ -358,16 +358,7 @@ def update_packaging_costs():
 
 
 # ---------------- FINANCIAL SUMMARIES ---------------- #
-# ---------------- GROSS PROFIT ---------------- #
-@finance_bp.route("/gross-profit", methods=["GET"])
-def get_gross_profit():
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT * FROM gross_profit_items ORDER BY date_created DESC")
-    rows = cur.fetchall()
-    cur.close()
-    conn.close()
-    return jsonify(rows)
+
 
 @finance_bp.route("/gross-profit/<string:time_range>", methods=["GET"])
 def get_gross_profit_by_range(time_range):
