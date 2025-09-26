@@ -145,14 +145,15 @@ def add_gross_profit():
     data = request.get_json()
     name = data.get("name")
     amount = data.get("amount")
+    date = data.get('date')
     user_id = session.get("user", {}).get("id")
 
     conn = get_db_conn()
     cur = conn.cursor()
     cur.execute("""
-        INSERT INTO gross_profit_items (name, amount, created_by)
-        VALUES (%s, %s, %s) RETURNING *;
-    """, (name, amount, user_id))
+        INSERT INTO gross_profit_items (name, amount, date, created_by)
+        VALUES (%s, %s, %s, %s) RETURNING *;
+    """, (name, amount, date, user_id))
     row = cur.fetchone()
     conn.commit()
     cur.close()
