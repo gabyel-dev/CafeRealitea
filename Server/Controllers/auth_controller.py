@@ -73,7 +73,7 @@ def register():
     password = data.get('password')
     role = data.get('role')
 
-    email = first_name + last_name
+    email = first_name + last_name + "@gmail.com"
 
     if role not in ALLOWED_ROLES:
         return jsonify({"error": "Invalid Role"}), 400
