@@ -86,29 +86,29 @@ def get_gross_profit_by_range(time_range):
         if time_range == "daily":
             # Get ALL daily gross profit data (not just today)
             cur.execute("""
-                SELECT *, DATE(created_at) as date 
+                SELECT *, DATE(date) as date 
                 FROM gross_profit_items 
-                ORDER BY created_at DESC
+                ORDER BY date DESC
             """)
         elif time_range == "monthly":
             # Get ALL monthly gross profit data
             cur.execute("""
                 SELECT *, 
-                       EXTRACT(YEAR FROM created_at) as year,
-                       EXTRACT(MONTH FROM created_at) as month
+                       EXTRACT(YEAR FROM date) as year,
+                       EXTRACT(MONTH FROM date) as month
                 FROM gross_profit_items 
-                ORDER BY created_at DESC
+                ORDER BY date DESC
             """)
         elif time_range == "yearly":
             # Get ALL yearly gross profit data
             cur.execute("""
-                SELECT *, EXTRACT(YEAR FROM created_at) as year
+                SELECT *, EXTRACT(YEAR FROM date) as year
                 FROM gross_profit_items 
-                ORDER BY created_at DESC
+                ORDER BY date DESC
             """)
         else:
             # Default: get all gross profit items
-            cur.execute("SELECT * FROM gross_profit_items ORDER BY created_at DESC")
+            cur.execute("SELECT * FROM gross_profit_items ORDER BY date DESC")
         
         rows = cur.fetchall()
         return jsonify(rows)
