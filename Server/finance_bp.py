@@ -410,7 +410,7 @@ def daily_summary():
 
     # Gross profit grouped by day
     cur.execute("""
-        SELECT DATE(created_at) as day,
+        SELECT DATE(date_created) as day,
                SUM(amount) as gross_profit
         FROM gross_profit_items
         GROUP BY day;
@@ -461,8 +461,8 @@ def monthly_summary():
     orders = cur.fetchall()
 
     cur.execute("""
-        SELECT EXTRACT(YEAR FROM created_at) AS year,
-               EXTRACT(MONTH FROM created_at) AS month,
+        SELECT EXTRACT(YEAR FROM date_created) AS year,
+               EXTRACT(MONTH FROM date_created) AS month,
                SUM(amount) as gross_profit
         FROM gross_profit_items
         GROUP BY year, month;
@@ -513,7 +513,7 @@ def yearly_summary():
     orders = cur.fetchall()
 
     cur.execute("""
-        SELECT EXTRACT(YEAR FROM created_at) AS year,
+        SELECT EXTRACT(YEAR FROM date_created) AS year,
                SUM(amount) as gross_profit
         FROM gross_profit_items
         GROUP BY year;
