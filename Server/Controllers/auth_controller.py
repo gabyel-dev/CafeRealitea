@@ -548,34 +548,78 @@ def create_order():
         # Calculate packaging cost
         packaging_cost = get_packaging_cost_for_items(items)
 
+        # Handle order_time - convert from frontend datetime-local format
+        order_time = data.get('order_date')  # Frontend sends as 'order_date'
+        if order_time:
+            # Convert from "YYYY-MM-DDTHH:MM" to PostgreSQL timestamp format
+            # Add seconds if not present
+            if ':' in order_time and order_time.count(':') == 1:
+                order_time += ':00'  # Add seconds
+        else:
+            # Use current timestamp if no date provided (will use DEFAULT CURRENT_TIMESTAMP)
+            order_time = None
+
         # Insert main order
         user_id = session.get("user", {}).get("id")
 
         if packaging_column_exists:
-            cursor.execute("""
-                INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by)
-                VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s)
-                RETURNING id
-            """, (
-                data.get('customer_name', 'Walk-in customer'),
-                data.get('order_type', 'Dine-in'),
-                data.get('payment_method', 'Cash'),
-                float(total_to_use),
-                float(packaging_cost),
-                user_id
-            ))
+            if order_time:
+                # Use custom order_time
+                cursor.execute("""
+                    INSERT INTO orders (customer_name, order_type, payment_method, total, order_time, packaging_cost, status, created_by)
+                    VALUES (%s, %s, %s, %s, %s, %s, 'CONFIRMED', %s)
+                    RETURNING id
+                """, (
+                    data.get('customer_name', 'Walk-in customer'),
+                    data.get('order_type', 'Dine-in'),
+                    data.get('payment_method', 'Cash'),
+                    float(total_to_use),
+                    order_time,
+                    float(packaging_cost),
+                    user_id
+                ))
+            else:
+                # Use DEFAULT CURRENT_TIMESTAMP
+                cursor.execute("""
+                    INSERT INTO orders (customer_name, order_type, payment_method, total, packaging_cost, status, created_by)
+                    VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s)
+                    RETURNING id
+                """, (
+                    data.get('customer_name', 'Walk-in customer'),
+                    data.get('order_type', 'Dine-in'),
+                    data.get('payment_method', 'Cash'),
+                    float(total_to_use),
+                    float(packaging_cost),
+                    user_id
+                ))
         else:
-            cursor.execute("""
-                INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by)
-                VALUES (%s, %s, %s, %s, 'CONFIRMED', %s)
-                RETURNING id
-            """, (
-                data.get('customer_name', 'Walk-in customer'),
-                data.get('order_type', 'Dine-in'),
-                data.get('payment_method', 'Cash'),
-                float(total_to_use),
-                user_id
-            ))
+            if order_time:
+                # Use custom order_time
+                cursor.execute("""
+                    INSERT INTO orders (customer_name, order_type, payment_method, total, order_time, status, created_by)
+                    VALUES (%s, %s, %s, %s, %s, 'CONFIRMED', %s)
+                    RETURNING id
+                """, (
+                    data.get('customer_name', 'Walk-in customer'),
+                    data.get('order_type', 'Dine-in'),
+                    data.get('payment_method', 'Cash'),
+                    float(total_to_use),
+                    order_time,
+                    user_id
+                ))
+            else:
+                # Use DEFAULT CURRENT_TIMESTAMP
+                cursor.execute("""
+                    INSERT INTO orders (customer_name, order_type, payment_method, total, status, created_by)
+                    VALUES (%s, %s, %s, %s, 'CONFIRMED', %s)
+                    RETURNING id
+                """, (
+                    data.get('customer_name', 'Walk-in customer'),
+                    data.get('order_type', 'Dine-in'),
+                    data.get('payment_method', 'Cash'),
+                    float(total_to_use),
+                    user_id
+                ))
 
         order_id = cursor.fetchone()['id']
         
@@ -604,7 +648,8 @@ def create_order():
         return jsonify({
             'message': 'Created successfully', 
             'order_id': order_id,
-            'packaging_cost': packaging_cost
+            'packaging_cost': packaging_cost,
+            'order_time': order_time or 'default'  # Return the time for confirmation
         }), 201
     
     except Exception as e:
