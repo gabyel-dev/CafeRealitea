@@ -70,13 +70,56 @@ def delete_equipment(id):
 def get_gross_profit():
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM gross_profit_items ORDER BY date_created DESC")
+    cur.execute("SELECT * FROM gross_profit_items ORDER BY id DESC")
     rows = cur.fetchall()
     cur.close()
     conn.close()
     return jsonify(rows)
 
 # ---------------- GROSS PROFIT ---------------- #
+@finance_bp.route("/gross-profit/<string:time_range>", methods=["GET"])
+def get_gross_profit_by_range(time_range):
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    try:
+        if time_range == "daily":
+            # Get ALL daily gross profit data (not just today)
+            cur.execute("""
+                SELECT *, DATE(created_at) as date 
+                FROM gross_profit_items 
+                ORDER BY created_at DESC
+            """)
+        elif time_range == "monthly":
+            # Get ALL monthly gross profit data
+            cur.execute("""
+                SELECT *, 
+                       EXTRACT(YEAR FROM created_at) as year,
+                       EXTRACT(MONTH FROM created_at) as month
+                FROM gross_profit_items 
+                ORDER BY created_at DESC
+            """)
+        elif time_range == "yearly":
+            # Get ALL yearly gross profit data
+            cur.execute("""
+                SELECT *, EXTRACT(YEAR FROM created_at) as year
+                FROM gross_profit_items 
+                ORDER BY created_at DESC
+            """)
+        else:
+            # Default: get all gross profit items
+            cur.execute("SELECT * FROM gross_profit_items ORDER BY created_at DESC")
+        
+        rows = cur.fetchall()
+        return jsonify(rows)
+        
+    except Exception as e:
+        print("Error fetching gross profit:", e)
+        return jsonify({"error": "Failed to fetch gross profit data"}), 500
+    finally:
+        cur.close()
+        conn.close()
+
 # Also fix the equipment endpoint to actually filter by time range if needed
 @finance_bp.route("/equipment/<string:time_range>", methods=["GET"])
 def get_equipment_by_range(time_range):
@@ -97,6 +140,24 @@ def get_equipment_by_range(time_range):
         cur.close()
         conn.close()
 
+@finance_bp.route("/gross-profit", methods=["POST"])
+def add_gross_profit():
+    data = request.get_json()
+    name = data.get("name")
+    amount = data.get("amount")
+    user_id = session.get("user", {}).get("id")
+
+    conn = get_db_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        INSERT INTO gross_profit_items (name, amount, created_by)
+        VALUES (%s, %s, %s) RETURNING *;
+    """, (name, amount, user_id))
+    row = cur.fetchone()
+    conn.commit()
+    cur.close()
+    conn.close()
+    return jsonify(row), 201
 
 @finance_bp.route("/gross-profit/<int:id>", methods=["PUT"])
 def update_gross_profit(id):
@@ -314,76 +375,6 @@ def update_packaging_costs():
 
 
 # ---------------- FINANCIAL SUMMARIES ---------------- #
-
-
-@finance_bp.route("/gross-profit/<string:time_range>", methods=["GET"])
-def get_gross_profit_by_range(time_range):
-    conn = get_db_conn()
-    cur = conn.cursor()
-    
-    try:
-        if time_range == "daily":
-            cur.execute("""
-                SELECT DATE(date_created) AS day,
-                       SUM(amount) AS total_amount
-                FROM gross_profit_items
-                GROUP BY day
-                ORDER BY day DESC
-            """)
-        elif time_range == "monthly":
-            cur.execute("""
-                SELECT EXTRACT(YEAR FROM date_created) AS year,
-                       EXTRACT(MONTH FROM date_created) AS month,
-                       SUM(amount) AS total_amount
-                FROM gross_profit_items
-                GROUP BY year, month
-                ORDER BY year DESC, month DESC
-            """)
-        elif time_range == "yearly":
-            cur.execute("""
-                SELECT EXTRACT(YEAR FROM date_created) AS year,
-                       SUM(amount) AS total_amount
-                FROM gross_profit_items
-                GROUP BY year
-                ORDER BY year DESC
-            """)
-        else:
-            cur.execute("SELECT * FROM gross_profit_items ORDER BY date_created DESC")
-        
-        rows = cur.fetchall()
-        return jsonify(rows)
-        
-    except Exception as e:
-        print("Error fetching gross profit:", e)
-        return jsonify({"error": "Failed to fetch gross profit data"}), 500
-    finally:
-        cur.close()
-        conn.close()
-
-@finance_bp.route("/gross-profit", methods=["POST"])
-def add_gross_profit():
-    data = request.get_json()
-    name = data.get("name")
-    amount = data.get("amount")
-    date = data.get('date')  # comes from React: YYYY-MM-DD
-    user_id = session.get("user", {}).get("id")
-
-    # Convert string to datetime
-    date_obj = datetime.fromisoformat(date)
-
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO gross_profit_items (name, amount, date_created, created_by)
-        VALUES (%s, %s, %s, %s) RETURNING *;
-    """, (name, amount, date_obj, user_id))
-    row = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return jsonify(row), 201
-
-# ---------------- FINANCIAL SUMMARIES ---------------- #
 def get_equipment_total():
     """Equipment is a one-time static cost (global)."""
     conn = get_db_conn()
@@ -393,6 +384,7 @@ def get_equipment_total():
     cur.close()
     conn.close()
     return float(equipment)
+
 
 @finance_bp.route("/summaries/daily", methods=["GET"])
 def daily_summary():
@@ -411,9 +403,9 @@ def daily_summary():
     """)
     orders = cur.fetchall()
 
-    # Gross profit grouped by day - FIXED: using date_created instead of date_created
+    # Gross profit grouped by day
     cur.execute("""
-        SELECT DATE(date_created) as day,
+        SELECT DATE(created_at) as day,
                SUM(amount) as gross_profit
         FROM gross_profit_items
         GROUP BY day;
@@ -445,6 +437,7 @@ def daily_summary():
     conn.close()
     return jsonify(summary)
 
+
 @finance_bp.route("/summaries/monthly", methods=["GET"])
 def monthly_summary():
     conn = get_db_conn()
@@ -462,10 +455,9 @@ def monthly_summary():
     """)
     orders = cur.fetchall()
 
-    # FIXED: using date_created instead of date_created
     cur.execute("""
-        SELECT EXTRACT(YEAR FROM date_created) AS year,
-               EXTRACT(MONTH FROM date_created) AS month,
+        SELECT EXTRACT(YEAR FROM created_at) AS year,
+               EXTRACT(MONTH FROM created_at) AS month,
                SUM(amount) as gross_profit
         FROM gross_profit_items
         GROUP BY year, month;
@@ -498,6 +490,7 @@ def monthly_summary():
     conn.close()
     return jsonify(summary)
 
+
 @finance_bp.route("/summaries/yearly", methods=["GET"])
 def yearly_summary():
     conn = get_db_conn()
@@ -514,9 +507,8 @@ def yearly_summary():
     """)
     orders = cur.fetchall()
 
-    # FIXED: using date_created instead of date_created
     cur.execute("""
-        SELECT EXTRACT(YEAR FROM date_created) AS year,
+        SELECT EXTRACT(YEAR FROM created_at) AS year,
                SUM(amount) as gross_profit
         FROM gross_profit_items
         GROUP BY year;
