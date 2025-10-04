@@ -65,129 +65,147 @@ def delete_equipment(id):
     return jsonify({"deleted": row})
 
 
-# ---------------- GROSS PROFIT ---------------- #
-@finance_bp.route("/gross-profit", methods=["GET"])
-def get_gross_profit():
+# ---------------- PRODUCT GROSS PROFIT ---------------- #
+@finance_bp.route("/product-gross-profit", methods=["GET"])
+def get_product_gross_profit():
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute("SELECT * FROM gross_profit_items ORDER BY id DESC")
+    cur.execute("""
+        SELECT pgp.*, i.name as product_name, i.price as product_price
+        FROM product_gross_profit pgp
+        JOIN itemss i ON pgp.product_id = i.id
+        ORDER BY i.name
+    """)
     rows = cur.fetchall()
     cur.close()
     conn.close()
     return jsonify(rows)
 
-# ---------------- GROSS PROFIT ---------------- #
-@finance_bp.route("/gross-profit/<string:time_range>", methods=["GET"])
-def get_gross_profit_by_range(time_range):
+@finance_bp.route("/product-gross-profit/<int:product_id>", methods=["GET"])
+def get_gross_profit_by_product(product_id):
     conn = get_db_conn()
     cur = conn.cursor()
+    cur.execute("""
+        SELECT pgp.*, i.name as product_name, i.price as product_price
+        FROM product_gross_profit pgp
+        JOIN itemss i ON pgp.product_id = i.id
+        WHERE pgp.product_id = %s
+    """, (product_id,))
+    row = cur.fetchone()
+    cur.close()
+    conn.close()
     
-    try:
-        if time_range == "daily":
-            # Get ALL daily gross profit data (not just today)
-            cur.execute("""
-                SELECT *, DATE(created_at) as date 
-                FROM gross_profit_items 
-                ORDER BY created_at DESC
-            """)
-        elif time_range == "monthly":
-            # Get ALL monthly gross profit data
-            cur.execute("""
-                SELECT *, 
-                       EXTRACT(YEAR FROM created_at) as year,
-                       EXTRACT(MONTH FROM created_at) as month
-                FROM gross_profit_items 
-                ORDER BY created_at DESC
-            """)
-        elif time_range == "yearly":
-            # Get ALL yearly gross profit data
-            cur.execute("""
-                SELECT *, EXTRACT(YEAR FROM created_at) as year
-                FROM gross_profit_items 
-                ORDER BY created_at DESC
-            """)
-        else:
-            # Default: get all gross profit items
-            cur.execute("SELECT * FROM gross_profit_items ORDER BY created_at DESC")
-        
-        rows = cur.fetchall()
-        return jsonify(rows)
-        
-    except Exception as e:
-        print("Error fetching gross profit:", e)
-        return jsonify({"error": "Failed to fetch gross profit data"}), 500
-    finally:
-        cur.close()
-        conn.close()
+    if row:
+        return jsonify(row)
+    else:
+        return jsonify({"error": "Product gross profit not found"}), 404
 
-# Also fix the equipment endpoint to actually filter by time range if needed
-@finance_bp.route("/equipment/<string:time_range>", methods=["GET"])
-def get_equipment_by_range(time_range):
-    conn = get_db_conn()
-    cur = conn.cursor()
-    
-    try:
-        # For equipment, you might want to filter by purchase date if you have that field
-        # For now, just return all equipment since it's usually one-time costs
-        cur.execute("SELECT * FROM equipment_costs ORDER BY created_at DESC")
-        rows = cur.fetchall()
-        return jsonify(rows)
-        
-    except Exception as e:
-        print("Error fetching equipment:", e)
-        return jsonify({"error": "Failed to fetch equipment data"}), 500
-    finally:
-        cur.close()
-        conn.close()
-
-@finance_bp.route("/gross-profit", methods=["POST"])
-def add_gross_profit():
+@finance_bp.route("/product-gross-profit/<int:product_id>", methods=["PUT"])
+def update_product_gross_profit(product_id):
     data = request.get_json()
-    name = data.get("name")
-    amount = data.get("amount")
+    gross_profit = data.get("gross_profit")
     user_id = session.get("user", {}).get("id")
 
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute("""
-        INSERT INTO gross_profit_items (name, amount, created_by)
-        VALUES (%s, %s, %s) RETURNING *;
-    """, (name, amount, user_id))
-    row = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return jsonify(row), 201
+    
+    try:
+        # Check if product exists
+        cur.execute("SELECT id FROM itemss WHERE id = %s", (product_id,))
+        if not cur.fetchone():
+            return jsonify({"error": "Product not found"}), 404
 
-@finance_bp.route("/gross-profit/<int:id>", methods=["PUT"])
-def update_gross_profit(id):
+        # Update or insert gross profit
+        cur.execute("""
+            INSERT INTO product_gross_profit (product_id, gross_profit, created_by)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (product_id) 
+            DO UPDATE SET 
+                gross_profit = EXCLUDED.gross_profit,
+                updated_at = NOW(),
+                created_by = EXCLUDED.created_by
+            RETURNING *;
+        """, (product_id, gross_profit, user_id))
+        
+        row = cur.fetchone()
+        conn.commit()
+        
+        # Get product details for response
+        cur.execute("""
+            SELECT pgp.*, i.name as product_name, i.price as product_price
+            FROM product_gross_profit pgp
+            JOIN itemss i ON pgp.product_id = i.id
+            WHERE pgp.id = %s
+        """, (row['id'],))
+        result = cur.fetchone()
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        conn.rollback()
+        print("Error updating product gross profit:", e)
+        return jsonify({"error": "Failed to update product gross profit"}), 500
+    finally:
+        cur.close()
+        conn.close()
+
+@finance_bp.route("/product-gross-profit/bulk-update", methods=["POST"])
+def bulk_update_product_gross_profit():
     data = request.get_json()
-    name = data.get("name")
-    amount = data.get("amount")
+    updates = data.get("updates", [])
+    user_id = session.get("user", {}).get("id")
+
+    if not updates:
+        return jsonify({"error": "No updates provided"}), 400
 
     conn = get_db_conn()
     cur = conn.cursor()
-    cur.execute("""
-        UPDATE gross_profit_items
-        SET name=%s, amount=%s, updated_at=NOW()
-        WHERE id=%s RETURNING *;
-    """, (name, amount, id))
-    row = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return jsonify(row)
+    
+    try:
+        results = []
+        for update in updates:
+            product_id = update.get("product_id")
+            gross_profit = update.get("gross_profit")
+            
+            if product_id is None or gross_profit is None:
+                continue
 
-@finance_bp.route("/gross-profit/<int:id>", methods=["DELETE"])
-def delete_gross_profit(id):
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("DELETE FROM gross_profit_items WHERE id=%s RETURNING *;", (id,))
-    row = cur.fetchone()
-    conn.commit()
-    cur.close()
-    conn.close()
-    return jsonify({"deleted": row})
+            cur.execute("""
+                INSERT INTO product_gross_profit (product_id, gross_profit, created_by)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (product_id) 
+                DO UPDATE SET 
+                    gross_profit = EXCLUDED.gross_profit,
+                    updated_at = NOW(),
+                    created_by = EXCLUDED.created_by
+                RETURNING *;
+            """, (product_id, gross_profit, user_id))
+            
+            row = cur.fetchone()
+            results.append(row)
+
+        conn.commit()
+        
+        # Get updated records with product names
+        product_ids = [str(update.get("product_id")) for update in updates]
+        if product_ids:
+            cur.execute("""
+                SELECT pgp.*, i.name as product_name, i.price as product_price
+                FROM product_gross_profit pgp
+                JOIN itemss i ON pgp.product_id = i.id
+                WHERE pgp.product_id IN (%s)
+            """ % ",".join(product_ids))
+            results = cur.fetchall()
+
+        return jsonify(results)
+        
+    except Exception as e:
+        conn.rollback()
+        print("Error in bulk update:", e)
+        return jsonify({"error": "Failed to update product gross profits"}), 500
+    finally:
+        cur.close()
+        conn.close()
 
 # ---------------- PACKAGING COSTS ---------------- #
 @finance_bp.route("/packaging-costs", methods=["GET"])
@@ -278,7 +296,6 @@ def daily_summary_with_packaging():
 
     return jsonify(summary)
 
-
 @finance_bp.route("/packaging-costs/<int:id>", methods=["PUT"])
 def update_packaging_cost(id):
     data = request.get_json()
@@ -296,24 +313,6 @@ def update_packaging_cost(id):
     cur.close()
     conn.close()
     return jsonify(row)
-
-# ---------------- FINANCIAL SUMMARIES ---------------- #
-def get_total_costs():
-    conn = get_db_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT COALESCE(SUM(price),0) AS total FROM equipment_costs;")
-    equipment = cur.fetchone()['total']
-    
-    cur.execute("SELECT COALESCE(SUM(amount),0) AS total FROM gross_profit_items;")
-    gross_profit = cur.fetchone()['total']
-    
-    cur.execute("SELECT COALESCE(SUM(cost),0) AS total FROM packaging_costs;")
-    packaging = cur.fetchone()['total']
-    
-    cur.close()
-    conn.close()
-    return float(equipment), float(gross_profit), float(packaging)
-
 
 @finance_bp.route("/packaging-costs/update", methods=["POST"])
 def update_packaging_costs():
@@ -373,7 +372,6 @@ def update_packaging_costs():
         cur.close()
         conn.close()
 
-
 # ---------------- FINANCIAL SUMMARIES ---------------- #
 def get_equipment_total():
     """Equipment is a one-time static cost (global)."""
@@ -385,6 +383,66 @@ def get_equipment_total():
     conn.close()
     return float(equipment)
 
+def get_daily_gross_profit(day):
+    """Calculate gross profit for a specific day based on product gross profits"""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as total_gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN product_gross_profit pgp ON oi.item_id = pgp.product_id
+        WHERE o.status = 'CONFIRMED' 
+        AND DATE(o.order_time) = %s
+    """, (day,))
+    
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    
+    return float(result['total_gross_profit']) if result and result['total_gross_profit'] else 0.0
+
+def get_monthly_gross_profit(year, month):
+    """Calculate gross profit for a specific month based on product gross profits"""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as total_gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN product_gross_profit pgp ON oi.item_id = pgp.product_id
+        WHERE o.status = 'CONFIRMED' 
+        AND EXTRACT(YEAR FROM o.order_time) = %s
+        AND EXTRACT(MONTH FROM o.order_time) = %s
+    """, (year, month))
+    
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    
+    return float(result['total_gross_profit']) if result and result['total_gross_profit'] else 0.0
+
+def get_yearly_gross_profit(year):
+    """Calculate gross profit for a specific year based on product gross profits"""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as total_gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN product_gross_profit pgp ON oi.item_id = pgp.product_id
+        WHERE o.status = 'CONFIRMED' 
+        AND EXTRACT(YEAR FROM o.order_time) = %s
+    """, (year,))
+    
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    
+    return float(result['total_gross_profit']) if result and result['total_gross_profit'] else 0.0
 
 @finance_bp.route("/summaries/daily", methods=["GET"])
 def daily_summary():
@@ -403,16 +461,6 @@ def daily_summary():
     """)
     orders = cur.fetchall()
 
-    # Gross profit grouped by day
-    cur.execute("""
-        SELECT DATE(created_at) as day,
-               SUM(amount) as gross_profit
-        FROM gross_profit_items
-        GROUP BY day;
-    """)
-    gross_profit_rows = cur.fetchall()
-    gross_profit_map = {r['day']: float(r['gross_profit']) for r in gross_profit_rows}
-
     equipment = get_equipment_total()
 
     summary = []
@@ -420,7 +468,7 @@ def daily_summary():
         day = r['day']
         revenue = float(r['revenue'])
         day_packaging = float(r['packaging_cost'])
-        day_gross = gross_profit_map.get(day, 0.0)
+        day_gross = get_daily_gross_profit(day)
 
         net_profit = revenue - (equipment + day_packaging + day_gross)
 
@@ -436,7 +484,6 @@ def daily_summary():
     cur.close()
     conn.close()
     return jsonify(summary)
-
 
 @finance_bp.route("/summaries/monthly", methods=["GET"])
 def monthly_summary():
@@ -455,16 +502,6 @@ def monthly_summary():
     """)
     orders = cur.fetchall()
 
-    cur.execute("""
-        SELECT EXTRACT(YEAR FROM created_at) AS year,
-               EXTRACT(MONTH FROM created_at) AS month,
-               SUM(amount) as gross_profit
-        FROM gross_profit_items
-        GROUP BY year, month;
-    """)
-    gross_profit_rows = cur.fetchall()
-    gross_profit_map = {(int(r['year']), int(r['month'])): float(r['gross_profit']) for r in gross_profit_rows}
-
     equipment = get_equipment_total()
 
     summary = []
@@ -472,7 +509,7 @@ def monthly_summary():
         year, month = int(r['year']), int(r['month'])
         revenue = float(r['revenue'])
         month_packaging = float(r['packaging_cost'])
-        month_gross = gross_profit_map.get((year, month), 0.0)
+        month_gross = get_monthly_gross_profit(year, month)
 
         net_profit = revenue - (equipment + month_packaging + month_gross)
 
@@ -490,7 +527,6 @@ def monthly_summary():
     conn.close()
     return jsonify(summary)
 
-
 @finance_bp.route("/summaries/yearly", methods=["GET"])
 def yearly_summary():
     conn = get_db_conn()
@@ -507,15 +543,6 @@ def yearly_summary():
     """)
     orders = cur.fetchall()
 
-    cur.execute("""
-        SELECT EXTRACT(YEAR FROM created_at) AS year,
-               SUM(amount) as gross_profit
-        FROM gross_profit_items
-        GROUP BY year;
-    """)
-    gross_profit_rows = cur.fetchall()
-    gross_profit_map = {int(r['year']): float(r['gross_profit']) for r in gross_profit_rows}
-
     equipment = get_equipment_total()
 
     summary = []
@@ -523,7 +550,7 @@ def yearly_summary():
         year = int(r['year'])
         revenue = float(r['revenue'])
         year_packaging = float(r['packaging_cost'])
-        year_gross = gross_profit_map.get(year, 0.0)
+        year_gross = get_yearly_gross_profit(year)
 
         net_profit = revenue - (equipment + year_packaging + year_gross)
 
@@ -539,3 +566,83 @@ def yearly_summary():
     cur.close()
     conn.close()
     return jsonify(summary)
+
+# ---------------- PRODUCT FINANCIAL ANALYSIS ---------------- #
+@finance_bp.route("/product-analysis", methods=["GET"])
+def get_product_analysis():
+    """Get detailed financial analysis per product"""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    cur.execute("""
+        SELECT 
+            i.id,
+            i.name as product_name,
+            i.price as selling_price,
+            COALESCE(pgp.gross_profit, 0) as gross_profit_per_unit,
+            (i.price - COALESCE(pgp.gross_profit, 0)) as cost_per_unit,
+            COALESCE(SUM(oi.quantity), 0) as total_units_sold,
+            COALESCE(SUM(oi.quantity * i.price), 0) as total_revenue,
+            COALESCE(SUM(oi.quantity * pgp.gross_profit), 0) as total_gross_profit
+        FROM itemss i
+        LEFT JOIN product_gross_profit pgp ON i.id = pgp.product_id
+        LEFT JOIN order_items oi ON i.id = oi.item_id
+        LEFT JOIN orders o ON oi.order_id = o.id AND o.status = 'CONFIRMED'
+        GROUP BY i.id, i.name, i.price, pgp.gross_profit
+        ORDER BY total_gross_profit DESC;
+    """)
+    
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return jsonify(rows)
+
+@finance_bp.route("/product-analysis/<int:product_id>", methods=["GET"])
+def get_product_analysis_detail(product_id):
+    """Get detailed financial analysis for a specific product over time"""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    # Product basic info
+    cur.execute("""
+        SELECT 
+            i.id,
+            i.name as product_name,
+            i.price as selling_price,
+            COALESCE(pgp.gross_profit, 0) as gross_profit_per_unit,
+            (i.price - COALESCE(pgp.gross_profit, 0)) as cost_per_unit
+        FROM itemss i
+        LEFT JOIN product_gross_profit pgp ON i.id = pgp.product_id
+        WHERE i.id = %s
+    """, (product_id,))
+    
+    product_info = cur.fetchone()
+    if not product_info:
+        return jsonify({"error": "Product not found"}), 404
+    
+    # Monthly sales data
+    cur.execute("""
+        SELECT 
+            EXTRACT(YEAR FROM o.order_time) as year,
+            EXTRACT(MONTH FROM o.order_time) as month,
+            SUM(oi.quantity) as units_sold,
+            SUM(oi.quantity * i.price) as revenue,
+            SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        JOIN itemss i ON oi.item_id = i.id
+        LEFT JOIN product_gross_profit pgp ON i.id = pgp.product_id
+        WHERE o.status = 'CONFIRMED' AND i.id = %s
+        GROUP BY year, month
+        ORDER BY year DESC, month DESC;
+    """, (product_id,))
+    
+    monthly_data = cur.fetchall()
+    
+    cur.close()
+    conn.close()
+    
+    return jsonify({
+        "product_info": product_info,
+        "monthly_performance": monthly_data
+    })
