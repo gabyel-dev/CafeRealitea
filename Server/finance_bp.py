@@ -449,17 +449,49 @@ def daily_summary():
     conn = get_db_conn()
     cur = conn.cursor()
 
-    # Revenue + packaging cost from orders
-    cur.execute("""
+    # Get filter parameters from request
+    month = request.args.get('month', type=int)
+    year = request.args.get('year', type=int)
+    
+    # Build query with filters
+    query = """
         SELECT DATE(order_time) as day, 
                SUM(total) AS revenue,
                SUM(packaging_cost) AS packaging_cost
         FROM orders
         WHERE status='CONFIRMED'
-        GROUP BY day
-        ORDER BY day DESC;
-    """)
+    """
+    params = []
+    
+    if month and year:
+        query += " AND EXTRACT(MONTH FROM order_time) = %s AND EXTRACT(YEAR FROM order_time) = %s"
+        params.extend([month, year])
+    
+    query += " GROUP BY day ORDER BY day DESC;"
+    
+    cur.execute(query, params)
     orders = cur.fetchall()
+
+    # Calculate gross profit with SAME filters
+    gross_profit_query = """
+        SELECT DATE(o.order_time) as day,
+               SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN product_gross_profit pgp ON oi.item_id = pgp.product_id
+        WHERE o.status = 'CONFIRMED'
+    """
+    gross_profit_params = []
+    
+    if month and year:
+        gross_profit_query += " AND EXTRACT(MONTH FROM o.order_time) = %s AND EXTRACT(YEAR FROM o.order_time) = %s"
+        gross_profit_params.extend([month, year])
+    
+    gross_profit_query += " GROUP BY DATE(o.order_time)"
+    
+    cur.execute(gross_profit_query, gross_profit_params)
+    gross_profit_rows = cur.fetchall()
+    gross_profit_map = {r['day']: float(r['gross_profit']) for r in gross_profit_rows}
 
     equipment = get_equipment_total()
 
@@ -468,7 +500,7 @@ def daily_summary():
         day = r['day']
         revenue = float(r['revenue'])
         day_packaging = float(r['packaging_cost'])
-        day_gross = get_daily_gross_profit(day)
+        day_gross = gross_profit_map.get(day, 0.0)
 
         net_profit = revenue - (equipment + day_packaging + day_gross)
 
@@ -490,17 +522,49 @@ def monthly_summary():
     conn = get_db_conn()
     cur = conn.cursor()
 
-    cur.execute("""
+    # Get filter parameters
+    year = request.args.get('year', type=int)
+    
+    query = """
         SELECT EXTRACT(YEAR FROM order_time) AS year,
                EXTRACT(MONTH FROM order_time) AS month,
                SUM(total) AS revenue,
                SUM(packaging_cost) AS packaging_cost
         FROM orders
         WHERE status='CONFIRMED'
-        GROUP BY year, month
-        ORDER BY year DESC, month DESC;
-    """)
+    """
+    params = []
+    
+    if year:
+        query += " AND EXTRACT(YEAR FROM order_time) = %s"
+        params.append(year)
+    
+    query += " GROUP BY year, month ORDER BY year DESC, month DESC;"
+    
+    cur.execute(query, params)
     orders = cur.fetchall()
+
+    # Calculate gross profit with SAME filters
+    gross_profit_query = """
+        SELECT EXTRACT(YEAR FROM o.order_time) AS year,
+               EXTRACT(MONTH FROM o.order_time) AS month,
+               SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN product_gross_profit pgp ON oi.item_id = pgp.product_id
+        WHERE o.status = 'CONFIRMED'
+    """
+    gross_profit_params = []
+    
+    if year:
+        gross_profit_query += " AND EXTRACT(YEAR FROM o.order_time) = %s"
+        gross_profit_params.append(year)
+    
+    gross_profit_query += " GROUP BY EXTRACT(YEAR FROM o.order_time), EXTRACT(MONTH FROM o.order_time)"
+    
+    cur.execute(gross_profit_query, gross_profit_params)
+    gross_profit_rows = cur.fetchall()
+    gross_profit_map = {(int(r['year']), int(r['month'])): float(r['gross_profit']) for r in gross_profit_rows}
 
     equipment = get_equipment_total()
 
@@ -509,7 +573,7 @@ def monthly_summary():
         year, month = int(r['year']), int(r['month'])
         revenue = float(r['revenue'])
         month_packaging = float(r['packaging_cost'])
-        month_gross = get_monthly_gross_profit(year, month)
+        month_gross = gross_profit_map.get((year, month), 0.0)
 
         net_profit = revenue - (equipment + month_packaging + month_gross)
 
@@ -543,6 +607,18 @@ def yearly_summary():
     """)
     orders = cur.fetchall()
 
+    cur.execute("""
+        SELECT EXTRACT(YEAR FROM o.order_time) AS year,
+               SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN product_gross_profit pgp ON oi.item_id = pgp.product_id
+        WHERE o.status = 'CONFIRMED'
+        GROUP BY EXTRACT(YEAR FROM o.order_time)
+    """)
+    gross_profit_rows = cur.fetchall()
+    gross_profit_map = {int(r['year']): float(r['gross_profit']) for r in gross_profit_rows}
+
     equipment = get_equipment_total()
 
     summary = []
@@ -550,7 +626,7 @@ def yearly_summary():
         year = int(r['year'])
         revenue = float(r['revenue'])
         year_packaging = float(r['packaging_cost'])
-        year_gross = get_yearly_gross_profit(year)
+        year_gross = gross_profit_map.get(year, 0.0)
 
         net_profit = revenue - (equipment + year_packaging + year_gross)
 
@@ -646,3 +722,31 @@ def get_product_analysis_detail(product_id):
         "product_info": product_info,
         "monthly_performance": monthly_data
     })
+
+def get_filtered_gross_profit(month=None, year=None):
+    """Calculate gross profit with optional month/year filters"""
+    conn = get_db_conn()
+    cur = conn.cursor()
+    
+    query = """
+        SELECT SUM(oi.quantity * COALESCE(pgp.gross_profit, 0)) as total_gross_profit
+        FROM orders o
+        JOIN order_items oi ON o.id = oi.order_id
+        LEFT JOIN product_gross_profit pgp ON oi.item_id = pgp.product_id
+        WHERE o.status = 'CONFIRMED'
+    """
+    params = []
+    
+    if month and year:
+        query += " AND EXTRACT(MONTH FROM o.order_time) = %s AND EXTRACT(YEAR FROM o.order_time) = %s"
+        params.extend([month, year])
+    elif year:
+        query += " AND EXTRACT(YEAR FROM o.order_time) = %s"
+        params.append(year)
+    
+    cur.execute(query, params)
+    result = cur.fetchone()
+    cur.close()
+    conn.close()
+    
+    return float(result['total_gross_profit']) if result and result['total_gross_profit'] else 0.0
