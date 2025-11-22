@@ -641,7 +641,7 @@ def yearly_summary():
 
     cur.close()
     conn.close()
-    return jsonify(summary)
+    return jsonify(summary) 
 
 # ---------------- PRODUCT FINANCIAL ANALYSIS ---------------- #
 @finance_bp.route("/product-analysis", methods=["GET"])
