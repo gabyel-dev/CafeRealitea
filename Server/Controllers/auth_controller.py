@@ -1248,12 +1248,13 @@ def update_product(id):
     cursor = conn.cursor()
     data = request.get_json()
     price = data.get('price')
+    status = data.get('status')
 
     try:
-        cursor.execute('UPDATE itemss SET price = %s WHERE id = %s', (price, id))
+        cursor.execute('UPDATE itemss SET price = %s, status = %s WHERE id = %s', (price, status, id))
         conn.commit()
 
-        return jsonify({'message': 'product price updated successfully'})
+        return jsonify({'message': 'product price and status updated successfully'})
     except Exception as e:
         return jsonify({'error': str(e)})
 
