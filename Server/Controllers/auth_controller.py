@@ -1442,34 +1442,50 @@ def get_product_by_id(id):
     try:
         cursor.execute("""
                 SELECT 
-                    i.id AS product_id,
-                    i.name AS product_name,
-                    i.category_id AS category,
-                    i.price AS price,
-                    c.name AS category_name,
-                    COALESCE(SUM(oi.quantity), 0) AS total_quantity,
-                    COALESCE(SUM(oi.quantity * oi.price), 0) AS total_sales,
-                    COALESCE(pgp.gross_profit, 0) AS gross_profit,
-                    COALESCE(SUM(oi.quantity * pgp.gross_profit), 0) AS total_gross_profit,
+    i.id AS product_id,
+    i.name AS product_name,
+    i.category_id AS category,
+    i.price AS price,
+    c.name AS category_name,
+    
+    -- Total quantity sold
+    COALESCE(SUM(oi.quantity), 0) AS total_quantity,
 
-                    CASE 
-                        WHEN i.price > 0 THEN (pgp.gross_profit / i.price) * 100
-                        ELSE 0
-                    END AS profit_margin_percentage
+    -- Total sales
+    COALESCE(SUM(oi.quantity * oi.price), 0) AS total_sales,
 
-                FROM itemss i
-                LEFT JOIN categories c ON i.category_id = c.id
-                LEFT JOIN product_gross_profit pgp ON pgp.product_id = i.id
-                LEFT JOIN order_items oi ON oi.item_id = i.id
-                LEFT JOIN orders o ON oi.order_id = o.id
-                WHERE i.id = %s
-                GROUP BY 
-                    i.id, 
-                    i.name,
-                    i.category_id,
-                    i.price,
-                    c.name,
-                    pgp.gross_profit;
+    -- Gross profit per unit
+    COALESCE(pgp.gross_profit, 0) AS gross_profit,
+
+    -- Total gross profit
+    COALESCE(SUM(oi.quantity * pgp.gross_profit), 0) AS total_gross_profit,
+
+    -- Profit margin
+    CASE 
+        WHEN i.price > 0 THEN (pgp.gross_profit / i.price) * 100
+        ELSE 0
+    END AS profit_margin_percentage,
+
+    -- Packaging cost for the category only
+    (SELECT SUM(pc.cost)
+     FROM packaging_costs pc
+     WHERE pc.category_id = i.category_id) AS packaging_cost
+
+FROM itemss i
+LEFT JOIN categories c ON i.category_id = c.id
+LEFT JOIN product_gross_profit pgp ON pgp.product_id = i.id
+LEFT JOIN order_items oi ON oi.item_id = i.id
+LEFT JOIN orders o ON oi.order_id = o.id
+
+WHERE i.id = 1
+GROUP BY 
+    i.id, 
+    i.name,
+    i.category_id,
+    i.price,
+    c.name,
+    pgp.gross_profit;
+
 
                 """, (id,))
         product = cursor.fetchone()
@@ -1487,7 +1503,8 @@ def get_product_by_id(id):
             "total_sales": product["total_sales"],
             "gross_profit": product["gross_profit"],
             "total_gross_profit": product["total_gross_profit"],
-            "profit_margin_percentage": product["profit_margin_percentage"]
+            "profit_margin_percentage": product["profit_margin_percentage"],
+            "packaging_cost": product["packaging_cost"]
         })
 
     except:
