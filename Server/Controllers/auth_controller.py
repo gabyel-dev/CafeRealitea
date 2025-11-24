@@ -1432,4 +1432,61 @@ def delete_order(id):
         cursor.close()
         conn.close()
 
-    
+
+# GET PRODUCT BY ID
+@auth_bp.route('/products/<int:id>', methods=['GET'])
+def get_product_by_id(id):
+    conn = get_db_conn()
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute("""
+                SELECT 
+                    i.id AS product_id,
+                    i.name AS product_name,
+                    i.category_id AS category,
+                    i.price AS price,
+                    c.name AS category_name,
+                    COALESCE(SUM(oi.quantity), 0) AS total_quantity,
+                    COALESCE(SUM(oi.quantity * oi.price), 0) AS total_sales,
+                    COALESCE(pgp.gross_profit, 0) AS gross_profit,
+                    COALESCE(SUM(oi.quantity * pgp.gross_profit), 0) AS total_gross_profit,
+
+                    CASE 
+                        WHEN i.price > 0 THEN (pgp.gross_profit / i.price) * 100
+                        ELSE 0
+                    END AS profit_margin_percentage
+
+                FROM itemss i
+                LEFT JOIN categories c ON i.category_id = c.id
+                LEFT JOIN product_gross_profit pgp ON pgp.product_id = i.id
+                LEFT JOIN order_items oi ON oi.item_id = i.id
+                LEFT JOIN orders o ON oi.order_id = o.id
+                WHERE i.id = %s
+                GROUP BY 
+                    i.id, 
+                    i.name,
+                    i.category_id,
+                    i.price,
+                    c.name,
+                    pgp.gross_profit;
+
+                """, (id,))
+        product = cursor.fetchone()
+
+        if not product:
+            return jsonify({"message": "Product not found"}), 404
+            
+        colnames = [desc[0] for desc in cursor.description]
+        product = dict(zip(colnames, product))
+        
+        return jsonify(product)
+
+
+
+    except:
+        return jsonify({"message": f"failed to retrieve product {id}"})
+    finally:
+        if conn:
+            cursor.close()
+            conn.close()
