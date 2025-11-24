@@ -1477,7 +1477,7 @@ LEFT JOIN product_gross_profit pgp ON pgp.product_id = i.id
 LEFT JOIN order_items oi ON oi.item_id = i.id
 LEFT JOIN orders o ON oi.order_id = o.id
 
-WHERE i.id = 1
+WHERE i.id = %s
 GROUP BY 
     i.id, 
     i.name,
