@@ -1476,13 +1476,19 @@ def get_product_by_id(id):
 
         if not product:
             return jsonify({"message": "Product not found"}), 404
-            
-        colnames = [desc[0] for desc in cursor.description]
-        product = dict(zip(colnames, product))
         
-        return jsonify(product)
-
-
+        return jsonify({
+            "product_id": product["product_id"],
+            "product_name": product["product_name"],
+            "category_id": product["category"],
+            "price": product["price"],
+            "category_name": product["category_name"],
+            "total_quantity": product["total_quantity"],
+            "total_sales": product["total_sales"],
+            "gross_profit": product["gross_profit"],
+            "total_gross_profit": product["total_gross_profit"],
+            "profit_margin_percentage": product["profit_margin_percentage"]
+        })
 
     except:
         return jsonify({"message": f"failed to retrieve product {id}"})
