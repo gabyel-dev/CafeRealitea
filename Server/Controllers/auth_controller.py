@@ -1444,6 +1444,7 @@ def get_product_by_id(id):
         cursor.execute("""
                 SELECT 
     i.id AS product_id,
+    i.status AS status,
     i.name AS product_name,
     i.category_id AS category,
     i.price AS price,
@@ -1496,6 +1497,7 @@ GROUP BY
         
         return jsonify({
             "product_id": product["product_id"],
+            "product_status": product["status"],
             "product_name": product["product_name"],
             "category_id": product["category"],
             "price": product["price"],
