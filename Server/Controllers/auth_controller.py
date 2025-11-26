@@ -1118,6 +1118,8 @@ ORDER BY total_quantity DESC;
             result.append({
                 "item_id": item['item_id'],
                 "product_name": item['product_name'],
+                "product_price": item['product_price'],
+                "product_status": item['product_status'],
                 "total_quantity": item['total_quantity'],
                 "total_sales": item['total_sales'],
             })
