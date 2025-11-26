@@ -1092,16 +1092,22 @@ def top_items():
 
     try:
         cursor.execute("""
-                                            SELECT 
-                        oi.item_id,
-                        i.name AS product_name,
-                        SUM(oi.quantity) AS total_quantity,
-                        SUM(oi.quantity * oi.price) AS total_sales
-                    FROM order_items oi
-                    JOIN orders o ON oi.order_id = o.id
-                    JOIN itemss i ON oi.item_id = i.id
-                    GROUP BY oi.item_id, i.name
-                    ORDER BY total_quantity DESC;
+                         SELECT 
+    oi.item_id,
+    i.name AS product_name,
+    i.status AS product_status,
+    i.price AS product_price,
+    SUM(oi.quantity) AS total_quantity,
+    SUM(oi.quantity * oi.price) AS total_sales
+FROM order_items oi
+LEFT JOIN orders o ON oi.order_id = o.id
+LEFT JOIN itemss i ON oi.item_id = i.id
+GROUP BY 
+    oi.item_id, 
+    i.name,
+    i.status,
+    i.price
+ORDER BY total_quantity DESC;
 
                         """)
         items = cursor.fetchall()
